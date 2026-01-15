@@ -3,64 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Điền Thông Tin</title>
+    <title>XÁC NHẬN ĐIỂM DANH</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background: #f4f4f9; }
-        .container { max-width: 400px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #2ecc71; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
-        button:disabled { background: #95a5a6; }
-        .error { color: red; text-align: center; font-weight: bold; }
-        .success { color: green; text-align: center; font-weight: bold; font-size: 18px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .form-card { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        
+        h2 { text-align: center; color: #2c3e50; margin-bottom: 20px; }
+        .input-group { margin-bottom: 20px; }
+        label { display: block; font-weight: bold; margin-bottom: 8px; color: #555; }
+        
+        input { width: 100%; padding: 14px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; box-sizing: border-box; transition: 0.3s; }
+        input:focus { border-color: #3498db; outline: none; }
+
+        /* CSS Viết hoa chữ cái đầu */
+        #name { text-transform: capitalize; }
+        /* CSS Viết hoa toàn bộ */
+        #class_name { text-transform: uppercase; }
+
+        .btn-submit { width: 100%; padding: 15px; background: #2ecc71; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        .btn-submit:disabled { background: #ccc; }
+
+        .error-msg { color: red; text-align: center; font-weight: bold; display: none; }
     </style>
 </head>
 <body>
-    <div class="container" id="formBox">
-        <h2 style="text-align:center">ĐIỂM DANH</h2>
-        <p id="status" class="error"></p>
+
+    <div class="form-card" id="mainForm">
+        <h2>📋 THÔNG TIN SINH VIÊN</h2>
+        <p class="error-msg" id="blockMsg">⛔ THIẾT BỊ NÀY ĐÃ ĐIỂM DANH HÔM NAY!</p>
         
-        <form id="myForm">
-            <input type="text" id="name" placeholder="Họ và tên" required>
-            <input type="text" id="mssv" placeholder="Mã SV" pattern="[0-9]*" required>
-            <input type="text" id="class_name" placeholder="Lớp" required oninput="this.value = this.value.toUpperCase()">
-            <button type="submit" id="btnSubmit">GỬI</button>
+        <form id="attendanceForm">
+            <div class="input-group">
+                <label>Họ và tên:</label>
+                <input type="text" id="name" placeholder="Nguyễn Văn A" required oninput="formatName(this)">
+            </div>
+
+            <div class="input-group">
+                <label>Mã sinh viên:</label>
+                <input type="number" id="mssv" placeholder="Nhập số..." required pattern="[0-9]*" inputmode="numeric">
+            </div>
+
+            <div class="input-group">
+                <label>Lớp:</label>
+                <input type="text" id="class_name" placeholder="K68LUAT..." required oninput="this.value = this.value.toUpperCase()">
+            </div>
+
+            <button type="submit" class="btn-submit" id="btnSub">XÁC NHẬN ĐIỂM DANH</button>
         </form>
-    </div>
-    
-    <div id="doneBox" class="container" style="display:none; text-align:center;">
-        <h1>✅</h1>
-        <p class="success">Đã lưu vào Google Sheet!</p>
     </div>
 
     <script>
-        // --- DÁN LINK API CỦA BẠN VÀO ĐÂY ---
-        const API_URL = "https://script.google.com/macros/s/AKfycbymeGJusgg0OO96ofOoUyOMdNz8amzrbBYAxjsUH4PKzoVhUyikikEdvT3OAeT7s4fX/exec"; 
-        // ------------------------------------
+        // --- 1. CẤU HÌNH API ---
+        // Thay link Google Apps Script của bạn vào đây
+        const API_URL = https://script.google.com/macros/s/AKfycbxk2DeAwCVYempdxmVywhV1VD3uUih1GC6tIrDJ71ncvN5h4ScJ3hqfIIEbU82Zlj2q/exec; 
 
-        // Kiểm tra Token thời gian (Chống gian lận cơ bản)
-        const params = new URLSearchParams(window.location.search);
-        const tokenTime = params.get('t');
-        const now = Math.floor(Date.now() / 1000);
-        
-        // Nếu không có token hoặc token quá cũ (quá 45 giây)
-        if (!tokenTime || (now - tokenTime > 45)) {
-            document.getElementById("formBox").innerHTML = "<h3 class='error'>MÃ QR HẾT HẠN HOẶC KHÔNG HỢP LỆ!</h3><p align='center'>Vui lòng quét mã mới trên màn hình.</p>";
+        // --- 2. KIỂM TRA CHẶN THIẾT BỊ (1 lần/ngày) ---
+        const today = new Date().toLocaleDateString('vi-VN');
+        const lastAttended = localStorage.getItem('last_attendance_date');
+
+        if (lastAttended === today) {
+            document.getElementById('attendanceForm').style.display = 'none';
+            document.getElementById('blockMsg').style.display = 'block';
         }
 
-        // Xử lý gửi Form
-        document.getElementById("myForm").addEventListener("submit", function(e) {
+        // --- 3. KIỂM TRA THỜI GIAN QR ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const qrTime = parseInt(urlParams.get('t'));
+        const now = Date.now();
+
+        // Nếu QR cũ quá 45 giây (30s refresh + 15s thao tác) -> Chặn
+        if (!qrTime || (now - qrTime > 45000)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Mã QR hết hạn!',
+                text: 'Vui lòng quét mã mới trên màn hình.',
+                allowOutsideClick: false,
+                showConfirmButton: false
+            });
+            document.getElementById('btnSub').disabled = true;
+        }
+
+        // --- 4. XỬ LÝ FORMAT TÊN (Viết hoa chữ cái đầu) ---
+        function formatName(input) {
+            let words = input.value.toLowerCase().split(' ');
+            for (let i = 0; i < words.length; i++) {
+                words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1);
+            }
+            input.value = words.join(' ');
+        }
+
+        // --- 5. GỬI DỮ LIỆU ---
+        document.getElementById('attendanceForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            const btn = document.getElementById("btnSubmit");
-            btn.innerText = "Đang gửi...";
+            
+            const btn = document.getElementById('btnSub');
+            btn.innerText = "Đang xử lý...";
             btn.disabled = true;
 
+            const name = document.getElementById('name').value;
+            const mssv = document.getElementById('mssv').value;
+            const className = document.getElementById('class_name').value;
+            const submitTime = new Date().toLocaleString('vi-VN');
+
             const data = {
-                name: document.getElementById("name").value,
-                mssv: document.getElementById("mssv").value,
-                class_name: document.getElementById("class_name").value
+                name: name,
+                mssv: mssv,
+                class_name: className,
+                device_info: navigator.userAgent // Lấy thông tin thiết bị
             };
 
-            // Gửi dữ liệu bằng fetch (No-CORS mode để vượt qua bảo mật trình duyệt)
             fetch(API_URL, {
                 method: "POST",
                 mode: "no-cors",
@@ -68,13 +120,31 @@
                 body: JSON.stringify(data)
             })
             .then(() => {
-                document.getElementById("formBox").style.display = "none";
-                document.getElementById("doneBox").style.display = "block";
+                // Ghi nhận đã điểm danh hôm nay vào bộ nhớ máy
+                localStorage.setItem('last_attendance_date', today);
+
+                // Hiện Popup thành công
+                Swal.fire({
+                    icon: 'success',
+                    title: 'ĐIỂM DANH THÀNH CÔNG!',
+                    html: `
+                        <div style="text-align:left; font-size:16px;">
+                            <p><b>Hệ thống đã ghi nhận:</b></p>
+                            <p>👨‍🎓 Sinh viên: <b>${name}</b></p>
+                            <p>🆔 MSSV: <b>${mssv}</b></p>
+                            <p>⏰ Lúc: <b>${submitTime}</b></p>
+                        </div>
+                    `,
+                    confirmButtonText: 'Đóng'
+                }).then(() => {
+                    // Sau khi đóng popup thì chặn luôn form
+                    location.reload();
+                });
             })
             .catch(err => {
-                alert("Lỗi mạng! Thử lại.");
+                Swal.fire('Lỗi', 'Không thể gửi dữ liệu. Vui lòng thử lại!', 'error');
                 btn.disabled = false;
-                btn.innerText = "GỬI LẠI";
+                btn.innerText = "XÁC NHẬN ĐIỂM DANH";
             });
         });
     </script>
