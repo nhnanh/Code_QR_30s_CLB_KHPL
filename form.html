@@ -4,37 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>XÁC NHẬN ĐIỂM DANH</title>
+    <!-- Thư viện Popup -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .form-card { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        
         h2 { text-align: center; color: #2c3e50; margin-bottom: 20px; }
         .input-group { margin-bottom: 20px; }
         label { display: block; font-weight: bold; margin-bottom: 8px; color: #555; }
         input { width: 100%; padding: 14px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
         
+        /* Viết hoa chữ cái đầu */
         #name { text-transform: capitalize; }
+        /* Viết hoa toàn bộ */
         #class_name { text-transform: uppercase; }
 
-        .btn-submit { width: 100%; padding: 15px; background: #2ecc71; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-submit:hover { background: #27ae60; }
+        .btn-submit { width: 100%; padding: 15px; background: #2ecc71; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
         .btn-submit:disabled { background: #95a5a6; cursor: not-allowed; }
 
-        .hidden { display: none; }
-        .blocked-msg { text-align: center; color: #c0392b; font-weight: bold; padding: 20px; border: 2px dashed #c0392b; border-radius: 10px; background: #fadbd8; }
+        /* Màn hình lỗi */
+        .error-screen { text-align: center; padding: 20px; color: #c0392b; background: #fadbd8; border-radius: 10px; border: 2px dashed #c0392b; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <div class="form-card">
-        <div id="blockedScreen" class="hidden">
-            <div class="blocked-msg">
-                <h3 id="blockTitle">⛔ MÃ QR ĐÃ HẾT HẠN!</h3>
-                <p id="blockReason">Vui lòng quét mã mới trên màn hình.</p>
-            </div>
-        </div>
-
-        <div id="formScreen">
+    <!-- KHUNG ĐIỂM DANH -->
+    <div class="form-card" id="mainContainer">
+        <!-- 1. Màn hình Form -->
+        <div id="formSection">
             <h2>📋 ĐIỂM DANH</h2>
             <form id="attendanceForm">
                 <div class="input-group">
@@ -49,37 +48,50 @@
                     <label>Lớp:</label>
                     <input type="text" id="class_name" placeholder="K68LUAT" required oninput="this.value = this.value.toUpperCase()">
                 </div>
-                <button type="submit" class="btn-submit" id="btnSub">XÁC NHẬN</button>
+                <button type="submit" class="btn-submit" id="btnSub">XÁC NHẬN ĐIỂM DANH</button>
             </form>
+        </div>
+
+        <!-- 2. Màn hình thông báo lỗi (Ẩn mặc định) -->
+        <div id="errorSection" class="error-screen hidden">
+            <h3 id="errorTitle">⛔ LỖI</h3>
+            <p id="errorMsg">Nội dung lỗi</p>
         </div>
     </div>
 
     <script>
-        // ==========================================
-        // THAY LINK MỚI CỦA BẠN VÀO ĐÂY (Link Apps Script /exec)
-        const API_URL = https://script.google.com/macros/s/AKfycbw1oa6F1uhF6ye-JGKLMTxBrArYS49Wfxc5Hy6-ZNBuASWoNlGT9UFpNYL39zN3BnHN/exec; 
-        // ==========================================
+        // ============================================================
+        // 👇 DÁN LINK GOOGLE SCRIPT (EXEC) MỚI CỦA BẠN VÀO ĐÂY 👇
+        const API_URL = "https://script.google.com/macros/s/AKfycbw57FoZhAjou0nRXKUgTyA5CY63c-uSVbWWXMahxHXkRxzr2Jhoaon6kwv6AcqjvMvj/exec"; 
+        // ============================================================
 
-        // 1. KIỂM TRA CHẶN THIẾT BỊ (1 lần/ngày)
         const today = new Date().toLocaleDateString('vi-VN');
-        if (localStorage.getItem('attended_today') === today) {
-            blockScreen("⛔ BẠN ĐÃ ĐIỂM DANH RỒI!", "Mỗi thiết bị chỉ được điểm danh 1 lần/ngày.");
+
+        // --- 1. CHẶN THIẾT BỊ NGAY LẬP TỨC ---
+        if (localStorage.getItem('attended_date') === today) {
+            showError("BẠN ĐÃ ĐIỂM DANH RỒI!", "Mỗi thiết bị chỉ được điểm danh 1 lần/ngày.");
+        } 
+        else {
+            checkQRCode();
         }
 
-        // 2. KIỂM TRA MÃ QR (Logic chặt chẽ hơn)
-        const urlParams = new URLSearchParams(window.location.search);
-        const qrTimeStr = urlParams.get('t');
-        
-        // Nếu không có tham số t -> Chặn luôn (đề phòng vào link trực tiếp)
-        if (!qrTimeStr) {
-            blockScreen("⛔ LỖI TRUY CẬP", "Vui lòng quét mã QR để truy cập.");
-        } else {
-            const qrTime = parseInt(qrTimeStr);
+        // --- 2. KIỂM TRA MÃ QR (Chặn QR cũ) ---
+        function checkQRCode() {
+            const params = new URLSearchParams(window.location.search);
+            const qrTime = parseInt(params.get('t'));
             const now = Date.now();
-            // Cho phép trễ tối đa 45 giây
-            if (now - qrTime > 45000) { 
-                blockScreen("⛔ MÃ QR ĐÃ HẾT HẠN!", "Mã này đã cũ. Vui lòng quét mã mới.");
+
+            // Nếu không có mã t hoặc mã t đã quá 45 giây (30s refresh + 15s thao tác)
+            if (!qrTime || (now - qrTime > 45000)) { 
+                showError("MÃ QR ĐÃ HẾT HẠN!", "Mã này đã cũ hoặc không hợp lệ. Vui lòng quét mã mới trên màn hình.");
             }
+        }
+
+        function showError(title, msg) {
+            document.getElementById('formSection').classList.add('hidden');
+            document.getElementById('errorSection').classList.remove('hidden');
+            document.getElementById('errorTitle').innerText = title;
+            document.getElementById('errorMsg').innerText = msg;
         }
 
         function formatName(el) {
@@ -88,64 +100,56 @@
             el.value = words.join(' ');
         }
 
-        function blockScreen(title, reason) {
-            document.getElementById('formScreen').remove(); // Xóa hẳn form khỏi DOM
-            document.getElementById('blockedScreen').classList.remove('hidden');
-            document.getElementById('blockTitle').innerText = title;
-            document.getElementById('blockReason').innerText = reason;
-        }
-
-        // 3. XỬ LÝ GỬI FORM (Sử dụng sendBeacon hoặc fetch no-cors cải tiến)
+        // --- 3. XỬ LÝ GỬI FORM (SỬA LỖI POPUP) ---
         document.getElementById('attendanceForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const btn = document.getElementById('btnSub');
-            btn.innerText = "Đang xử lý...";
+            btn.innerText = "Đang gửi dữ liệu...";
             btn.disabled = true;
 
             const name = document.getElementById('name').value;
             const mssv = document.getElementById('mssv').value;
             const className = document.getElementById('class_name').value;
-            const timeReal = new Date().toLocaleString('vi-VN');
+            const timeInfo = new Date().toLocaleString('vi-VN');
 
-            // Kỹ thuật mới: Giả lập gửi thành công vì no-cors không trả về kết quả
-            // Chúng ta sẽ hiển thị popup ngay sau khi gửi lệnh, vì Google Script rất hiếm khi lỗi nếu đã cấu hình đúng.
-            
+            // Gửi dữ liệu đi
             fetch(API_URL, {
                 method: "POST",
-                mode: "no-cors",
+                mode: "no-cors", // Bắt buộc để không bị lỗi bảo mật
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                    name: name, 
-                    mssv: mssv, 
-                    class_name: className, 
-                    device_info: navigator.userAgent 
+                body: JSON.stringify({
+                    name: name,
+                    mssv: mssv,
+                    class_name: className,
+                    device_info: navigator.userAgent
                 })
-            }).then(() => {
-                // Mặc định coi như thành công vì no-cors không báo lỗi
-                localStorage.setItem('attended_today', today);
-                
+            })
+            .then(() => {
+                // CHẮC CHẮN HIỆN POPUP Ở ĐÂY
+                localStorage.setItem('attended_date', today); // Đánh dấu đã điểm danh
+
                 Swal.fire({
                     icon: 'success',
-                    title: 'ĐIỂM DANH THÀNH CÔNG!',
+                    title: 'THÀNH CÔNG!',
                     html: `
-                        <div style="text-align: left; margin-top: 10px;">
-                            <p><b>Hệ thống đã ghi nhận:</b></p>
-                            <p>👨‍🎓 SV: <b>${name}</b></p>
-                            <p>🆔 MSSV: <b>${mssv}</b></p>
-                            <p>⏰ Lúc: <b>${timeReal}</b></p>
+                        <div style="text-align:left; margin-top:10px">
+                            <p><b>Sinh viên:</b> ${name}</p>
+                            <p><b>MSSV:</b> ${mssv}</p>
+                            <p><b>Thời gian:</b> ${timeInfo}</p>
                         </div>
                     `,
-                    confirmButtonText: 'HOÀN TẤT',
-                    allowOutsideClick: false
+                    allowOutsideClick: false,
+                    confirmButtonText: 'HOÀN TẤT'
                 }).then(() => {
-                    blockScreen("✅ ĐÃ GHI NHẬN", "Bạn đã điểm danh thành công hôm nay.");
+                    // Sau khi bấm Hoàn tất -> Chặn màn hình
+                    showError("ĐÃ GHI NHẬN", "Cảm ơn bạn đã tham gia buổi học.");
                 });
-            }).catch(err => {
-                // Chỉ bắt lỗi mạng (mất net)
-                Swal.fire('Lỗi đường truyền', 'Vui lòng kiểm tra Wifi/4G và thử lại', 'error');
+            })
+            .catch(err => {
+                Swal.fire('Lỗi mạng', 'Vui lòng kiểm tra internet và thử lại', 'error');
                 btn.disabled = false;
-                btn.innerText = "XÁC NHẬN";
+                btn.innerText = "THỬ LẠI";
             });
         });
     </script>
