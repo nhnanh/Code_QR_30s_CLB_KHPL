@@ -11,24 +11,22 @@
         :root { --primary: #2563eb; --bg: #f1f5f9; --text: #1e293b; --danger: #ef4444; }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
         
-        /* Nút Cài đặt góc trái */
         .settings-btn { position: absolute; top: 20px; left: 20px; font-size: 28px; color: #64748b; cursor: pointer; padding: 10px; z-index: 100; transition: 0.3s; }
         .settings-btn:hover { color: var(--primary); transform: rotate(90deg); }
 
-        /* Khung hiển thị QR */
         .qr-card { background: white; padding: 40px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 380px; position: relative; z-index: 10; margin-bottom: 40px;}
         #qrcode { background: white; padding: 15px; border: 2px dashed #cbd5e1; border-radius: 16px; display: inline-block; margin: 20px 0; }
         
         .timer { font-size: 64px; font-weight: 900; color: var(--danger); line-height: 1; }
         .realtime { margin-top: 20px; font-weight: 600; color: #64748b; border-top: 1px solid #eee; padding-top: 15px;}
 
-        /* MODAL (Cửa sổ bật lên) */
+        /* MODAL */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
-        .modal-content { background: white; width: 95%; max-width: 700px; border-radius: 20px; padding: 25px; max-height: 90vh; overflow-y: auto; text-align: left; position: relative; }
+        .modal-content { background: white; width: 95%; max-width: 800px; border-radius: 20px; padding: 25px; max-height: 90vh; overflow-y: auto; text-align: left; position: relative; }
         
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; color: #333; }
-        input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; }
         
         .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; color: white; transition: 0.2s; display: inline-block; text-align: center;}
         .btn:hover { opacity: 0.9; }
@@ -37,12 +35,15 @@
         .btn-close { background: #64748b; }
         .btn-refresh { background: #10b981; }
         
-        /* BẢNG DANH SÁCH SINH VIÊN */
-        .list-controls { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; background: #f8fafc; padding: 15px; border-radius: 10px; }
-        .control-item { flex: 1; min-width: 200px; }
+        /* BẢNG & BỘ LỌC */
+        .filter-bar { background: #f8fafc; padding: 15px; border-radius: 10px; margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; border: 1px solid #e2e8f0; }
+        .filter-group { flex: 1; min-width: 150px; }
+        .filter-group label { font-size: 12px; color: #64748b; margin-bottom: 4px; }
         
         .student-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
-        .student-table th { background: #f1f5f9; padding: 12px; text-align: left; border-bottom: 2px solid #ddd; position: sticky; top: 0; z-index: 10; font-weight: bold; color: #475569; }
+        .student-table th { background: #f1f5f9; padding: 12px; text-align: left; border-bottom: 2px solid #ddd; position: sticky; top: 0; z-index: 10; font-weight: bold; color: #475569; cursor: pointer; user-select: none; }
+        .student-table th:hover { background: #e2e8f0; color: var(--primary); }
+        .student-table th i { margin-left: 5px; font-size: 11px; opacity: 0.5; }
         .student-table td { padding: 12px; border-bottom: 1px solid #eee; color: #334155; }
         .student-table tr:hover td { background-color: #f8fafc; }
         
@@ -50,19 +51,16 @@
         .delete-btn:hover { background: #dc2626; }
         
         .empty-msg { text-align: center; color: #999; padding: 30px; font-style: italic; }
-        .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; background: #e2e8f0; color: #64748b; margin-left: 5px; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; background: #e2e8f0; color: #64748b; }
 
-        /* Loader */
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; display: none; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-    <!-- Nút Bánh Răng -->
     <div class="settings-btn" onclick="checkLogin()" title="Cài đặt Admin"><i class="fa-solid fa-gear"></i></div>
 
-    <!-- Màn hình chính -->
     <div class="qr-card">
         <h1 id="orgName">ĐIỂM DANH CLB</h1>
         <div id="qrcode"></div>
@@ -76,7 +74,7 @@
             <h2 style="margin-top:0; border-bottom:1px solid #eee; padding-bottom:10px;">⚙️ Quản Trị</h2>
             
             <button class="btn btn-list" onclick="openListModal()">
-                <i class="fa-solid fa-clipboard-list"></i> XEM DANH SÁCH & XÓA
+                <i class="fa-solid fa-clipboard-list"></i> QUẢN LÝ DANH SÁCH
             </button>
 
             <div style="border-top: 1px solid #eee; margin: 15px 0;"></div>
@@ -101,39 +99,46 @@
         </div>
     </div>
 
-    <!-- MODAL 2: DANH SÁCH & BỘ LỌC -->
+    <!-- MODAL 2: DANH SÁCH & BỘ LỌC NÂNG CAO -->
     <div id="listModal" class="modal">
         <div class="modal-content">
-            <h2 style="margin-top:0;">📋 Danh Sách Điểm Danh</h2>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h2 style="margin:0;">📋 Dữ Liệu Điểm Danh</h2>
+                <button class="btn btn-close" style="width: auto; margin:0; padding: 8px 15px;" onclick="closeModal('listModal')">✕ Đóng</button>
+            </div>
             
-            <!-- KHU VỰC BỘ LỌC DỮ LIỆU -->
-            <div class="list-controls">
-                <div class="control-item">
+            <!-- BỘ LỌC NÂNG CAO -->
+            <div class="filter-bar">
+                <div class="filter-group">
                     <label>Ngày xem:</label>
                     <input type="date" id="viewDate" onchange="fetchList()">
                 </div>
-                <div class="control-item">
-                    <label>Tìm kiếm (Tên, MSSV, Lớp):</label>
-                    <input type="text" id="searchInput" placeholder="Nhập từ khóa..." onkeyup="filterList()">
+                <div class="filter-group">
+                    <label>Tìm kiếm chung:</label>
+                    <input type="text" id="searchAll" placeholder="Nhập tên, mssv..." onkeyup="applyFilter()">
                 </div>
-            </div>
-
-            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 10px;">
-                <button class="btn btn-refresh" style="width: auto; margin:0;" onclick="fetchList()"><i class="fa-solid fa-rotate-right"></i> Làm mới</button>
-                <button class="btn btn-close" style="width: auto; margin:0;" onclick="closeModal('listModal')">Đóng</button>
+                <div class="filter-group">
+                    <label>Lọc theo Lớp:</label>
+                    <select id="filterClass" onchange="applyFilter()" style="width:100%; padding:10px; border-radius:8px; border:1px solid #cbd5e1;">
+                        <option value="">Tất cả các lớp</option>
+                    </select>
+                </div>
+                <div class="filter-group" style="flex:0;">
+                    <button class="btn btn-refresh" style="margin:0;" onclick="fetchList()" title="Tải lại dữ liệu"><i class="fa-solid fa-rotate-right"></i></button>
+                </div>
             </div>
 
             <div id="loader" class="loader"></div>
             
-            <div style="max-height: 400px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px;">
+            <div style="max-height: 450px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px;">
                 <table class="student-table">
                     <thead>
                         <tr>
-                            <th style="width: 80px;">Giờ</th>
-                            <th>Họ Tên</th>
-                            <th style="width: 100px;">MSSV</th>
-                            <th style="width: 80px;">Lớp</th>
-                            <th style="width: 80px; text-align: center;">Thao tác</th>
+                            <th onclick="sortData('time')">Giờ <i class="fa-solid fa-sort"></i></th>
+                            <th onclick="sortData('name')">Họ Tên <i class="fa-solid fa-sort"></i></th>
+                            <th onclick="sortData('mssv')">MSSV <i class="fa-solid fa-sort"></i></th>
+                            <th onclick="sortData('class_name')">Lớp <i class="fa-solid fa-sort"></i></th>
+                            <th style="text-align: center;">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
@@ -141,8 +146,9 @@
                     </tbody>
                 </table>
             </div>
-            <div style="text-align: right; font-size: 12px; color: #64748b; margin-top: 10px;">
-                Tổng số: <b id="totalCount">0</b> sinh viên
+            <div style="display:flex; justify-content:space-between; font-size: 12px; color: #64748b; margin-top: 10px;">
+                <span>* Bấm vào tiêu đề cột để sắp xếp</span>
+                <span>Tổng số: <b id="totalCount">0</b> sinh viên</span>
             </div>
         </div>
     </div>
@@ -159,7 +165,11 @@
 
         let timer = config.time;
         let interval = null;
-        let allStudents = []; // Biến chứa toàn bộ danh sách để lọc
+        
+        // BIẾN QUẢN LÝ DỮ LIỆU
+        let allData = []; // Dữ liệu gốc từ server
+        let filteredData = []; // Dữ liệu đang hiển thị sau khi lọc
+        let sortConfig = { key: 'time', dir: 'desc' }; // Mặc định: Mới nhất lên đầu
 
         window.onload = function() {
             document.getElementById('viewDate').valueAsDate = new Date();
@@ -213,7 +223,7 @@
 
         function closeModal(id) { document.getElementById(id).style.display = "none"; }
 
-        // --- DANH SÁCH & BỘ LỌC ---
+        // --- TẢI DỮ LIỆU ---
         function openListModal() {
             if(!config.api) { alert("Chưa nhập Link API trong cài đặt!"); return; }
             document.getElementById("adminModal").style.display = "none";
@@ -237,8 +247,9 @@
             .then(res => {
                 loader.style.display = "none";
                 if(res.status === "success") {
-                    allStudents = res.data; // Lưu dữ liệu gốc để lọc
-                    filterList(); // Hiển thị
+                    allData = res.data;
+                    updateClassFilterOptions(); // Cập nhật dropdown lớp
+                    applyFilter(); // Áp dụng bộ lọc và hiển thị
                 } else {
                     tbody.innerHTML = `<tr><td colspan="5" class="empty-msg">Lỗi: ${res.message}</td></tr>`;
                 }
@@ -249,28 +260,82 @@
             });
         }
 
-        // Hàm lọc dữ liệu theo từ khóa
-        function filterList() {
-            const term = document.getElementById("searchInput").value.toLowerCase();
-            const filtered = allStudents.filter(s => 
-                s.name.toLowerCase().includes(term) || 
-                s.mssv.toString().includes(term) || 
-                s.class_name.toLowerCase().includes(term)
-            );
-            renderTable(filtered);
+        // --- BỘ LỌC & SẮP XẾP ---
+        
+        function updateClassFilterOptions() {
+            const select = document.getElementById("filterClass");
+            const currentVal = select.value;
+            
+            // Lấy danh sách lớp duy nhất
+            const classes = [...new Set(allData.map(item => item.class_name))].sort();
+            
+            let html = `<option value="">Tất cả các lớp</option>`;
+            classes.forEach(c => {
+                html += `<option value="${c}">${c}</option>`;
+            });
+            select.innerHTML = html;
+            select.value = currentVal; // Giữ lại lựa chọn cũ nếu có
         }
 
-        function renderTable(data) {
-            const tbody = document.getElementById('tableBody');
-            document.getElementById("totalCount").innerText = data.length;
+        function applyFilter() {
+            const search = document.getElementById("searchAll").value.toLowerCase();
+            const classFilter = document.getElementById("filterClass").value;
 
-            if(data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="empty-msg">Không tìm thấy dữ liệu.</td></tr>`;
+            filteredData = allData.filter(item => {
+                const matchSearch = item.name.toLowerCase().includes(search) || 
+                                    item.mssv.toString().includes(search) ||
+                                    item.class_name.toLowerCase().includes(search);
+                const matchClass = classFilter === "" || item.class_name === classFilter;
+                return matchSearch && matchClass;
+            });
+
+            // Sau khi lọc thì sắp xếp luôn
+            runSort();
+        }
+
+        function sortData(key) {
+            // Đảo chiều nếu bấm lại cột cũ
+            if (sortConfig.key === key) {
+                sortConfig.dir = sortConfig.dir === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortConfig.key = key;
+                sortConfig.dir = 'asc';
+            }
+            runSort();
+        }
+
+        function runSort() {
+            const { key, dir } = sortConfig;
+            
+            filteredData.sort((a, b) => {
+                let valA = a[key];
+                let valB = b[key];
+
+                // Xử lý riêng cho MSSV (số) và Time
+                if (key === 'mssv') {
+                    valA = parseInt(valA) || 0;
+                    valB = parseInt(valB) || 0;
+                }
+                
+                if (valA < valB) return dir === 'asc' ? -1 : 1;
+                if (valA > valB) return dir === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            document.getElementById("totalCount").innerText = filteredData.length;
+
+            if (filteredData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="empty-msg">Không tìm thấy dữ liệu phù hợp.</td></tr>`;
                 return;
             }
 
             let html = "";
-            data.forEach(item => {
+            filteredData.forEach(item => {
                 let timeOnly = item.time.split(" ")[0];
                 html += `
                     <tr>
@@ -291,7 +356,7 @@
 
         // --- XÓA SINH VIÊN ---
         function deleteRow(rowIndex, mssv, name) {
-            if(!confirm(`XÓA SINH VIÊN: ${name} (${mssv})?\n\nLưu ý: Sau khi xóa, hãy yêu cầu sinh viên bấm nút "Reset thiết bị" (hoặc Điểm danh lại) trên điện thoại của họ để nộp lại.`)) return;
+            if(!confirm(`⚠️ XÓA SINH VIÊN: ${name} (${mssv})?\n\nLƯU Ý QUAN TRỌNG:\nSau khi xóa ở đây, sinh viên cần bấm nút "Reset thiết bị" (nút nhỏ ở góc dưới form điểm danh) thì mới có thể điểm danh lại được.`)) return;
 
             fetch(config.api, {
                 method: 'POST',
@@ -300,8 +365,8 @@
             .then(res => res.json())
             .then(res => {
                 if(res.status === "success") {
-                    alert("✅ Đã xóa thành công!\n\nSinh viên bây giờ có thể điểm danh lại (nhớ Reset thiết bị).");
-                    fetchList(); 
+                    alert("✅ Đã xóa thành công khỏi danh sách!");
+                    fetchList(); // Tải lại bảng
                 } else {
                     alert("Lỗi: " + res.message);
                 }
