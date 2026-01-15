@@ -67,7 +67,7 @@
     <script>
         // ==========================================
         // DÁN LINK GOOGLE APPS SCRIPT CỦA BẠN VÀO ĐÂY
-        const API_URL = "https://script.google.com/macros/s/AKfycbzzsWZoGnP61ovCHAbG3xlR0TQl-wcMShJHs1JsKaME6y_ymDVE03GUt0Gz2njEGoHL/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbyk8mivqsuoi4KC57XUd3GwhRM3UZlT2Ut2AUMyE-AmfN9gsP3e305DIbMrrTXyRvkQ/exec";
         // ==========================================
 
         const today = new Date().toLocaleDateString('vi-VN');
@@ -121,9 +121,6 @@
 
             fetch(API_URL, {
                 method: "POST",
-                // Chuyển sang mode cors để đọc được phản hồi nếu script hỗ trợ
-                // Nếu script chưa cấu hình options, dùng no-cors sẽ không đọc được lỗi
-                // Ở đây dùng no-cors cho an toàn với script cũ, nhưng ở tính năng Reset ta sẽ dùng cors
                 mode: "no-cors",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ name: name, mssv: mssv, class_name: className, device_info: navigator.userAgent })
@@ -150,7 +147,7 @@
 
             // 1. Nếu không tìm thấy MSSV (do xóa cache hoặc chưa điểm danh) -> Hỏi Pass
             if (!mssv) {
-                askPassword("Nhập mật khẩu Admin để reset thủ công:");
+                askPassword("Nhập mật khẩu Reset để mở khóa thiết bị:");
                 return;
             }
 
@@ -172,7 +169,7 @@
                 Swal.close();
                 if (data.exist === true) {
                     // TRƯỜNG HỢP 1: CHƯA XÓA Ở DANH SÁCH -> CẦN PASS
-                    askPassword(`Sinh viên ${mssv} vẫn còn trong danh sách điểm danh!\nBạn cần mật khẩu Admin để reset máy này.`);
+                    askPassword(`Sinh viên ${mssv} vẫn còn trong danh sách điểm danh!\nBạn cần mật khẩu Reset để mở khóa máy này.`);
                 } else {
                     // TRƯỜNG HỢP 2: ĐÃ XÓA Ở DANH SÁCH -> KHÔNG CẦN PASS
                     Swal.fire({
@@ -189,22 +186,27 @@
                 Swal.close();
                 console.error(err);
                 // Lỗi mạng -> Fallback về hỏi pass
-                askPassword("Không thể kết nối server kiểm tra. Nhập mật khẩu Admin để reset:");
+                askPassword("Không thể kết nối server kiểm tra. Nhập mật khẩu Reset để mở khóa:");
             });
         }
 
         function askPassword(msg) {
             Swal.fire({
-                title: 'Yêu cầu quyền Admin',
+                title: 'Yêu cầu quyền Reset',
                 text: msg,
                 input: 'password',
-                inputPlaceholder: 'Nhập mật khẩu Admin',
+                inputPlaceholder: 'Nhập mật khẩu...',
                 showCancelButton: true,
                 confirmButtonText: 'Mở khóa',
                 cancelButtonText: 'Hủy'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    if (result.value === "Admin") { // Pass mặc định, có thể đổi
+                    // --- ĐỒNG BỘ MẬT KHẨU VỚI ADMIN ---
+                    // Lấy pass từ localStorage (do file index.html đã lưu vào đó nếu cùng domain)
+                    // Mặc định là "Admin" nếu chưa đổi
+                    const adminPass = localStorage.getItem('admin_reset_pass') || "Admin"; 
+
+                    if (result.value === adminPass) { 
                         performReset();
                     } else {
                         Swal.fire('Lỗi', 'Sai mật khẩu!', 'error');
