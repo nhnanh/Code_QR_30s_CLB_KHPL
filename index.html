@@ -8,56 +8,38 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        :root {
-            --primary-color: #2c3e50;
-            --accent-color: #e74c3c;
-            --bg-color: #f4f4f9;
-        }
+        :root { --primary-color: #2c3e50; --accent-color: #e74c3c; --bg-color: #f4f4f9; }
         body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-color); height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
         
-        /* Icon Setting góc trái */
-        .settings-btn {
-            position: absolute; top: 20px; left: 20px;
-            font-size: 30px; color: #7f8c8d; cursor: pointer;
-            transition: 0.3s; z-index: 100;
-        }
+        .settings-btn { position: absolute; top: 20px; left: 20px; font-size: 30px; color: #7f8c8d; cursor: pointer; transition: 0.3s; z-index: 100; }
         .settings-btn:hover { color: var(--primary-color); transform: rotate(90deg); }
 
-        /* Giao diện chính */
-        h1 { color: var(--primary-color); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; }
-        .qr-container {
-            background: white; padding: 20px; border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            display: flex; flex-direction: column; align-items: center;
-        }
+        h1 { color: var(--primary-color); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; text-align: center; font-size: 24px;}
+        .qr-container { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: flex; flex-direction: column; align-items: center; width: 340px; }
+        
+        /* Chỗ chứa QR cố định kích thước để không bị nhảy */
+        #qrcode { width: 260px; height: 260px; margin-top: 10px; display: flex; justify-content: center; align-items: center;}
         #qrcode img { border: 4px solid #333; border-radius: 5px; }
         
         .timer-box { margin-top: 20px; text-align: center; }
         .countdown { font-size: 48px; font-weight: bold; color: var(--accent-color); }
-        .info-text { color: #7f8c8d; margin-top: 10px; font-size: 18px; }
+        .info-text { color: #7f8c8d; margin-top: 10px; font-size: 16px; }
 
-        /* MODAL (Cửa sổ đăng nhập & Admin) */
+        /* MODAL */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 200; align-items: center; justify-content: center; }
-        .modal-content { background: white; width: 90%; max-width: 450px; padding: 30px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); animation: slideDown 0.3s ease; position: relative; }
-        
-        @keyframes slideDown { from {transform: translateY(-50px); opacity: 0;} to {transform: translateY(0); opacity: 1;} }
-
+        .modal-content { background: white; width: 90%; max-width: 400px; padding: 25px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); position: relative; }
         .close-btn { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #aaa; }
-        .close-btn:hover { color: red; }
-
-        /* Form Style */
-        .form-group { margin-bottom: 15px; text-align: left; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; color: #333; }
-        input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 16px; }
-        button { width: 100%; padding: 12px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; margin-top: 10px; font-weight: bold; transition: 0.2s; }
         
-        .btn-login { background: var(--primary-color); color: white; }
-        .btn-save { background: #27ae60; color: white; }
-        .btn-sheet { background: #2980b9; color: white; margin-bottom: 10px; display: block; text-align: center; text-decoration: none; line-height: 1.5;}
-        .btn-pause { background: #f39c12; color: white; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px;}
+        input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button, .btn-sheet { width: 100%; padding: 10px; border: none; border-radius: 5px; cursor: pointer; margin-top: 5px; font-weight: bold; color: white; text-align: center; text-decoration: none; display: block; box-sizing: border-box;}
         
-        button:hover, .btn-sheet:hover { opacity: 0.9; }
-        .status-paused { color: red; font-weight: bold; display: none; }
+        .btn-login { background: var(--primary-color); }
+        .btn-save { background: #27ae60; }
+        .btn-sheet { background: #2980b9; }
+        .btn-pause { background: #f39c12; }
+        .status-msg { color: red; font-weight: bold; margin-top: 10px; display: none; }
     </style>
 </head>
 <body>
@@ -66,251 +48,18 @@
 
     <div class="qr-container">
         <h1>Quét Mã Điểm Danh</h1>
+        
         <div id="qrcode"></div>
         
         <div class="timer-box">
-            <div id="countdown" class="countdown">30</div>
-            <div class="info-text">Tự động đổi mã sau mỗi phiên</div>
-            <p id="pausedMsg" class="status-paused">⛔ HỆ THỐNG ĐANG TẠM DỪNG</p>
+            <div id="countdown" class="countdown">--</div>
+            <div class="info-text" id="statusText">Đang tải hệ thống...</div>
+            <div id="warningMsg" class="status-msg"></div>
         </div>
-        <div style="margin-top: 20px; font-size: 14px; color: #999;">
+        <div style="margin-top: 15px; font-size: 13px; color: #999;">
             Thời gian thực: <span id="realtime">...</span>
         </div>
     </div>
 
     <div id="loginModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal('loginModal')">&times;</span>
-            <h2 style="text-align:center">🔒 Đăng nhập Admin</h2>
-            <div class="form-group">
-                <label>Mật khẩu quản trị:</label>
-                <input type="password" id="adminPassInput" placeholder="Nhập mật khẩu..." onkeyup="if(event.key === 'Enter') checkLogin()">
-            </div>
-            <p id="loginError" style="color:red; display:none; text-align:center;">Mật khẩu sai!</p>
-            <button class="btn-login" onclick="checkLogin()">Truy cập</button>
-        </div>
-    </div>
-
-    <div id="adminModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal('adminModal')">&times;</span>
-            <h2 style="text-align:center">⚙️ Cài Đặt Hệ Thống</h2>
-            
-            <div class="form-group">
-                <a href="#" id="sheetLinkBtn" target="_blank" class="btn-sheet"><i class="fas fa-file-excel"></i> Mở Google Sheet Danh Sách</a>
-            </div>
-
-            <hr style="margin: 20px 0; border: 0.5px solid #eee;">
-
-            <div class="form-group">
-                <label>Link trang Form (form.html):</label>
-                <input type="text" id="cfgLink" placeholder="https://.../form.html">
-            </div>
-
-            <div class="form-group">
-                <label>Link Google Sheet (Để mở nhanh):</label>
-                <input type="text" id="cfgSheet" placeholder="https://docs.google.com/spreadsheets/...">
-            </div>
-
-            <div class="form-group" style="display:flex; gap:10px;">
-                <div style="flex:1">
-                    <label>Thời gian đổi QR (giây):</label>
-                    <input type="number" id="cfgTime" min="5" value="30">
-                </div>
-                <div style="flex:1">
-                    <label>Đổi mật khẩu Admin:</label>
-                    <input type="text" id="cfgPass" placeholder="Mật khẩu mới...">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <button class="btn-pause" id="btnPause" onclick="togglePause()">Tạm dừng hệ thống</button>
-                <button class="btn-save" onclick="saveSettings()">💾 Lưu Cài Đặt</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // --- 1. QUẢN LÝ DỮ LIỆU & CẤU HÌNH ---
-        // Lấy cấu hình từ LocalStorage hoặc dùng mặc định
-        let config = {
-            formUrl: localStorage.getItem('adm_formUrl') || "",
-            sheetUrl: localStorage.getItem('adm_sheetUrl') || "#",
-            refreshTime: parseInt(localStorage.getItem('adm_refreshTime')) || 30,
-            password: localStorage.getItem('adm_password') || "admin", // Mật khẩu mặc định
-            isPaused: false
-        };
-
-        // Biến toàn cục
-        let timer = config.refreshTime;
-        let intervalId = null;
-        let clockId = null;
-        const qrContainer = document.getElementById("qrcode");
-
-        // --- 2. LOGIC TẠO MÃ QR ---
-        function generateQR() {
-            qrContainer.innerHTML = "";
-            
-            if (config.isPaused) {
-                qrContainer.innerHTML = "<h3 style='color:red'>ĐÃ TẠM DỪNG</h3>";
-                return;
-            }
-
-            if (!config.formUrl) {
-                qrContainer.innerHTML = "<p>Chưa cấu hình Link Form!<br>Vui lòng vào cài đặt.</p>";
-                return;
-            }
-
-            // Tạo token dựa trên thời gian thực (giây)
-            const token = Math.floor(Date.now() / 1000); 
-            // Link đích kèm token: .../form.html?t=170xxxxxx
-            const finalLink = `${config.formUrl}?t=${token}`;
-            
-            new QRCode(qrContainer, {
-                text: finalLink,
-                width: 280,
-                height: 280,
-                colorDark : "#000000",
-                colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.M
-            });
-        }
-
-        // Vòng lặp đếm ngược
-        function startSystem() {
-            if (intervalId) clearInterval(intervalId);
-            
-            // Cập nhật ngay lập tức
-            generateQR();
-            timer = config.refreshTime;
-            updateDisplay();
-
-            intervalId = setInterval(() => {
-                if (!config.isPaused) {
-                    timer--;
-                    updateDisplay();
-                    if (timer <= 0) {
-                        timer = config.refreshTime;
-                        generateQR(); // Tạo mã mới
-                    }
-                }
-            }, 1000);
-        }
-
-        function updateDisplay() {
-            document.getElementById("countdown").innerText = timer;
-        }
-
-        // Đồng hồ thời gian thực
-        setInterval(() => {
-            document.getElementById("realtime").innerText = new Date().toLocaleString('vi-VN');
-        }, 1000);
-
-
-        // --- 3. XỬ LÝ ADMIN & LOGIN ---
-        function openLoginModal() {
-            document.getElementById("loginModal").style.display = "flex";
-            document.getElementById("adminPassInput").value = "";
-            document.getElementById("loginError").style.display = "none";
-            document.getElementById("adminPassInput").focus();
-        }
-
-        function checkLogin() {
-            const inputPass = document.getElementById("adminPassInput").value;
-            if (inputPass === config.password) {
-                closeModal("loginModal");
-                openAdminPanel();
-            } else {
-                document.getElementById("loginError").style.display = "block";
-            }
-        }
-
-        function openAdminPanel() {
-            document.getElementById("adminModal").style.display = "flex";
-            // Đổ dữ liệu hiện tại vào form
-            document.getElementById("cfgLink").value = config.formUrl;
-            document.getElementById("cfgSheet").value = config.sheetUrl;
-            document.getElementById("cfgTime").value = config.refreshTime;
-            document.getElementById("cfgPass").value = config.password;
-            
-            // Cập nhật nút Sheet
-            const btnSheet = document.getElementById("sheetLinkBtn");
-            btnSheet.href = config.sheetUrl && config.sheetUrl !== "#" ? config.sheetUrl : "#";
-            if(config.sheetUrl === "#") btnSheet.style.opacity = "0.5";
-            else btnSheet.style.opacity = "1";
-
-            updatePauseBtn();
-        }
-
-        function saveSettings() {
-            // Lấy dữ liệu từ form
-            const newLink = document.getElementById("cfgLink").value;
-            const newSheet = document.getElementById("cfgSheet").value;
-            const newTime = parseInt(document.getElementById("cfgTime").value);
-            const newPass = document.getElementById("cfgPass").value;
-
-            if (!newLink) { alert("Link Form không được để trống!"); return; }
-            if (newTime < 5) { alert("Thời gian tối thiểu là 5 giây!"); return; }
-
-            // Lưu vào Config & LocalStorage
-            config.formUrl = newLink;
-            config.sheetUrl = newSheet;
-            config.refreshTime = newTime;
-            config.password = newPass;
-
-            localStorage.setItem('adm_formUrl', newLink);
-            localStorage.setItem('adm_sheetUrl', newSheet);
-            localStorage.setItem('adm_refreshTime', newTime);
-            localStorage.setItem('adm_password', newPass);
-
-            alert("Đã lưu cài đặt!");
-            closeModal("adminModal");
-            
-            // Khởi động lại hệ thống với thông số mới
-            startSystem();
-        }
-
-        // --- 4. TÍNH NĂNG PHỤ ---
-        function togglePause() {
-            config.isPaused = !config.isPaused;
-            updatePauseBtn();
-            
-            const msg = document.getElementById("pausedMsg");
-            if (config.isPaused) {
-                msg.style.display = "block";
-                qrContainer.innerHTML = "<h3 style='color:red; margin:50px 0;'>⛔ TẠM DỪNG</h3>";
-                document.getElementById("countdown").innerText = "--";
-            } else {
-                msg.style.display = "none";
-                startSystem(); // Chạy lại
-            }
-        }
-
-        function updatePauseBtn() {
-            const btn = document.getElementById("btnPause");
-            if (config.isPaused) {
-                btn.innerText = "▶️ Tiếp tục điểm danh";
-                btn.style.background = "#27ae60";
-            } else {
-                btn.innerText = "⏸️ Tạm dừng hệ thống";
-                btn.style.background = "#f39c12";
-            }
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).style.display = "none";
-        }
-
-        // Đóng modal khi click ra ngoài
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) {
-                event.target.style.display = "none";
-            }
-        }
-
-        // --- KHỞI CHẠY ---
-        startSystem();
-
-    </script>
-</body>
-</html>
+        <div class
