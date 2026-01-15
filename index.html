@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>QR ADMIN - CLB KHPL</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body { text-align: center; font-family: sans-serif; background: #222; color: #fff; padding-top: 30px; }
+        #qrcode { background: white; padding: 20px; display: inline-block; border-radius: 10px; }
+        .timer { font-size: 40px; color: #ff4757; font-weight: bold; margin-top: 20px; }
+        .clock { font-size: 18px; color: #ccc; margin-top: 10px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <h1>QUÉT MÃ ĐIỂM DANH</h1>
+    
+    <div id="setup">
+        <p>https://github.com/nhnanh/Code_QR_30s_CLB_KHPL/blob/main/form.html</p>
+        <input type="text" id="githubLink" placeholder="Ví dụ: https://tenban.github.io/form.html" style="padding:10px; width:300px;">
+        <button onclick="saveSetup()" style="padding:10px; cursor:pointer;">BẮT ĐẦU</button>
+    </div>
+
+    <div id="main" class="hidden">
+        <div id="qrcode"></div>
+        <div class="timer" id="countdown">30</div>
+        <div class="clock" id="realtime"></div>
+    </div>
+
+    <script>
+        let formUrl = localStorage.getItem("my_form_url");
+        let timeLeft = 30;
+
+        if (formUrl) {
+            document.getElementById("setup").classList.add("hidden");
+            document.getElementById("main").classList.remove("hidden");
+            startGenQR();
+        }
+
+        function saveSetup() {
+            let val = document.getElementById("githubLink").value;
+            if(val) {
+                localStorage.setItem("my_form_url", val);
+                location.reload();
+            } else { alert("Chưa nhập link!"); }
+        }
+
+        function startGenQR() {
+            const qrDiv = document.getElementById("qrcode");
+            
+            function makeQR() {
+                qrDiv.innerHTML = "";
+                // Tạo token dựa trên thời gian thực (giây)
+                let token = Math.floor(Date.now() / 1000); 
+                // Link: github.io/form.html?t=1701234567
+                let finalLink = `${localStorage.getItem("my_form_url")}?t=${token}`;
+                
+                new QRCode(qrDiv, { text: finalLink, width: 300, height: 300 });
+                timeLeft = 30;
+            }
+
+            makeQR();
+            
+            // Đếm ngược và đổi mã
+            setInterval(() => {
+                document.getElementById("realtime").innerText = new Date().toLocaleString('vi-VN');
+                timeLeft--;
+                document.getElementById("countdown").innerText = timeLeft;
+                if(timeLeft <= 0) makeQR();
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
