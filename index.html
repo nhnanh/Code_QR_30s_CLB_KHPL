@@ -11,16 +11,18 @@
         :root { --primary: #2563eb; --bg: #f1f5f9; --text: #1e293b; --danger: #ef4444; }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
         
+        /* Nút Cài đặt góc trái */
         .settings-btn { position: absolute; top: 20px; left: 20px; font-size: 28px; color: #64748b; cursor: pointer; padding: 10px; z-index: 100; transition: 0.3s; }
         .settings-btn:hover { color: var(--primary); transform: rotate(90deg); }
 
+        /* Khung hiển thị QR */
         .qr-card { background: white; padding: 40px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 380px; position: relative; z-index: 10; margin-bottom: 40px;}
         #qrcode { background: white; padding: 15px; border: 2px dashed #cbd5e1; border-radius: 16px; display: inline-block; margin: 20px 0; }
         
         .timer { font-size: 64px; font-weight: 900; color: var(--danger); line-height: 1; }
         .realtime { margin-top: 20px; font-weight: 600; color: #64748b; border-top: 1px solid #eee; padding-top: 15px;}
 
-        /* MODAL CHUNG */
+        /* MODAL (Cửa sổ bật lên) */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
         .modal-content { background: white; width: 95%; max-width: 600px; border-radius: 20px; padding: 25px; max-height: 90vh; overflow-y: auto; text-align: left; position: relative; }
         
@@ -31,27 +33,29 @@
         .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; color: white; transition: 0.2s; display: inline-block; text-align: center;}
         .btn:hover { opacity: 0.9; }
         .btn-save { background: var(--primary); }
-        .btn-list { background: #8b5cf6; }
+        .btn-list { background: #8b5cf6; width: 100%; margin-bottom: 15px; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.5); }
         .btn-close { background: #64748b; }
         
-        /* DANH SÁCH SINH VIÊN */
+        /* BẢNG DANH SÁCH SINH VIÊN */
         .list-header { display: flex; gap: 10px; margin-bottom: 15px; align-items: end; }
         .student-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
-        .student-table th { background: #f1f5f9; padding: 10px; text-align: left; border-bottom: 2px solid #ddd; }
+        .student-table th { background: #f1f5f9; padding: 10px; text-align: left; border-bottom: 2px solid #ddd; position: sticky; top: 0; }
         .student-table td { padding: 10px; border-bottom: 1px solid #eee; }
-        .delete-btn { color: white; background: var(--danger); border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; }
+        .delete-btn { color: white; background: var(--danger); border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
         .delete-btn:hover { background: #dc2626; }
         .empty-msg { text-align: center; color: #999; padding: 20px; }
 
-        /* Loader */
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: none; margin: 0 auto; }
+        /* Loader quay vòng */
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; display: none; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
+    <!-- Nút Bánh Răng -->
     <div class="settings-btn" onclick="checkLogin()" title="Cài đặt Admin"><i class="fa-solid fa-gear"></i></div>
 
+    <!-- Màn hình chính -->
     <div class="qr-card">
         <h1 id="orgName">ĐIỂM DANH CLB</h1>
         <div id="qrcode"></div>
@@ -59,18 +63,25 @@
         <div class="realtime"><i class="fa-regular fa-clock"></i> <span id="clock">Loading...</span></div>
     </div>
 
-    <!-- MODAL 1: CÀI ĐẶT -->
+    <!-- MODAL 1: BẢNG ADMIN (Đã chỉnh sửa) -->
     <div id="adminModal" class="modal">
         <div class="modal-content" style="max-width: 450px;">
             <h2 style="margin-top:0; border-bottom:1px solid #eee; padding-bottom:10px;">⚙️ Quản Trị</h2>
             
+            <!-- Nút Xem Danh Sách (Đặt lên đầu cho dễ thấy) -->
+            <button class="btn btn-list" onclick="openListModal()">
+                <i class="fa-solid fa-clipboard-list"></i> XEM DANH SÁCH HÔM NAY
+            </button>
+
+            <div style="border-top: 1px solid #eee; margin: 15px 0;"></div>
+
             <div class="form-group">
                 <label>Link trang Form:</label>
                 <input type="text" id="cfgLink">
             </div>
             
             <div class="form-group">
-                <label>Link API Google Script (Quan trọng):</label>
+                <label>Link API Google Script:</label>
                 <input type="text" id="cfgApi" placeholder="https://script.google.com/macros/s/.../exec">
             </div>
 
@@ -79,13 +90,12 @@
                 <input type="number" id="cfgTime" value="30">
             </div>
 
-            <button class="btn btn-list" onclick="openListModal()"><i class="fa-solid fa-list"></i> Xem Danh Sách Hôm Nay</button>
             <button class="btn btn-save" onclick="saveConfig()"><i class="fa-solid fa-floppy-disk"></i> Lưu Cài Đặt</button>
             <button class="btn btn-close" onclick="closeModal('adminModal')">Đóng</button>
         </div>
     </div>
 
-    <!-- MODAL 2: DANH SÁCH -->
+    <!-- MODAL 2: HIỂN THỊ DANH SÁCH -->
     <div id="listModal" class="modal">
         <div class="modal-content">
             <h2 style="margin-top:0;">📋 Danh Sách Điểm Danh</h2>
@@ -101,7 +111,7 @@
 
             <div id="loader" class="loader"></div>
             
-            <div style="max-height: 400px; overflow-y: auto;">
+            <div style="max-height: 400px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px;">
                 <table class="student-table">
                     <thead>
                         <tr>
@@ -134,9 +144,9 @@
         let timer = config.time;
         let interval = null;
 
+        // --- KHỞI CHẠY ---
         window.onload = function() {
-            // Set ngày mặc định là hôm nay
-            document.getElementById('viewDate').valueAsDate = new Date();
+            document.getElementById('viewDate').valueAsDate = new Date(); // Mặc định chọn hôm nay
             startSystem();
             setInterval(() => document.getElementById("clock").innerText = new Date().toLocaleString("vi-VN"), 1000);
         };
@@ -160,7 +170,7 @@
             new QRCode(qrDiv, { text: finalLink, width: 250, height: 250 });
         }
 
-        // --- ADMIN ---
+        // --- ADMIN LOGIN & CONFIG ---
         function checkLogin() {
             const p = prompt("Nhập mật khẩu Admin:");
             if(p === config.pass) {
@@ -180,23 +190,23 @@
             localStorage.setItem('qr_api', config.api);
             localStorage.setItem('qr_time', config.time);
             
-            alert("Đã lưu!");
+            alert("Đã lưu cài đặt!");
             closeModal('adminModal');
             startSystem();
         }
 
         function closeModal(id) { document.getElementById(id).style.display = "none"; }
 
-        // --- QUẢN LÝ DANH SÁCH ---
+        // --- XỬ LÝ DANH SÁCH (QUAN TRỌNG) ---
         function openListModal() {
-            if(!config.api) { alert("Vui lòng nhập Link API Google Script trước!"); return; }
+            if(!config.api) { alert("Vui lòng nhập Link API Google Script trong cài đặt trước!"); return; }
             document.getElementById("adminModal").style.display = "none";
             document.getElementById("listModal").style.display = "flex";
-            fetchList(); // Tự động load ngày hôm nay
+            fetchList(); // Tự động tải danh sách hôm nay
         }
 
         function fetchList() {
-            const date = document.getElementById('viewDate').value; // yyyy-mm-dd
+            const date = document.getElementById('viewDate').value; 
             const tbody = document.getElementById('tableBody');
             const loader = document.getElementById('loader');
 
@@ -205,8 +215,7 @@
             tbody.innerHTML = "";
             loader.style.display = "block";
 
-            // Gọi API bằng phương thức GET (hỗ trợ đọc dữ liệu)
-            // Lưu ý: Cần thêm tham số action=GET_LIST
+            // Gọi API GET_LIST
             fetch(`${config.api}?action=GET_LIST&date=${date}`)
             .then(res => res.json())
             .then(res => {
@@ -219,7 +228,7 @@
             })
             .catch(err => {
                 loader.style.display = "none";
-                tbody.innerHTML = `<tr><td colspan="5" class="empty-msg">Lỗi kết nối! Kiểm tra link API.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="empty-msg" style="color:red">Lỗi kết nối! Kiểm tra lại Link API.</td></tr>`;
                 console.error(err);
             });
         }
@@ -233,7 +242,7 @@
 
             let html = "";
             data.forEach(item => {
-                // Tách giờ từ chuỗi thời gian (VD: 10:30:00 16/12/2025 -> 10:30:00)
+                // Tách giờ từ chuỗi thời gian
                 let timeOnly = item.time.split(" ")[0];
                 html += `
                     <tr>
@@ -242,8 +251,8 @@
                         <td>${item.mssv}</td>
                         <td>${item.class_name}</td>
                         <td>
-                            <button class="delete-btn" onclick="deleteRow(${item.row_index}, '${item.mssv}')">
-                                <i class="fa-solid fa-xmark"></i>
+                            <button class="delete-btn" title="Xóa sinh viên này" onclick="deleteRow(${item.row_index}, '${item.mssv}')">
+                                <i class="fa-solid fa-xmark"></i> Xóa
                             </button>
                         </td>
                     </tr>
@@ -252,31 +261,28 @@
             tbody.innerHTML = html;
         }
 
+        // --- XÓA SINH VIÊN ---
         function deleteRow(rowIndex, mssv) {
-            if(!confirm(`Bạn chắc chắn muốn xóa sinh viên MSSV: ${mssv}?`)) return;
+            if(!confirm(`Bạn chắc chắn muốn xóa sinh viên MSSV: ${mssv} khỏi danh sách?\n(Sinh viên này sẽ cần điểm danh lại)`)) return;
 
-            // Gọi API để xóa dòng
-            // Dùng POST để bảo mật hơn cho hành động xóa
-            // Cần chế độ no-cors không hoạt động tốt khi cần đọc kết quả, 
-            // nhưng ở đây ta dùng fetch thường vì Apps Script Web App hỗ trợ CORS nếu setup đúng.
-            
+            // Gọi API DELETE_ROW
             fetch(config.api, {
                 method: 'POST',
-                // redirect: "follow", // Quan trọng
+                // redirect: "follow", 
                 body: JSON.stringify({ action: "DELETE_ROW", row_index: rowIndex, mssv: mssv })
             })
             .then(res => res.json())
             .then(res => {
                 if(res.status === "success") {
-                    alert("Đã xóa!");
-                    fetchList(); // Tải lại bảng
+                    alert("Đã xóa thành công!");
+                    fetchList(); // Tải lại bảng để cập nhật
                 } else {
                     alert("Lỗi: " + res.message);
                 }
             })
             .catch(err => {
-                alert("Lỗi kết nối! Có thể do CORS, nhưng lệnh xóa có thể vẫn đã chạy.");
-                fetchList(); // Thử tải lại xem mất chưa
+                alert("Đã gửi lệnh xóa. Hãy làm mới danh sách để kiểm tra.");
+                fetchList();
             });
         }
     </script>
