@@ -24,7 +24,7 @@
 
         /* MODAL (Cửa sổ bật lên) */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
-        .modal-content { background: white; width: 95%; max-width: 600px; border-radius: 20px; padding: 25px; max-height: 90vh; overflow-y: auto; text-align: left; position: relative; }
+        .modal-content { background: white; width: 95%; max-width: 700px; border-radius: 20px; padding: 25px; max-height: 90vh; overflow-y: auto; text-align: left; position: relative; }
         
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; color: #333; }
@@ -35,17 +35,24 @@
         .btn-save { background: var(--primary); }
         .btn-list { background: #8b5cf6; width: 100%; margin-bottom: 15px; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.5); }
         .btn-close { background: #64748b; }
+        .btn-refresh { background: #10b981; }
         
         /* BẢNG DANH SÁCH SINH VIÊN */
-        .list-header { display: flex; gap: 10px; margin-bottom: 15px; align-items: end; }
+        .list-controls { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; background: #f8fafc; padding: 15px; border-radius: 10px; }
+        .control-item { flex: 1; min-width: 200px; }
+        
         .student-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
-        .student-table th { background: #f1f5f9; padding: 10px; text-align: left; border-bottom: 2px solid #ddd; position: sticky; top: 0; }
-        .student-table td { padding: 10px; border-bottom: 1px solid #eee; }
-        .delete-btn { color: white; background: var(--danger); border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        .student-table th { background: #f1f5f9; padding: 12px; text-align: left; border-bottom: 2px solid #ddd; position: sticky; top: 0; z-index: 10; font-weight: bold; color: #475569; }
+        .student-table td { padding: 12px; border-bottom: 1px solid #eee; color: #334155; }
+        .student-table tr:hover td { background-color: #f8fafc; }
+        
+        .delete-btn { color: white; background: var(--danger); border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; gap: 5px; }
         .delete-btn:hover { background: #dc2626; }
-        .empty-msg { text-align: center; color: #999; padding: 20px; }
+        
+        .empty-msg { text-align: center; color: #999; padding: 30px; font-style: italic; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; background: #e2e8f0; color: #64748b; margin-left: 5px; }
 
-        /* Loader quay vòng */
+        /* Loader */
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; display: none; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -63,14 +70,13 @@
         <div class="realtime"><i class="fa-regular fa-clock"></i> <span id="clock">Loading...</span></div>
     </div>
 
-    <!-- MODAL 1: BẢNG ADMIN (Đã chỉnh sửa) -->
+    <!-- MODAL 1: BẢNG ADMIN -->
     <div id="adminModal" class="modal">
         <div class="modal-content" style="max-width: 450px;">
             <h2 style="margin-top:0; border-bottom:1px solid #eee; padding-bottom:10px;">⚙️ Quản Trị</h2>
             
-            <!-- Nút Xem Danh Sách (Đặt lên đầu cho dễ thấy) -->
             <button class="btn btn-list" onclick="openListModal()">
-                <i class="fa-solid fa-clipboard-list"></i> XEM DANH SÁCH HÔM NAY
+                <i class="fa-solid fa-clipboard-list"></i> XEM DANH SÁCH & XÓA
             </button>
 
             <div style="border-top: 1px solid #eee; margin: 15px 0;"></div>
@@ -95,17 +101,25 @@
         </div>
     </div>
 
-    <!-- MODAL 2: HIỂN THỊ DANH SÁCH -->
+    <!-- MODAL 2: DANH SÁCH & BỘ LỌC -->
     <div id="listModal" class="modal">
         <div class="modal-content">
             <h2 style="margin-top:0;">📋 Danh Sách Điểm Danh</h2>
             
-            <div class="list-header">
-                <div style="flex: 1;">
-                    <label>Chọn ngày:</label>
-                    <input type="date" id="viewDate">
+            <!-- KHU VỰC BỘ LỌC DỮ LIỆU -->
+            <div class="list-controls">
+                <div class="control-item">
+                    <label>Ngày xem:</label>
+                    <input type="date" id="viewDate" onchange="fetchList()">
                 </div>
-                <button class="btn btn-save" style="width: auto; margin:0;" onclick="fetchList()">Xem</button>
+                <div class="control-item">
+                    <label>Tìm kiếm (Tên, MSSV, Lớp):</label>
+                    <input type="text" id="searchInput" placeholder="Nhập từ khóa..." onkeyup="filterList()">
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 10px;">
+                <button class="btn btn-refresh" style="width: auto; margin:0;" onclick="fetchList()"><i class="fa-solid fa-rotate-right"></i> Làm mới</button>
                 <button class="btn btn-close" style="width: auto; margin:0;" onclick="closeModal('listModal')">Đóng</button>
             </div>
 
@@ -115,23 +129,25 @@
                 <table class="student-table">
                     <thead>
                         <tr>
-                            <th>Giờ</th>
+                            <th style="width: 80px;">Giờ</th>
                             <th>Họ Tên</th>
-                            <th>MSSV</th>
-                            <th>Lớp</th>
-                            <th>Xóa</th>
+                            <th style="width: 100px;">MSSV</th>
+                            <th style="width: 80px;">Lớp</th>
+                            <th style="width: 80px; text-align: center;">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
-                        <tr><td colspan="5" class="empty-msg">Chọn ngày và bấm Xem...</td></tr>
+                        <tr><td colspan="5" class="empty-msg">Đang tải dữ liệu...</td></tr>
                     </tbody>
                 </table>
+            </div>
+            <div style="text-align: right; font-size: 12px; color: #64748b; margin-top: 10px;">
+                Tổng số: <b id="totalCount">0</b> sinh viên
             </div>
         </div>
     </div>
 
     <script>
-        // CẤU HÌNH MẶC ĐỊNH
         const DEFAULT_LINK = "https://nhnanh.github.io/Code_QR_30s_CLB_KHPL/form.html";
         
         let config = {
@@ -143,10 +159,10 @@
 
         let timer = config.time;
         let interval = null;
+        let allStudents = []; // Biến chứa toàn bộ danh sách để lọc
 
-        // --- KHỞI CHẠY ---
         window.onload = function() {
-            document.getElementById('viewDate').valueAsDate = new Date(); // Mặc định chọn hôm nay
+            document.getElementById('viewDate').valueAsDate = new Date();
             startSystem();
             setInterval(() => document.getElementById("clock").innerText = new Date().toLocaleString("vi-VN"), 1000);
         };
@@ -170,7 +186,7 @@
             new QRCode(qrDiv, { text: finalLink, width: 250, height: 250 });
         }
 
-        // --- ADMIN LOGIN & CONFIG ---
+        // --- ADMIN ---
         function checkLogin() {
             const p = prompt("Nhập mật khẩu Admin:");
             if(p === config.pass) {
@@ -197,12 +213,12 @@
 
         function closeModal(id) { document.getElementById(id).style.display = "none"; }
 
-        // --- XỬ LÝ DANH SÁCH (QUAN TRỌNG) ---
+        // --- DANH SÁCH & BỘ LỌC ---
         function openListModal() {
-            if(!config.api) { alert("Vui lòng nhập Link API Google Script trong cài đặt trước!"); return; }
+            if(!config.api) { alert("Chưa nhập Link API trong cài đặt!"); return; }
             document.getElementById("adminModal").style.display = "none";
             document.getElementById("listModal").style.display = "flex";
-            fetchList(); // Tự động tải danh sách hôm nay
+            fetchList();
         }
 
         function fetchList() {
@@ -214,45 +230,57 @@
 
             tbody.innerHTML = "";
             loader.style.display = "block";
+            document.getElementById("totalCount").innerText = "0";
 
-            // Gọi API GET_LIST
             fetch(`${config.api}?action=GET_LIST&date=${date}`)
             .then(res => res.json())
             .then(res => {
                 loader.style.display = "none";
                 if(res.status === "success") {
-                    renderTable(res.data);
+                    allStudents = res.data; // Lưu dữ liệu gốc để lọc
+                    filterList(); // Hiển thị
                 } else {
                     tbody.innerHTML = `<tr><td colspan="5" class="empty-msg">Lỗi: ${res.message}</td></tr>`;
                 }
             })
             .catch(err => {
                 loader.style.display = "none";
-                tbody.innerHTML = `<tr><td colspan="5" class="empty-msg" style="color:red">Lỗi kết nối! Kiểm tra lại Link API.</td></tr>`;
-                console.error(err);
+                tbody.innerHTML = `<tr><td colspan="5" class="empty-msg" style="color:red">Lỗi kết nối API!</td></tr>`;
             });
+        }
+
+        // Hàm lọc dữ liệu theo từ khóa
+        function filterList() {
+            const term = document.getElementById("searchInput").value.toLowerCase();
+            const filtered = allStudents.filter(s => 
+                s.name.toLowerCase().includes(term) || 
+                s.mssv.toString().includes(term) || 
+                s.class_name.toLowerCase().includes(term)
+            );
+            renderTable(filtered);
         }
 
         function renderTable(data) {
             const tbody = document.getElementById('tableBody');
+            document.getElementById("totalCount").innerText = data.length;
+
             if(data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="empty-msg">Chưa có ai điểm danh ngày này.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="empty-msg">Không tìm thấy dữ liệu.</td></tr>`;
                 return;
             }
 
             let html = "";
             data.forEach(item => {
-                // Tách giờ từ chuỗi thời gian
                 let timeOnly = item.time.split(" ")[0];
                 html += `
                     <tr>
                         <td>${timeOnly}</td>
                         <td><b>${item.name}</b></td>
-                        <td>${item.mssv}</td>
+                        <td><span class="badge">${item.mssv}</span></td>
                         <td>${item.class_name}</td>
-                        <td>
-                            <button class="delete-btn" title="Xóa sinh viên này" onclick="deleteRow(${item.row_index}, '${item.mssv}')">
-                                <i class="fa-solid fa-xmark"></i> Xóa
+                        <td style="text-align: center;">
+                            <button class="delete-btn" onclick="deleteRow(${item.row_index}, '${item.mssv}', '${item.name}')">
+                                <i class="fa-solid fa-trash"></i>
                             </button>
                         </td>
                     </tr>
@@ -262,26 +290,24 @@
         }
 
         // --- XÓA SINH VIÊN ---
-        function deleteRow(rowIndex, mssv) {
-            if(!confirm(`Bạn chắc chắn muốn xóa sinh viên MSSV: ${mssv} khỏi danh sách?\n(Sinh viên này sẽ cần điểm danh lại)`)) return;
+        function deleteRow(rowIndex, mssv, name) {
+            if(!confirm(`XÓA SINH VIÊN: ${name} (${mssv})?\n\nLưu ý: Sau khi xóa, hãy yêu cầu sinh viên bấm nút "Reset thiết bị" (hoặc Điểm danh lại) trên điện thoại của họ để nộp lại.`)) return;
 
-            // Gọi API DELETE_ROW
             fetch(config.api, {
                 method: 'POST',
-                // redirect: "follow", 
                 body: JSON.stringify({ action: "DELETE_ROW", row_index: rowIndex, mssv: mssv })
             })
             .then(res => res.json())
             .then(res => {
                 if(res.status === "success") {
-                    alert("Đã xóa thành công!");
-                    fetchList(); // Tải lại bảng để cập nhật
+                    alert("✅ Đã xóa thành công!\n\nSinh viên bây giờ có thể điểm danh lại (nhớ Reset thiết bị).");
+                    fetchList(); 
                 } else {
                     alert("Lỗi: " + res.message);
                 }
             })
             .catch(err => {
-                alert("Đã gửi lệnh xóa. Hãy làm mới danh sách để kiểm tra.");
+                alert("Đã gửi lệnh xóa. Vui lòng làm mới danh sách.");
                 fetchList();
             });
         }
