@@ -3,188 +3,328 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HỆ THỐNG ĐIỂM DANH QR</title>
+    <title>HỆ THỐNG ĐIỂM DANH QR PRO</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        :root { --primary: #2563eb; --bg: #f1f5f9; --text: #1e293b; --danger: #ef4444; }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
+        :root {
+            --primary: #2563eb;
+            --bg: #f1f5f9;
+            --text: #1e293b;
+            --danger: #ef4444;
+            --success: #10b981;
+            --card-bg: #ffffff;
+        }
+
+        body.dark-mode {
+            --primary: #60a5fa;
+            --bg: #0f172a;
+            --text: #f1f5f9;
+            --card-bg: #1e293b;
+        }
+
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; transition: 0.3s; }
         
+        /* Cài đặt & Logo */
         .settings-btn { position: absolute; top: 20px; left: 20px; font-size: 28px; color: #64748b; cursor: pointer; padding: 10px; z-index: 100; transition: 0.3s; }
         .settings-btn:hover { color: var(--primary); transform: rotate(90deg); }
 
-        .qr-card { background: white; padding: 40px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 380px; position: relative; z-index: 10; margin-bottom: 40px;}
-        #qrcode { background: white; padding: 15px; border: 2px dashed #cbd5e1; border-radius: 16px; display: inline-block; margin: 20px 0; }
+        /* QR Card */
+        .qr-card { 
+            background: var(--card-bg); padding: 40px; border-radius: 24px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 380px; 
+            position: relative; z-index: 10; transition: 0.3s;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
         
-        .timer { font-size: 64px; font-weight: 900; color: var(--danger); line-height: 1; }
+        .logo-img { max-height: 60px; margin-bottom: 10px; display: none; }
+        h1 { margin: 0 0 20px 0; font-size: 24px; color: var(--primary); }
+        
+        #qrcode { background: white; padding: 10px; border: 2px dashed #cbd5e1; border-radius: 16px; display: inline-block; margin: 10px 0; transition: 0.3s; }
+        
+        .timer { font-size: 64px; font-weight: 900; color: var(--danger); line-height: 1; transition: 0.2s; }
         .realtime { margin-top: 20px; font-weight: 600; color: #64748b; border-top: 1px solid #eee; padding-top: 15px;}
 
-        /* MODAL */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
-        .modal-content { background: white; width: 95%; max-width: 800px; border-radius: 20px; padding: 25px; max-height: 90vh; overflow-y: auto; text-align: left; position: relative; }
-        
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; color: #333; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; }
-        
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; color: white; transition: 0.2s; display: inline-block; text-align: center;}
-        .btn:hover { opacity: 0.9; }
-        .btn-save { background: var(--primary); }
-        .btn-list { background: #8b5cf6; width: 100%; margin-bottom: 15px; font-size: 16px; box-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.5); }
-        .btn-close { background: #64748b; }
-        .btn-refresh { background: #10b981; }
-        
-        /* BẢNG & BỘ LỌC */
-        .filter-bar { background: #f8fafc; padding: 15px; border-radius: 10px; margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; border: 1px solid #e2e8f0; }
-        .filter-group { flex: 1; min-width: 150px; }
-        .filter-group label { font-size: 12px; color: #64748b; margin-bottom: 4px; }
-        
-        .student-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
-        .student-table th { background: #f1f5f9; padding: 12px; text-align: left; border-bottom: 2px solid #ddd; position: sticky; top: 0; z-index: 10; font-weight: bold; color: #475569; cursor: pointer; user-select: none; }
-        .student-table th:hover { background: #e2e8f0; color: var(--primary); }
-        .student-table th i { margin-left: 5px; font-size: 11px; opacity: 0.5; }
-        .student-table td { padding: 12px; border-bottom: 1px solid #eee; color: #334155; }
-        .student-table tr:hover td { background-color: #f8fafc; }
-        
-        .delete-btn { color: white; background: var(--danger); border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; display: inline-flex; align-items: center; gap: 5px; }
-        .delete-btn:hover { background: #dc2626; }
-        
-        .empty-msg { text-align: center; color: #999; padding: 30px; font-style: italic; }
-        .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; background: #e2e8f0; color: #64748b; }
+        /* Marquee */
+        .marquee-container {
+            position: fixed; left: 0; width: 100%;
+            padding: 10px 0; font-weight: bold; font-size: 16px;
+            z-index: 50; text-transform: uppercase;
+            display: none;
+        }
+        .marquee-top { top: 0; }
+        .marquee-bottom { bottom: 0; }
 
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; display: none; margin: 20px auto; }
+        /* MODAL ADMIN */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-content { background: var(--card-bg); width: 95%; max-width: 800px; border-radius: 16px; padding: 0; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+        
+        /* Tabs Header */
+        .modal-header { display: flex; background: #e2e8f0; padding: 0; }
+        .tab-btn { flex: 1; padding: 15px; border: none; background: none; cursor: pointer; font-weight: bold; color: #64748b; border-bottom: 3px solid transparent; transition: 0.2s; }
+        .tab-btn.active { background: var(--card-bg); color: var(--primary); border-bottom-color: var(--primary); }
+        .tab-btn:hover { background: rgba(255,255,255,0.5); }
+
+        /* Tabs Content */
+        .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+        .tab-content { display: none; animation: fadeIn 0.3s; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 13px; color: var(--text); opacity: 0.8; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; background: var(--bg); color: var(--text); }
+        
+        .row { display: flex; gap: 15px; }
+        .col { flex: 1; }
+
+        /* Buttons */
+        .modal-footer { padding: 15px 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px; background: var(--bg); }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; }
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        
+        .btn-primary { background: var(--primary); }
+        .btn-danger { background: var(--danger); }
+        .btn-success { background: var(--success); }
+        .btn-secondary { background: #64748b; }
+        .btn-purple { background: #8b5cf6; }
+
+        /* Tools Grid */
+        .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+        .tool-card { background: var(--bg); padding: 15px; border-radius: 8px; text-align: center; cursor: pointer; border: 1px solid transparent; transition: 0.2s; }
+        .tool-card:hover { border-color: var(--primary); background: rgba(37, 99, 235, 0.05); }
+        .tool-card i { font-size: 20px; margin-bottom: 5px; color: var(--primary); display: block; }
+        .tool-card span { font-size: 12px; font-weight: 600; }
+
+        /* Table */
+        .student-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+        .student-table th { background: var(--bg); padding: 10px; text-align: left; position: sticky; top: 0; color: var(--text); }
+        .student-table td { padding: 8px 10px; border-bottom: 1px solid #eee; color: var(--text); }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto; display: none; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-    <div class="settings-btn" onclick="checkLogin()" title="Cài đặt Admin"><i class="fa-solid fa-gear"></i></div>
+    <!-- Nút Cài đặt -->
+    <div class="settings-btn" onclick="checkLogin()" title="Mở bảng điều khiển"><i class="fa-solid fa-gear"></i></div>
 
-    <div class="qr-card">
-        <h1 id="orgName">ĐIỂM DANH CLB</h1>
-        <div id="qrcode"></div>
+    <!-- Khung QR Chính -->
+    <div class="qr-card" id="mainCard">
+        <img src="" id="logoDisplay" class="logo-img" alt="Logo">
+        <h1 id="titleDisplay">ĐIỂM DANH CLB</h1>
+        
+        <div id="qrContainer">
+            <div id="qrcode"></div>
+        </div>
+        
         <div class="timer" id="countdown">--</div>
-        <div class="realtime"><i class="fa-regular fa-clock"></i> <span id="clock">Loading...</span></div>
-    </div>
-
-    <!-- MODAL 1: BẢNG ADMIN -->
-    <div id="adminModal" class="modal">
-        <div class="modal-content" style="max-width: 450px;">
-            <h2 style="margin-top:0; border-bottom:1px solid #eee; padding-bottom:10px;">⚙️ Quản Trị</h2>
-            
-            <button class="btn btn-list" onclick="openListModal()">
-                <i class="fa-solid fa-clipboard-list"></i> QUẢN LÝ DANH SÁCH
-            </button>
-
-            <div style="border-top: 1px solid #eee; margin: 15px 0;"></div>
-
-            <div class="form-group">
-                <label>Link trang Form:</label>
-                <input type="text" id="cfgLink">
-            </div>
-            
-            <div class="form-group">
-                <label>Link API Google Script:</label>
-                <input type="text" id="cfgApi" placeholder="https://script.google.com/macros/s/.../exec">
-            </div>
-
-            <div class="form-group">
-                <label>Thời gian đổi QR (s):</label>
-                <input type="number" id="cfgTime" value="30">
-            </div>
-
-            <button class="btn btn-save" onclick="saveConfig()"><i class="fa-solid fa-floppy-disk"></i> Lưu Cài Đặt</button>
-            <button class="btn btn-close" onclick="closeModal('adminModal')">Đóng</button>
+        <div style="font-size:13px; opacity: 0.7;">Giây đổi mã</div>
+        
+        <div class="realtime" id="clockBox">
+            <i class="fa-regular fa-clock"></i> <span id="clock">Loading...</span>
         </div>
     </div>
 
-    <!-- MODAL 2: DANH SÁCH & BỘ LỌC NÂNG CAO -->
-    <div id="listModal" class="modal">
+    <!-- Chữ chạy -->
+    <div id="marqueeContainer" class="marquee-container">
+        <marquee id="marqueeText"></marquee>
+    </div>
+
+    <!-- MODAL ADMIN -->
+    <div id="adminModal" class="modal">
         <div class="modal-content">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h2 style="margin:0;">📋 Dữ Liệu Điểm Danh</h2>
-                <button class="btn btn-close" style="width: auto; margin:0; padding: 8px 15px;" onclick="closeModal('listModal')">✕ Đóng</button>
-            </div>
-            
-            <!-- BỘ LỌC NÂNG CAO -->
-            <div class="filter-bar">
-                <div class="filter-group">
-                    <label>Ngày xem:</label>
-                    <input type="date" id="viewDate" onchange="fetchList()">
-                </div>
-                <div class="filter-group">
-                    <label>Tìm kiếm chung:</label>
-                    <input type="text" id="searchAll" placeholder="Nhập tên, mssv..." onkeyup="applyFilter()">
-                </div>
-                <div class="filter-group">
-                    <label>Lọc theo Lớp:</label>
-                    <select id="filterClass" onchange="applyFilter()" style="width:100%; padding:10px; border-radius:8px; border:1px solid #cbd5e1;">
-                        <option value="">Tất cả các lớp</option>
-                    </select>
-                </div>
-                <div class="filter-group" style="flex:0;">
-                    <button class="btn btn-refresh" style="margin:0;" onclick="fetchList()" title="Tải lại dữ liệu"><i class="fa-solid fa-rotate-right"></i></button>
-                </div>
+            <!-- Tabs Header -->
+            <div class="modal-header">
+                <button class="tab-btn active" onclick="switchTab('tab-general')"><i class="fa-solid fa-sliders"></i> Cấu Hình</button>
+                <button class="tab-btn" onclick="switchTab('tab-ui')"><i class="fa-solid fa-palette"></i> Giao Diện</button>
+                <button class="tab-btn" onclick="switchTab('tab-list')"><i class="fa-solid fa-list"></i> Danh Sách</button>
+                <button class="tab-btn" onclick="switchTab('tab-security')"><i class="fa-solid fa-shield-halved"></i> Bảo Mật</button>
+                <button class="tab-btn" onclick="switchTab('tab-tools')"><i class="fa-solid fa-toolbox"></i> Tiện Ích</button>
             </div>
 
-            <div id="loader" class="loader"></div>
-            
-            <div style="max-height: 450px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px;">
-                <table class="student-table">
-                    <thead>
-                        <tr>
-                            <th onclick="sortData('time')">Giờ <i class="fa-solid fa-sort"></i></th>
-                            <th onclick="sortData('name')">Họ Tên <i class="fa-solid fa-sort"></i></th>
-                            <th onclick="sortData('mssv')">MSSV <i class="fa-solid fa-sort"></i></th>
-                            <th onclick="sortData('class_name')">Lớp <i class="fa-solid fa-sort"></i></th>
-                            <th style="text-align: center;">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                        <tr><td colspan="5" class="empty-msg">Đang tải dữ liệu...</td></tr>
-                    </tbody>
-                </table>
+            <!-- Tabs Content -->
+            <div class="modal-body">
+                
+                <!-- TAB 1: CẤU HÌNH CƠ BẢN -->
+                <div id="tab-general" class="tab-content active">
+                    <div class="form-group">
+                        <label>Link trang Form (form.html):</label>
+                        <input type="text" id="cfgLink">
+                    </div>
+                    <div class="form-group">
+                        <label>Link API Google Apps Script:</label>
+                        <input type="text" id="cfgApi" placeholder="https://script.google.com/macros/s/.../exec">
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <label>Thời gian đổi QR (giây):</label>
+                            <input type="number" id="cfgTime" value="30" min="5">
+                        </div>
+                        <div class="col">
+                            <label>Độ khó QR (Correction Level):</label>
+                            <select id="cfgQrLevel">
+                                <option value="L">L (Thấp - Mật độ thưa)</option>
+                                <option value="M" selected>M (Trung bình)</option>
+                                <option value="Q">Q (Cao)</option>
+                                <option value="H">H (Cao nhất)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: GIAO DIỆN & CHỮ CHẠY -->
+                <div id="tab-ui" class="tab-content">
+                    <div class="form-group">
+                        <label>Tiêu đề trang:</label>
+                        <input type="text" id="cfgTitle" value="ĐIỂM DANH CLB">
+                    </div>
+                    <div class="form-group">
+                        <label>Link Logo (URL ảnh):</label>
+                        <input type="text" id="cfgLogo" placeholder="Để trống nếu không dùng logo">
+                    </div>
+                    
+                    <fieldset style="border:1px solid #cbd5e1; border-radius:8px; padding:10px; margin-bottom:10px;">
+                        <legend style="font-weight:bold; font-size:13px; color:var(--primary);">Cài đặt Chữ Chạy (Marquee)</legend>
+                        <div class="form-group">
+                            <label>Nội dung:</label>
+                            <input type="text" id="cfgMarqueeText" placeholder="Nhập nội dung thông báo...">
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <label>Vị trí:</label>
+                                <select id="cfgMarqueePos">
+                                    <option value="none">Tắt</option>
+                                    <option value="bottom">Chạy dưới đáy</option>
+                                    <option value="top">Chạy trên cùng</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <label>Màu nền:</label>
+                                <input type="color" id="cfgMarqueeBg" value="#ef4444" style="height:40px; padding:2px;">
+                            </div>
+                            <div class="col">
+                                <label>Màu chữ:</label>
+                                <input type="color" id="cfgMarqueeColor" value="#ffffff" style="height:40px; padding:2px;">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <div class="row">
+                        <div class="col">
+                            <label>Màu chủ đạo:</label>
+                            <input type="color" id="cfgPrimaryColor" value="#2563eb" style="height:40px; padding:2px;">
+                        </div>
+                        <div class="col">
+                            <label>Kích thước QR (px):</label>
+                            <input type="number" id="cfgQrSize" value="250" min="100" max="500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: DANH SÁCH & API -->
+                <div id="tab-list" class="tab-content">
+                    <div class="row" style="margin-bottom:10px;">
+                        <div class="col"><input type="date" id="viewDate"></div>
+                        <button class="btn btn-purple" onclick="fetchList()">Xem Dữ Liệu</button>
+                    </div>
+                    <div id="loader" class="loader"></div>
+                    <div style="max-height: 300px; overflow-y: auto; border: 1px solid #eee;">
+                        <table class="student-table">
+                            <thead><tr><th>Giờ</th><th>Họ Tên</th><th>MSSV</th><th>Xóa</th></tr></thead>
+                            <tbody id="tableBody"><tr><td colspan="4" style="text-align:center; padding:20px; color:#999">Chọn ngày và bấm Xem</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- TAB 4: BẢO MẬT -->
+                <div id="tab-security" class="tab-content">
+                    <div class="form-group">
+                        <label>Mật khẩu đăng nhập Admin:</label>
+                        <input type="text" id="cfgPass" value="Admin">
+                    </div>
+                    <div class="form-group">
+                        <label>Mật khẩu Reset máy (Dành cho Sinh viên):</label>
+                        <input type="text" id="cfgResetPass" value="Admin" placeholder="Mật khẩu nhập ở form.html">
+                        <small style="color:var(--danger)">* Pass này dùng khi sinh viên cần reset thủ công thiết bị.</small>
+                    </div>
+                </div>
+
+                <!-- TAB 5: TIỆN ÍCH -->
+                <div id="tab-tools" class="tab-content">
+                    <div class="tools-grid">
+                        <div class="tool-card" onclick="togglePause()"><i class="fa-solid fa-pause"></i><span>Tạm dừng</span></div>
+                        <div class="tool-card" onclick="toggleDarkMode()"><i class="fa-solid fa-moon"></i><span>Chế độ Tối</span></div>
+                        <div class="tool-card" onclick="toggleFullscreen()"><i class="fa-solid fa-expand"></i><span>Toàn màn hình</span></div>
+                        <div class="tool-card" onclick="downloadQR()"><i class="fa-solid fa-download"></i><span>Tải ảnh QR</span></div>
+                        <div class="tool-card" onclick="toggleClock()"><i class="fa-regular fa-clock"></i><span>Ẩn/Hiện Giờ</span></div>
+                        <div class="tool-card" onclick="exportConfig()"><i class="fa-solid fa-file-export"></i><span>Sao lưu Cài đặt</span></div>
+                        <div class="tool-card" onclick="importConfig()"><i class="fa-solid fa-file-import"></i><span>Khôi phục Cài đặt</span></div>
+                        <div class="tool-card" onclick="clearSheetData()" style="color:var(--danger)"><i class="fa-solid fa-trash"></i><span>Xóa sạch Sheet</span></div>
+                        <div class="tool-card" onclick="resetFactory()" style="color:var(--danger)"><i class="fa-solid fa-rotate-left"></i><span>Reset Gốc</span></div>
+                    </div>
+                </div>
+
             </div>
-            <div style="display:flex; justify-content:space-between; font-size: 12px; color: #64748b; margin-top: 10px;">
-                <span>* Bấm vào tiêu đề cột để sắp xếp</span>
-                <span>Tổng số: <b id="totalCount">0</b> sinh viên</span>
+
+            <!-- Footer Buttons -->
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Đóng</button>
+                <button class="btn btn-success" onclick="saveConfig()"><i class="fa-solid fa-save"></i> LƯU & ÁP DỤNG</button>
             </div>
         </div>
     </div>
 
     <script>
-        const DEFAULT_LINK = "https://nhnanh.github.io/Code_QR_30s_CLB_KHPL/form.html";
-        
-        let config = {
-            link: localStorage.getItem('qr_link') || DEFAULT_LINK,
-            api: localStorage.getItem('qr_api') || "",
-            time: parseInt(localStorage.getItem('qr_time')) || 30,
-            pass: localStorage.getItem('qr_pass') || "Admin"
+        // --- DEFAULT CONFIG ---
+        const DEFAULT_CONFIG = {
+            link: "https://nhnanh.github.io/Code_QR_30s_CLB_KHPL/form.html",
+            api: "",
+            time: 30,
+            pass: "Admin",
+            resetPass: "Admin",
+            title: "ĐIỂM DANH CLB",
+            logo: "",
+            qrSize: 250,
+            qrLevel: "M",
+            primaryColor: "#2563eb",
+            darkMode: false,
+            marqueeText: "HỆ THỐNG ĐANG MỞ ĐIỂM DANH",
+            marqueePos: "bottom",
+            marqueeBg: "#ef4444",
+            marqueeColor: "#ffffff",
+            showClock: true
         };
 
+        // --- GLOBAL VARIABLES ---
+        let config = JSON.parse(localStorage.getItem('qr_config_pro')) || DEFAULT_CONFIG;
         let timer = config.time;
         let interval = null;
-        
-        // BIẾN QUẢN LÝ DỮ LIỆU
-        let allData = []; // Dữ liệu gốc từ server
-        let filteredData = []; // Dữ liệu đang hiển thị sau khi lọc
-        let sortConfig = { key: 'time', dir: 'desc' }; // Mặc định: Mới nhất lên đầu
+        let qrObj = null;
+        let isPaused = false;
 
+        // --- INIT ---
         window.onload = function() {
-            document.getElementById('viewDate').valueAsDate = new Date();
+            applyUI();
             startSystem();
             setInterval(() => document.getElementById("clock").innerText = new Date().toLocaleString("vi-VN"), 1000);
+            document.getElementById('viewDate').valueAsDate = new Date();
         };
 
+        // --- CORE FUNCTIONS ---
         function startSystem() {
             if (interval) clearInterval(interval);
             updateQR();
             timer = config.time;
             interval = setInterval(() => {
-                timer--;
-                document.getElementById("countdown").innerText = timer;
-                if (timer <= 0) { timer = config.time; updateQR(); }
+                if(!isPaused) {
+                    timer--;
+                    document.getElementById("countdown").innerText = timer;
+                    if (timer <= 0) { timer = config.time; updateQR(); }
+                } else {
+                    document.getElementById("countdown").innerText = "--";
+                }
             }, 1000);
         }
 
@@ -192,190 +332,231 @@
             const qrDiv = document.getElementById("qrcode");
             const token = Date.now(); 
             const finalLink = `${config.link}?t=${token}`;
-            qrDiv.innerHTML = "";
-            new QRCode(qrDiv, { text: finalLink, width: 250, height: 250 });
+            
+            // Set kích thước QR
+            const size = parseInt(config.qrSize) || 250;
+
+            if (qrObj === null) {
+                qrDiv.innerHTML = "";
+                qrObj = new QRCode(qrDiv, { 
+                    text: finalLink, width: size, height: size,
+                    colorDark : "#000000", colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel[config.qrLevel]
+                });
+            } else {
+                qrObj.clear();
+                qrObj.makeCode(finalLink);
+            }
         }
 
-        // --- ADMIN ---
+        function applyUI() {
+            // Apply Title & Logo
+            document.getElementById("titleDisplay").innerText = config.title;
+            const logo = document.getElementById("logoDisplay");
+            if(config.logo) { logo.src = config.logo; logo.style.display = "inline-block"; }
+            else { logo.style.display = "none"; }
+
+            // Apply Colors
+            document.documentElement.style.setProperty('--primary', config.primaryColor);
+            if(config.darkMode) document.body.classList.add('dark-mode');
+            else document.body.classList.remove('dark-mode');
+
+            // Apply Clock
+            document.getElementById("clockBox").style.display = config.showClock ? "block" : "none";
+
+            // Apply Marquee
+            const mqBox = document.getElementById("marqueeContainer");
+            const mqText = document.getElementById("marqueeText");
+            
+            if(config.marqueePos === "none") {
+                mqBox.style.display = "none";
+            } else {
+                mqBox.style.display = "block";
+                mqBox.className = "marquee-container " + (config.marqueePos === "top" ? "marquee-top" : "marquee-bottom");
+                mqBox.style.backgroundColor = config.marqueeBg;
+                mqBox.style.color = config.marqueeColor;
+                mqText.innerText = config.marqueeText;
+            }
+        }
+
+        // --- ADMIN MODAL LOGIC ---
         function checkLogin() {
             const p = prompt("Nhập mật khẩu Admin:");
-            if(p === config.pass) {
-                document.getElementById("adminModal").style.display = "flex";
-                document.getElementById("cfgLink").value = config.link;
-                document.getElementById("cfgApi").value = config.api;
-                document.getElementById("cfgTime").value = config.time;
-            } else if(p !== null) alert("Sai mật khẩu!");
+            if(p === config.pass) openAdmin();
+            else if(p !== null) alert("Sai mật khẩu!");
+        }
+
+        function openAdmin() {
+            document.getElementById("adminModal").style.display = "flex";
+            switchTab('tab-general'); // Mặc định mở tab đầu
+            
+            // Fill Data
+            document.getElementById("cfgLink").value = config.link;
+            document.getElementById("cfgApi").value = config.api;
+            document.getElementById("cfgTime").value = config.time;
+            document.getElementById("cfgQrLevel").value = config.qrLevel;
+            document.getElementById("cfgTitle").value = config.title;
+            document.getElementById("cfgLogo").value = config.logo;
+            document.getElementById("cfgMarqueeText").value = config.marqueeText;
+            document.getElementById("cfgMarqueePos").value = config.marqueePos;
+            document.getElementById("cfgMarqueeBg").value = config.marqueeBg;
+            document.getElementById("cfgMarqueeColor").value = config.marqueeColor;
+            document.getElementById("cfgPrimaryColor").value = config.primaryColor;
+            document.getElementById("cfgQrSize").value = config.qrSize;
+            document.getElementById("cfgPass").value = config.pass;
+            document.getElementById("cfgResetPass").value = config.resetPass || "Admin";
         }
 
         function saveConfig() {
             config.link = document.getElementById("cfgLink").value;
             config.api = document.getElementById("cfgApi").value;
             config.time = parseInt(document.getElementById("cfgTime").value);
+            config.qrLevel = document.getElementById("cfgQrLevel").value;
+            config.title = document.getElementById("cfgTitle").value;
+            config.logo = document.getElementById("cfgLogo").value;
+            config.marqueeText = document.getElementById("cfgMarqueeText").value;
+            config.marqueePos = document.getElementById("cfgMarqueePos").value;
+            config.marqueeBg = document.getElementById("cfgMarqueeBg").value;
+            config.marqueeColor = document.getElementById("cfgMarqueeColor").value;
+            config.primaryColor = document.getElementById("cfgPrimaryColor").value;
+            config.qrSize = parseInt(document.getElementById("cfgQrSize").value);
+            config.pass = document.getElementById("cfgPass").value;
+            config.resetPass = document.getElementById("cfgResetPass").value;
+
+            // Lưu Password Reset vào localStorage riêng để form.html có thể đọc (nếu chung domain)
+            localStorage.setItem('admin_reset_pass', config.resetPass);
             
-            localStorage.setItem('qr_link', config.link);
-            localStorage.setItem('qr_api', config.api);
-            localStorage.setItem('qr_time', config.time);
+            localStorage.setItem('qr_config_pro', JSON.stringify(config));
             
             alert("Đã lưu cài đặt!");
-            closeModal('adminModal');
+            closeModal();
+            qrObj = null; document.getElementById("qrcode").innerHTML = ""; // Reset QR để vẽ lại size mới
+            applyUI();
             startSystem();
         }
 
-        function closeModal(id) { document.getElementById(id).style.display = "none"; }
-
-        // --- TẢI DỮ LIỆU ---
-        function openListModal() {
-            if(!config.api) { alert("Chưa nhập Link API trong cài đặt!"); return; }
-            document.getElementById("adminModal").style.display = "none";
-            document.getElementById("listModal").style.display = "flex";
-            fetchList();
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
         }
 
+        function closeModal() { document.getElementById("adminModal").style.display = "none"; }
+
+        // --- TOOLS ---
+        function togglePause() { isPaused = !isPaused; alert(isPaused ? "Đã Tạm dừng" : "Đã Tiếp tục"); }
+        function toggleDarkMode() { config.darkMode = !config.darkMode; applyUI(); }
+        function toggleClock() { config.showClock = !config.showClock; applyUI(); }
+        
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+            else if (document.exitFullscreen) document.exitFullscreen();
+        }
+
+        function downloadQR() {
+            const img = document.querySelector("#qrcode img");
+            if(img) {
+                const link = document.createElement("a");
+                link.download = "QR_Code.png";
+                link.href = img.src;
+                link.click();
+            } else alert("Chưa có QR!");
+        }
+
+        function exportConfig() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(config));
+            const link = document.createElement("a");
+            link.href = dataStr; link.download = "qr_config.json"; link.click();
+        }
+
+        function importConfig() {
+            const input = document.createElement('input'); input.type = 'file';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = readerEvent => {
+                    try {
+                        const content = JSON.parse(readerEvent.target.result);
+                        config = content;
+                        localStorage.setItem('qr_config_pro', JSON.stringify(config));
+                        alert("Đã khôi phục cài đặt! Trang sẽ tải lại.");
+                        location.reload();
+                    } catch(err) { alert("File lỗi!"); }
+                }
+                reader.readAsText(file);
+            }
+            input.click();
+        }
+
+        function resetFactory() {
+            if(confirm("Bạn có chắc muốn Reset toàn bộ cài đặt về mặc định?")) {
+                localStorage.removeItem('qr_config_pro');
+                location.reload();
+            }
+        }
+
+        // --- LIST & API CALLS ---
         function fetchList() {
-            const date = document.getElementById('viewDate').value; 
-            const tbody = document.getElementById('tableBody');
+            if(!config.api) { alert("Chưa có Link API!"); return; }
+            const date = document.getElementById('viewDate').value;
             const loader = document.getElementById('loader');
-
-            if(!date) return;
-
-            tbody.innerHTML = "";
-            loader.style.display = "block";
-            document.getElementById("totalCount").innerText = "0";
-
+            const tbody = document.getElementById('tableBody');
+            
+            loader.style.display = "block"; tbody.innerHTML = "";
+            
             fetch(`${config.api}?action=GET_LIST&date=${date}`)
             .then(res => res.json())
             .then(res => {
                 loader.style.display = "none";
-                if(res.status === "success") {
-                    allData = res.data;
-                    updateClassFilterOptions(); // Cập nhật dropdown lớp
-                    applyFilter(); // Áp dụng bộ lọc và hiển thị
+                if(res.status === "success" && res.data.length > 0) {
+                    let html = "";
+                    res.data.forEach(item => {
+                        let t = item.time.split(" ")[0];
+                        html += `<tr><td>${t}</td><td><b>${item.name}</b></td><td>${item.mssv}</td>
+                        <td><button class="btn-danger" style="padding:5px 10px; font-size:12px" onclick="deleteRow(${item.row_index}, '${item.mssv}')">Xóa</button></td></tr>`;
+                    });
+                    tbody.innerHTML = html;
                 } else {
-                    tbody.innerHTML = `<tr><td colspan="5" class="empty-msg">Lỗi: ${res.message}</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:20px;">Không có dữ liệu</td></tr>`;
                 }
             })
-            .catch(err => {
-                loader.style.display = "none";
-                tbody.innerHTML = `<tr><td colspan="5" class="empty-msg" style="color:red">Lỗi kết nối API!</td></tr>`;
-            });
+            .catch(() => { loader.style.display="none"; alert("Lỗi kết nối!"); });
         }
 
-        // --- BỘ LỌC & SẮP XẾP ---
-        
-        function updateClassFilterOptions() {
-            const select = document.getElementById("filterClass");
-            const currentVal = select.value;
-            
-            // Lấy danh sách lớp duy nhất
-            const classes = [...new Set(allData.map(item => item.class_name))].sort();
-            
-            let html = `<option value="">Tất cả các lớp</option>`;
-            classes.forEach(c => {
-                html += `<option value="${c}">${c}</option>`;
-            });
-            select.innerHTML = html;
-            select.value = currentVal; // Giữ lại lựa chọn cũ nếu có
-        }
-
-        function applyFilter() {
-            const search = document.getElementById("searchAll").value.toLowerCase();
-            const classFilter = document.getElementById("filterClass").value;
-
-            filteredData = allData.filter(item => {
-                const matchSearch = item.name.toLowerCase().includes(search) || 
-                                    item.mssv.toString().includes(search) ||
-                                    item.class_name.toLowerCase().includes(search);
-                const matchClass = classFilter === "" || item.class_name === classFilter;
-                return matchSearch && matchClass;
-            });
-
-            // Sau khi lọc thì sắp xếp luôn
-            runSort();
-        }
-
-        function sortData(key) {
-            // Đảo chiều nếu bấm lại cột cũ
-            if (sortConfig.key === key) {
-                sortConfig.dir = sortConfig.dir === 'asc' ? 'desc' : 'asc';
-            } else {
-                sortConfig.key = key;
-                sortConfig.dir = 'asc';
-            }
-            runSort();
-        }
-
-        function runSort() {
-            const { key, dir } = sortConfig;
-            
-            filteredData.sort((a, b) => {
-                let valA = a[key];
-                let valB = b[key];
-
-                // Xử lý riêng cho MSSV (số) và Time
-                if (key === 'mssv') {
-                    valA = parseInt(valA) || 0;
-                    valB = parseInt(valB) || 0;
-                }
-                
-                if (valA < valB) return dir === 'asc' ? -1 : 1;
-                if (valA > valB) return dir === 'asc' ? 1 : -1;
-                return 0;
-            });
-
-            renderTable();
-        }
-
-        function renderTable() {
-            const tbody = document.getElementById('tableBody');
-            document.getElementById("totalCount").innerText = filteredData.length;
-
-            if (filteredData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="empty-msg">Không tìm thấy dữ liệu phù hợp.</td></tr>`;
-                return;
-            }
-
-            let html = "";
-            filteredData.forEach(item => {
-                let timeOnly = item.time.split(" ")[0];
-                html += `
-                    <tr>
-                        <td>${timeOnly}</td>
-                        <td><b>${item.name}</b></td>
-                        <td><span class="badge">${item.mssv}</span></td>
-                        <td>${item.class_name}</td>
-                        <td style="text-align: center;">
-                            <button class="delete-btn" onclick="deleteRow(${item.row_index}, '${item.mssv}', '${item.name}')">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            });
-            tbody.innerHTML = html;
-        }
-
-        // --- XÓA SINH VIÊN ---
-        function deleteRow(rowIndex, mssv, name) {
-            if(!confirm(`⚠️ XÓA SINH VIÊN: ${name} (${mssv})?\n\nLƯU Ý QUAN TRỌNG:\nSau khi xóa ở đây, sinh viên cần bấm nút "Reset thiết bị" (nút nhỏ ở góc dưới form điểm danh) thì mới có thể điểm danh lại được.`)) return;
-
+        function deleteRow(idx, mssv) {
+            if(!confirm("Xóa sinh viên này?")) return;
             fetch(config.api, {
                 method: 'POST',
-                body: JSON.stringify({ action: "DELETE_ROW", row_index: rowIndex, mssv: mssv })
-            })
-            .then(res => res.json())
-            .then(res => {
-                if(res.status === "success") {
-                    alert("✅ Đã xóa thành công khỏi danh sách!");
-                    fetchList(); // Tải lại bảng
-                } else {
-                    alert("Lỗi: " + res.message);
-                }
-            })
-            .catch(err => {
-                alert("Đã gửi lệnh xóa. Vui lòng làm mới danh sách.");
-                fetchList();
-            });
+                body: JSON.stringify({ action: "DELETE_ROW", row_index: idx, mssv: mssv })
+            }).then(res => res.json()).then(res => {
+                if(res.status === "success") { alert("Đã xóa!"); fetchList(); }
+                else alert("Lỗi: " + res.message);
+            }).catch(() => alert("Lỗi kết nối!"));
+        }
+
+        function clearSheetData() {
+            if(!confirm("CẢNH BÁO: Xóa toàn bộ dữ liệu trên Sheet?")) return;
+            fetch(config.api, {
+                method: 'POST',
+                body: JSON.stringify({ action: "CLEAR_DATA" })
+            }).then(() => alert("Đã gửi lệnh xóa!")).catch(() => alert("Lỗi kết nối!"));
         }
     </script>
 </body>
 </html>
+```
+
+### Lưu ý quan trọng:
+Để tính năng **"Đổi mật khẩu Reset máy"** hoạt động đồng bộ với trang Form của sinh viên, bạn cần thêm 1 dòng nhỏ vào file `form.html` (ở phần logic nút Reset).
+
+Trong file `form.html`, tìm hàm `askPassword` và sửa dòng kiểm tra mật khẩu thành:
+
+```javascript
+// Đọc pass từ localStorage (do trang Admin đã lưu vào đó)
+const adminPass = localStorage.getItem('admin_reset_pass') || "Admin"; 
+
+if (result.value === adminPass) { 
+    performReset();
+}
