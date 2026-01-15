@@ -4,62 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QUẢN TRỊ ĐIỂM DANH - CLB KHPL</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" 
+            onerror="alert('LỖI: Không tải được thư viện tạo mã QR! Vui lòng kiểm tra kết nối mạng.')"></script>
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
         :root { --primary-color: #2c3e50; --accent-color: #e74c3c; --bg-color: #f4f4f9; }
-        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-color); height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg-color); height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         
-        .settings-btn { position: absolute; top: 20px; left: 20px; font-size: 30px; color: #7f8c8d; cursor: pointer; transition: 0.3s; z-index: 100; }
-        .settings-btn:hover { color: var(--primary-color); transform: rotate(90deg); }
-
-        h1 { color: var(--primary-color); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; text-align: center; font-size: 24px;}
-        .qr-container { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: flex; flex-direction: column; align-items: center; width: 340px; }
+        .settings-btn { position: absolute; top: 20px; left: 20px; font-size: 30px; color: #7f8c8d; cursor: pointer; z-index: 100; }
         
-        /* Chỗ chứa QR cố định kích thước để không bị nhảy */
-        #qrcode { width: 260px; height: 260px; margin-top: 10px; display: flex; justify-content: center; align-items: center;}
+        .qr-container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; width: 320px; min-height: 450px; display: flex; flex-direction: column; justify-content: center; align-items: center;}
+        
+        h1 { margin: 0 0 20px 0; color: var(--primary-color); font-size: 24px; text-transform: uppercase; }
+        
+        #qrcode { width: 260px; height: 260px; margin: 0 auto; display: flex; align-items: center; justify-content: center; border: 1px dashed #ccc; }
         #qrcode img { border: 4px solid #333; border-radius: 5px; }
         
-        .timer-box { margin-top: 20px; text-align: center; }
-        .countdown { font-size: 48px; font-weight: bold; color: var(--accent-color); }
-        .info-text { color: #7f8c8d; margin-top: 10px; font-size: 16px; }
-
-        /* MODAL */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 200; align-items: center; justify-content: center; }
-        .modal-content { background: white; width: 90%; max-width: 400px; padding: 25px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); position: relative; }
-        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #aaa; }
+        .timer-area { margin-top: 20px; }
+        .countdown { font-size: 50px; font-weight: bold; color: var(--accent-color); line-height: 1;}
+        .realtime { margin-top: 15px; font-size: 14px; color: #888; }
         
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px;}
-        input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        button, .btn-sheet { width: 100%; padding: 10px; border: none; border-radius: 5px; cursor: pointer; margin-top: 5px; font-weight: bold; color: white; text-align: center; text-decoration: none; display: block; box-sizing: border-box;}
+        /* Modal Styles */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; align-items: center; justify-content: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 10px; width: 90%; max-width: 400px; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .close-btn { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; }
         
-        .btn-login { background: var(--primary-color); }
+        input { width: 100%; padding: 10px; margin: 5px 0 15px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; margin-top: 5px; }
         .btn-save { background: #27ae60; }
-        .btn-sheet { background: #2980b9; }
-        .btn-pause { background: #f39c12; }
-        .status-msg { color: red; font-weight: bold; margin-top: 10px; display: none; }
+        .btn-login { background: var(--primary-color); }
+        label { font-weight: bold; font-size: 14px; display: block; text-align: left; }
     </style>
 </head>
 <body>
 
-    <div class="settings-btn" onclick="openLoginModal()"><i class="fas fa-cog"></i></div>
+    <div class="settings-btn" onclick="openLoginModal()" title="Cài đặt"><i class="fas fa-cog"></i></div>
 
     <div class="qr-container">
         <h1>Quét Mã Điểm Danh</h1>
         
-        <div id="qrcode"></div>
-        
-        <div class="timer-box">
-            <div id="countdown" class="countdown">--</div>
-            <div class="info-text" id="statusText">Đang tải hệ thống...</div>
-            <div id="warningMsg" class="status-msg"></div>
+        <div id="qrcode">
+            <span style="color:#999; font-size:14px;">Đang khởi tạo...</span>
         </div>
-        <div style="margin-top: 15px; font-size: 13px; color: #999;">
-            Thời gian thực: <span id="realtime">...</span>
+
+        <div class="timer-area">
+            <div id="countdown" class="countdown">--</div>
+            <div id="msg" style="margin-top:5px; font-size:14px; color:#555;">Hệ thống đang chạy</div>
+        </div>
+
+        <div class="realtime">
+            Thời gian thực: <span id="clock">Loading...</span>
         </div>
     </div>
 
-    <div id="loginModal" class="modal">
-        <div class
+    <div id="loginModal" class="modal
