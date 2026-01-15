@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Điền Thông Tin</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f4f4f9; }
+        .container { max-width: 400px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #2ecc71; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
+        button:disabled { background: #95a5a6; }
+        .error { color: red; text-align: center; font-weight: bold; }
+        .success { color: green; text-align: center; font-weight: bold; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <div class="container" id="formBox">
+        <h2 style="text-align:center">ĐIỂM DANH</h2>
+        <p id="status" class="error"></p>
+        
+        <form id="myForm">
+            <input type="text" id="name" placeholder="Họ và tên" required>
+            <input type="text" id="mssv" placeholder="Mã SV" pattern="[0-9]*" required>
+            <input type="text" id="class_name" placeholder="Lớp" required oninput="this.value = this.value.toUpperCase()">
+            <button type="submit" id="btnSubmit">GỬI</button>
+        </form>
+    </div>
+    
+    <div id="doneBox" class="container" style="display:none; text-align:center;">
+        <h1>✅</h1>
+        <p class="success">Đã lưu vào Google Sheet!</p>
+    </div>
+
+    <script>
+        // --- DÁN LINK API CỦA BẠN VÀO ĐÂY ---
+        const API_URL = "https://script.google.com/macros/s/AKfycbymeGJusgg0OO96ofOoUyOMdNz8amzrbBYAxjsUH4PKzoVhUyikikEdvT3OAeT7s4fX/exec"; 
+        // ------------------------------------
+
+        // Kiểm tra Token thời gian (Chống gian lận cơ bản)
+        const params = new URLSearchParams(window.location.search);
+        const tokenTime = params.get('t');
+        const now = Math.floor(Date.now() / 1000);
+        
+        // Nếu không có token hoặc token quá cũ (quá 45 giây)
+        if (!tokenTime || (now - tokenTime > 45)) {
+            document.getElementById("formBox").innerHTML = "<h3 class='error'>MÃ QR HẾT HẠN HOẶC KHÔNG HỢP LỆ!</h3><p align='center'>Vui lòng quét mã mới trên màn hình.</p>";
+        }
+
+        // Xử lý gửi Form
+        document.getElementById("myForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            const btn = document.getElementById("btnSubmit");
+            btn.innerText = "Đang gửi...";
+            btn.disabled = true;
+
+            const data = {
+                name: document.getElementById("name").value,
+                mssv: document.getElementById("mssv").value,
+                class_name: document.getElementById("class_name").value
+            };
+
+            // Gửi dữ liệu bằng fetch (No-CORS mode để vượt qua bảo mật trình duyệt)
+            fetch(API_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            })
+            .then(() => {
+                document.getElementById("formBox").style.display = "none";
+                document.getElementById("doneBox").style.display = "block";
+            })
+            .catch(err => {
+                alert("Lỗi mạng! Thử lại.");
+                btn.disabled = false;
+                btn.innerText = "GỬI LẠI";
+            });
+        });
+    </script>
+</body>
+</html>
