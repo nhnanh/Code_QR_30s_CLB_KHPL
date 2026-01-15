@@ -5,223 +5,455 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HỆ THỐNG ĐIỂM DANH QR</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        :root { --main-color: #2c3e50; --bg-color: #f4f4f9; }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg-color); height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; transition: 0.3s; }
-        
-        body.dark-mode { --main-color: #ecf0f1; --bg-color: #2c3e50; color: white; }
-        body.dark-mode .qr-card { background: #34495e; color: white; }
-        
-        .settings-btn { position: absolute; top: 20px; left: 20px; font-size: 32px; color: #7f8c8d; cursor: pointer; z-index: 10; transition: 0.3s; }
-        .settings-btn:hover { transform: rotate(90deg); color: var(--main-color); }
+        :root {
+            --primary: #2563eb;
+            --secondary: #475569;
+            --bg: #f1f5f9;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --accent: #ef4444;
+        }
 
-        .qr-card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); text-align: center; width: 350px; position: relative; }
-        
-        #qrcode { display: flex; justify-content: center; margin: 20px 0; border: 10px solid #f0f0f0; border-radius: 10px; padding: 10px; background: white; }
-        
-        .timer { font-size: 60px; font-weight: 800; color: #e74c3c; line-height: 1; }
-        .realtime { font-size: 16px; color: #95a5a6; margin-top: 10px; font-weight: 500; }
-        
-        /* Modal Admin */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; }
-        .modal-content { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; text-align: left; color: #333;}
-        .modal-header { font-size: 24px; font-weight: bold; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        
-        .input-group { margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        
-        .btn { width: 100%; padding: 12px; border: none; border-radius: 5px; font-weight: bold; color: white; cursor: pointer; margin-top: 5px; }
-        .btn-success { background: #2ecc71; }
-        .btn-danger { background: #e74c3c; }
-        
-        .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .feature-item { font-size: 13px; padding: 10px; background: #eee; border-radius: 5px; cursor: pointer; text-align: center; }
-        .feature-item:hover { background: #ddd; }
+        body.dark-mode {
+            --primary: #3b82f6;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f8fafc;
+        }
 
-        .marquee-container { position: fixed; bottom: 0; width: 100%; background: #e74c3c; color: white; padding: 10px 0; display: none; }
+        * { box-sizing: border-box; transition: background-color 0.3s, color 0.3s; }
+        
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Nút Cài đặt */
+        .settings-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 28px;
+            color: var(--secondary);
+            cursor: pointer;
+            z-index: 100;
+            padding: 10px;
+            border-radius: 50%;
+        }
+        .settings-btn:hover { background: rgba(0,0,0,0.1); color: var(--primary); transform: rotate(90deg); transition: 0.4s; }
+
+        /* Thẻ chứa QR chính */
+        .qr-card {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 380px;
+            max-width: 90%;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        h1 { margin: 0 0 20px 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+
+        #qrcode {
+            background: white;
+            padding: 15px;
+            border-radius: 16px;
+            display: inline-block;
+            margin-bottom: 20px;
+            border: 2px dashed #cbd5e1;
+        }
+
+        .timer-container { position: relative; height: 80px; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+        .timer { font-size: 64px; font-weight: 900; color: var(--accent); line-height: 1; font-variant-numeric: tabular-nums; }
+        .label { font-size: 14px; color: var(--secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; }
+
+        .realtime {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px solid var(--bg);
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--secondary);
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+
+        /* Dòng chữ chạy */
+        .marquee-box {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--accent);
+            color: white;
+            padding: 12px 0;
+            font-weight: bold;
+            font-size: 18px;
+            display: none; /* Mặc định ẩn */
+        }
+
+        /* MODAL ADMIN */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            width: 90%;
+            max-width: 500px;
+            border-radius: 20px;
+            padding: 30px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--bg); padding-bottom: 15px; }
+        .modal-title { font-size: 20px; font-weight: bold; }
+        .close-btn { font-size: 28px; cursor: pointer; color: var(--secondary); }
+        .close-btn:hover { color: var(--accent); }
+
+        .form-group { margin-bottom: 15px; text-align: left; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; }
+        input {
+            width: 100%; padding: 12px; border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 14px;
+        }
+        input:focus { outline: 2px solid var(--primary); border-color: transparent; }
+
+        .btn {
+            width: 100%; padding: 14px; border: none; border-radius: 10px;
+            font-weight: 700; cursor: pointer; margin-top: 10px;
+            font-size: 16px; transition: transform 0.1s;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn-save { background: var(--primary); color: white; }
+        .btn-logout { background: var(--bg); color: var(--text); border: 1px solid #cbd5e1; }
+
+        /* Grid tính năng nâng cao */
+        .features-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 20px; }
+        .feature-item {
+            background: var(--bg); padding: 15px 10px; border-radius: 10px;
+            text-align: center; cursor: pointer; font-size: 13px; font-weight: 600;
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
+        }
+        .feature-item:hover { background: #e2e8f0; }
+        body.dark-mode .feature-item:hover { background: #334155; }
+        .feature-item i { font-size: 20px; margin-bottom: 5px; color: var(--primary); }
+
+        /* Trạng thái tạm dừng */
+        .paused-overlay { color: var(--accent); font-weight: bold; font-size: 20px; display: none; margin: 20px 0;}
     </style>
 </head>
 <body>
 
-    <div class="settings-btn" onclick="checkLogin()">⚙️</div>
-
-    <div class="qr-card">
-        <h2 id="orgTitle">ĐIỂM DANH CLB</h2>
-        <div id="qrcode"></div>
-        <div class="timer" id="countdown">--</div>
-        <div style="font-size:14px; color:#888;">Giây đổi mã</div>
-        <div class="realtime"><i class="far fa-clock"></i> <span id="clock">Loading...</span></div>
+    <div class="settings-btn" onclick="requestLogin()" title="Cài đặt Admin">
+        <i class="fa-solid fa-gear"></i>
     </div>
 
-    <div class="marquee-container" id="marqueeBox">
-        <marquee>📢 HỆ THỐNG ĐANG MỞ ĐIỂM DANH - VUI LÒNG QUÉT MÃ NHANH CHÓNG!</marquee>
+    <div class="qr-card" id="mainCard">
+        <h1 id="orgName">ĐIỂM DANH CLB</h1>
+
+        <div id="qrWrapper">
+            <div id="qrcode"></div>
+        </div>
+
+        <div id="pausedText" class="paused-overlay">
+            <i class="fa-solid fa-pause"></i><br>HỆ THỐNG TẠM DỪNG
+        </div>
+
+        <div class="timer-container" id="timerBox">
+            <div class="timer" id="countdown">--</div>
+            <div class="label">Làm mới sau (giây)</div>
+        </div>
+
+        <div class="realtime">
+            <i class="fa-regular fa-clock"></i>
+            <span id="clock">Loading...</span>
+        </div>
+    </div>
+
+    <div class="marquee-box" id="marquee">
+        <marquee>📢 HỆ THỐNG ĐANG MỞ ĐIỂM DANH. VUI LÒNG QUÉT MÃ TRƯỚC KHI HẾT GIỜ!</marquee>
     </div>
 
     <div id="adminModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">QUẢN TRỊ VIÊN <span style="float:right; cursor:pointer" onclick="closeModal()">&times;</span></div>
-            
-            <div class="input-group">
-                <label>Link trang Form:</label>
-                <input type="text" id="cfgLink" value="https://nhnanh.github.io/Code_QR_30s_CLB_KHPL/form.html">
+            <div class="modal-header">
+                <div class="modal-title"><i class="fa-solid fa-user-shield"></i> Quản Trị Viên</div>
+                <div class="close-btn" onclick="closeModal()">&times;</div>
+            </div>
+
+            <div class="form-group">
+                <label>Link trang Form (form.html):</label>
+                <input type="text" id="cfgLink" placeholder="https://...">
             </div>
             
-            <div class="input-group">
-                <label>Thời gian đổi QR (giây):</label>
-                <input type="number" id="cfgTime" value="30">
+            <div class="form-group">
+                <label>Link Google Sheet (Kết quả):</label>
+                <input type="text" id="cfgSheet" placeholder="https://docs.google.com...">
             </div>
 
-            <div class="input-group">
-                <label>Đổi mật khẩu Admin:</label>
-                <input type="text" id="cfgPass" placeholder="Nhập pass mới...">
+            <div class="form-group" style="display:flex; gap:10px">
+                <div style="flex:1">
+                    <label>Thời gian đổi (s):</label>
+                    <input type="number" id="cfgTime" value="30" min="5">
+                </div>
+                <div style="flex:1">
+                    <label>Mật khẩu Admin:</label>
+                    <input type="text" id="cfgPass">
+                </div>
             </div>
 
-            <button class="btn btn-success" onclick="saveSettings()">💾 LƯU CÀI ĐẶT</button>
+            <button class="btn btn-save" onclick="saveConfig()">LƯU CÀI ĐẶT</button>
 
-            <h4 style="margin-bottom: 10px; border-top: 1px solid #ccc; padding-top: 10px;">🚀 TÍNH NĂNG NÂNG CAO</h4>
-            <div class="feature-grid">
-                <div class="feature-item" onclick="togglePause()" id="btnPause">⏯️ Tạm dừng/Tiếp tục</div>
-                <div class="feature-item" onclick="toggleDarkMode()">🌙 Chế độ tối/Sáng</div>
-                <div class="feature-item" onclick="changeTitle()">📝 Đổi tiêu đề CLB</div>
-                <div class="feature-item" onclick="toggleMarquee()">📢 Bật/Tắt dòng chữ chạy</div>
-                <div class="feature-item" onclick="openSheet()">📊 Mở Sheet dữ liệu</div>
-                <div class="feature-item" onclick="resetConfig()">⚠️ Reset mặc định</div>
-                <div class="feature-item" onclick="downloadQR()">⬇️ Tải ảnh QR</div>
-                <div class="feature-item btn-danger" onclick="logout()">🚪 Đăng xuất</div>
+            <div style="margin-top: 25px; font-weight:bold; font-size:14px; color:var(--secondary)">🚀 TÍNH NĂNG NÂNG CAO</div>
+            <div class="features-grid">
+                <div class="feature-item" onclick="togglePause()"><i class="fa-solid fa-play-pause"></i>Tạm dừng/Tiếp tục</div>
+                <div class="feature-item" onclick="toggleDarkMode()"><i class="fa-solid fa-moon"></i>Chế độ Tối/Sáng</div>
+                <div class="feature-item" onclick="changeTitle()"><i class="fa-solid fa-pen-to-square"></i>Đổi Tiêu đề</div>
+                <div class="feature-item" onclick="toggleMarquee()"><i class="fa-solid fa-bullhorn"></i>Bật/Tắt Chữ chạy</div>
+                <div class="feature-item" onclick="openSheet()"><i class="fa-solid fa-table"></i>Mở Sheet Dữ liệu</div>
+                <div class="feature-item" onclick="toggleFullscreen()"><i class="fa-solid fa-expand"></i>Toàn màn hình</div>
+                <div class="feature-item" onclick="downloadQR()"><i class="fa-solid fa-download"></i>Tải ảnh QR</div>
+                <div class="feature-item" onclick="checkNetwork()"><i class="fa-solid fa-wifi"></i>Kiểm tra mạng</div>
+                <div class="feature-item" onclick="resetDefaults()"><i class="fa-solid fa-rotate-left"></i>Reset Mặc định</div>
+                <div class="feature-item" onclick="closeModal()" style="color:var(--accent)"><i class="fa-solid fa-right-from-bracket"></i>Thoát Admin</div>
             </div>
         </div>
     </div>
 
     <script>
-        // CẤU HÌNH BAN ĐẦU (Đã gắn link mặc định của bạn)
-        const DEFAULT_LINK = "https://nhnanh.github.io/Code_QR_30s_CLB_KHPL/form.html";
-
-        let config = {
-            link: localStorage.getItem('qr_link') || DEFAULT_LINK,
-            time: parseInt(localStorage.getItem('qr_time')) || 30,
-            pass: localStorage.getItem('qr_pass') || "Admin",
-            title: localStorage.getItem('qr_title') || "ĐIỂM DANH CLB",
-            isPaused: false
+        // --- CẤU HÌNH MẶC ĐỊNH ---
+        const DEFAULT_CONFIG = {
+            link: "https://nhnanh.github.io/Code_QR_30s_CLB_KHPL/form.html", // Link mặc định của bạn
+            sheet: "",
+            time: 30,
+            pass: "Admin",
+            title: "ĐIỂM DANH CLB",
+            darkMode: false
         };
 
+        // Biến toàn cục
+        let config = loadConfig();
         let timer = config.time;
-        let qrObj = null;
-        let interval = null;
+        let intervalId = null;
+        let qrObject = null;
+        let isPaused = false;
 
+        // --- KHỞI TẠO ---
         window.onload = function() {
-            document.getElementById("orgTitle").innerText = config.title;
-            setInterval(() => document.getElementById('clock').innerText = new Date().toLocaleString('vi-VN'), 1000);
+            applyConfigUI();
+            startClock();
             startSystem();
         };
 
+        // --- CÁC HÀM XỬ LÝ CHÍNH ---
+        
         function startSystem() {
-            if(interval) clearInterval(interval);
-            updateQR();
-            timer = config.time;
+            if (intervalId) clearInterval(intervalId);
             
-            interval = setInterval(() => {
-                if(!config.isPaused) {
+            // Render lần đầu
+            generateQR();
+            timer = config.time;
+            updateTimerDisplay();
+
+            // Vòng lặp
+            intervalId = setInterval(() => {
+                if (!isPaused) {
                     timer--;
-                    document.getElementById('countdown').innerText = timer;
-                    if(timer <= 0) {
+                    updateTimerDisplay();
+                    if (timer <= 0) {
                         timer = config.time;
-                        updateQR();
+                        generateQR(); // Tạo mã mới
                     }
-                } else {
-                    document.getElementById('countdown').innerText = "PAUSE";
                 }
             }, 1000);
         }
 
-        function updateQR() {
-            const qrDiv = document.getElementById('qrcode');
+        function generateQR() {
+            const qrDiv = document.getElementById("qrcode");
+            
+            // Tạo link duy nhất theo thời gian (Token)
             const token = Date.now(); 
-            // Link chuẩn
-            const finalUrl = `${config.link}?t=${token}`;
+            const finalLink = `${config.link}?t=${token}`;
 
-            if(qrObj === null) {
+            if (qrObject === null) {
                 qrDiv.innerHTML = "";
-                qrObj = new QRCode(qrDiv, { text: finalUrl, width: 250, height: 250 });
+                qrObject = new QRCode(qrDiv, {
+                    text: finalLink,
+                    width: 250,
+                    height: 250,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.M
+                });
             } else {
-                qrObj.clear();
-                qrObj.makeCode(finalUrl);
+                qrObject.clear();
+                qrObject.makeCode(finalLink);
             }
         }
 
-        // --- ADMIN SYSTEM ---
-        function checkLogin() {
-            let p = prompt("Nhập mật khẩu Admin:");
-            if(p === config.pass) {
-                document.getElementById('adminModal').style.display = 'flex';
-                document.getElementById('cfgLink').value = config.link;
-                document.getElementById('cfgTime').value = config.time;
-                document.getElementById('cfgPass').value = config.pass;
-            } else if (p !== null) {
+        function updateTimerDisplay() {
+            document.getElementById("countdown").innerText = timer;
+        }
+
+        function startClock() {
+            setInterval(() => {
+                const now = new Date();
+                document.getElementById("clock").innerText = now.toLocaleTimeString("vi-VN") + " - " + now.toLocaleDateString("vi-VN");
+            }, 1000);
+        }
+
+        // --- QUẢN LÝ DỮ LIỆU (LOCAL STORAGE) ---
+        function loadConfig() {
+            const saved = localStorage.getItem("qr_config_v2");
+            return saved ? { ...DEFAULT_CONFIG, ...JSON.parse(saved) } : DEFAULT_CONFIG;
+        }
+
+        function saveConfigToStorage() {
+            localStorage.setItem("qr_config_v2", JSON.stringify(config));
+        }
+
+        function applyConfigUI() {
+            document.getElementById("orgName").innerText = config.title;
+            if (config.darkMode) document.body.classList.add("dark-mode");
+            else document.body.classList.remove("dark-mode");
+        }
+
+        // --- ADMIN & MODAL ---
+        function requestLogin() {
+            const input = prompt("Nhập mật khẩu Admin:");
+            if (input === config.pass) {
+                openModal();
+            } else if (input !== null) {
                 alert("Sai mật khẩu!");
             }
         }
 
-        function saveSettings() {
-            config.link = document.getElementById('cfgLink').value;
-            config.time = parseInt(document.getElementById('cfgTime').value);
-            config.pass = document.getElementById('cfgPass').value;
+        function openModal() {
+            document.getElementById("adminModal").style.display = "flex";
+            // Fill data
+            document.getElementById("cfgLink").value = config.link;
+            document.getElementById("cfgSheet").value = config.sheet;
+            document.getElementById("cfgTime").value = config.time;
+            document.getElementById("cfgPass").value = config.pass;
+        }
+
+        function closeModal() {
+            document.getElementById("adminModal").style.display = "none";
+        }
+
+        function saveConfig() {
+            config.link = document.getElementById("cfgLink").value;
+            config.sheet = document.getElementById("cfgSheet").value;
+            config.time = parseInt(document.getElementById("cfgTime").value);
+            config.pass = document.getElementById("cfgPass").value;
             
-            localStorage.setItem('qr_link', config.link);
-            localStorage.setItem('qr_time', config.time);
-            localStorage.setItem('qr_pass', config.pass);
-            
+            saveConfigToStorage();
             alert("Đã lưu cài đặt!");
             closeModal();
-            startSystem();
+            startSystem(); // Reset lại hệ thống
         }
 
-        function togglePause() {
-            config.isPaused = !config.isPaused;
-            alert(config.isPaused ? "Đã tạm dừng!" : "Đã tiếp tục!");
-        }
-
-        function toggleDarkMode() { document.body.classList.toggle('dark-mode'); }
+        // --- TÍNH NĂNG NÂNG CAO ---
         
+        function togglePause() {
+            isPaused = !isPaused;
+            const pausedText = document.getElementById("pausedText");
+            const qrWrapper = document.getElementById("qrWrapper");
+            const timerBox = document.getElementById("timerBox");
+
+            if (isPaused) {
+                pausedText.style.display = "block";
+                qrWrapper.style.opacity = "0.1";
+                timerBox.style.visibility = "hidden";
+            } else {
+                pausedText.style.display = "none";
+                qrWrapper.style.opacity = "1";
+                timerBox.style.visibility = "visible";
+                generateQR(); // Tạo mới ngay khi tiếp tục
+            }
+        }
+
+        function toggleDarkMode() {
+            config.darkMode = !config.darkMode;
+            applyConfigUI();
+            saveConfigToStorage();
+        }
+
         function changeTitle() {
-            let t = prompt("Nhập tên tiêu đề mới:", config.title);
-            if(t) {
+            const t = prompt("Nhập tiêu đề mới:", config.title);
+            if (t) {
                 config.title = t;
-                localStorage.setItem('qr_title', t);
-                document.getElementById("orgTitle").innerText = t;
+                applyConfigUI();
+                saveConfigToStorage();
             }
         }
 
         function toggleMarquee() {
-            let m = document.getElementById("marqueeBox");
-            m.style.display = m.style.display === "none" ? "block" : "none";
+            const m = document.getElementById("marquee");
+            m.style.display = (m.style.display === "none" || m.style.display === "") ? "block" : "none";
         }
 
         function openSheet() {
-            let url = prompt("Nhập link Google Sheet của bạn:");
-            if(url) window.open(url, '_blank');
+            if (config.sheet) window.open(config.sheet, "_blank");
+            else alert("Chưa nhập link Google Sheet trong cài đặt!");
         }
 
-        function downloadQR() {
-            let img = document.querySelector("#qrcode img");
-            if(img) {
-                let link = document.createElement('a');
-                link.download = 'QR_DiemDanh.png';
-                link.href = img.src;
-                link.click();
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
             }
         }
 
-        function resetConfig() { 
-            if(confirm("Khôi phục cài đặt gốc?")) { 
-                localStorage.clear(); 
-                location.reload(); 
-            } 
+        function downloadQR() {
+            const img = document.querySelector("#qrcode img");
+            if (img) {
+                const link = document.createElement("a");
+                link.download = "QR_Code.png";
+                link.href = img.src;
+                link.click();
+            } else {
+                alert("Đợi QR tải xong đã!");
+            }
         }
 
-        function logout() { closeModal(); }
-        function closeModal() { document.getElementById('adminModal').style.display = 'none'; }
+        function checkNetwork() {
+            alert(navigator.onLine ? "✅ Mạng ổn định" : "❌ Mất kết nối internet");
+        }
+
+        function resetDefaults() {
+            if (confirm("Bạn có chắc muốn khôi phục cài đặt gốc?")) {
+                localStorage.removeItem("qr_config_v2");
+                location.reload();
+            }
+        }
+
     </script>
 </body>
 </html>
