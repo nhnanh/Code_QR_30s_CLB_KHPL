@@ -546,17 +546,3 @@
     </script>
 </body>
 </html>
-```
-
-### Lưu ý quan trọng:
-Để tính năng **"Đổi mật khẩu Reset máy"** hoạt động đồng bộ với trang Form của sinh viên, bạn cần thêm 1 dòng nhỏ vào file `form.html` (ở phần logic nút Reset).
-
-Trong file `form.html`, tìm hàm `askPassword` và sửa dòng kiểm tra mật khẩu thành:
-
-```javascript
-// Đọc pass từ localStorage (do trang Admin đã lưu vào đó)
-const adminPass = localStorage.getItem('admin_reset_pass') || "Admin"; 
-
-if (result.value === adminPass) { 
-    performReset();
-}
