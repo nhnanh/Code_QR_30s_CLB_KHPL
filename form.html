@@ -16,21 +16,23 @@
         #name { text-transform: capitalize; }
         #class_name { text-transform: uppercase; }
 
-        .btn-submit { width: 100%; padding: 15px; background: #2ecc71; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        .btn-submit { width: 100%; padding: 15px; background: #2ecc71; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-submit:hover { background: #27ae60; }
         .btn-submit:disabled { background: #95a5a6; cursor: not-allowed; }
 
         .hidden { display: none !important; }
         .error-screen { text-align: center; color: #c0392b; background: #fadbd8; padding: 20px; border-radius: 10px; border: 2px dashed #c0392b; }
         
         /* Nút Reset ẩn dưới cùng */
-        .reset-btn { position: absolute; bottom: 10px; right: 10px; font-size: 12px; color: #ccc; cursor: pointer; text-decoration: none; }
-        .reset-btn:hover { color: #555; }
+        .reset-container { position: absolute; bottom: 10px; width: 100%; text-align: center; }
+        .reset-btn { font-size: 12px; color: #999; cursor: pointer; text-decoration: none; padding: 5px; }
+        .reset-btn:hover { color: #555; text-decoration: underline; }
     </style>
 </head>
 <body>
 
     <div class="form-card">
-        <!-- 1. Màn hình lỗi / Chặn -->
+        <!-- 1. Màn hình chặn -->
         <div id="errorScreen" class="hidden error-screen">
             <h3 id="errTitle">⛔ LỖI</h3>
             <p id="errMsg">Nội dung lỗi</p>
@@ -57,13 +59,15 @@
         </div>
     </div>
 
-    <!-- Nút Reset cho phép điểm danh lại -->
-    <div class="reset-btn" onclick="resetDevice()">🔄 Reset thiết bị</div>
+    <!-- Nút Reset thông minh -->
+    <div class="reset-container">
+        <span class="reset-btn" onclick="smartReset()">🔄 Reset thiết bị (Điểm danh lại)</span>
+    </div>
 
     <script>
         // ==========================================
         // DÁN LINK GOOGLE APPS SCRIPT CỦA BẠN VÀO ĐÂY
-        const API_URL = "https://script.google.com/macros/s/AKfycbxEy2TOvvPioKQwmZBIChzwSMDU-aYqLrAlVPiMzJkH6cLNMuXjbzOzYtg2nl1tZfxC/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbzzsWZoGnP61ovCHAbG3xlR0TQl-wcMShJHs1JsKaME6y_ymDVE03GUt0Gz2njEGoHL/exec";
         // ==========================================
 
         const today = new Date().toLocaleDateString('vi-VN');
@@ -75,13 +79,12 @@
             checkQRCode();
         }
 
-        // KIỂM TRA MÃ QR (Chặt chẽ hơn)
+        // KIỂM TRA MÃ QR
         function checkQRCode() {
             const params = new URLSearchParams(window.location.search);
             const qrTime = parseInt(params.get('t'));
             const now = Date.now();
 
-            // Nếu QR cũ quá 45 giây (30s refresh + 15s thao tác) -> CHẶN
             if (!qrTime || (now - qrTime > 45000)) {
                 blockUser("MÃ QR ĐÃ HẾT HẠN!", "Mã này đã cũ. Vui lòng quét mã mới trên màn hình.");
             }
@@ -101,7 +104,7 @@
             el.value = words.join(' ');
         }
 
-        // XỬ LÝ GỬI FORM
+        // --- XỬ LÝ GỬI FORM ---
         document.getElementById('attendanceForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const btn = document.getElementById('btnSub');
@@ -113,8 +116,14 @@
             const className = document.getElementById('class_name').value;
             const timeInfo = new Date().toLocaleString('vi-VN');
 
+            // Lưu MSSV để dùng cho tính năng Reset thông minh
+            localStorage.setItem('my_mssv', mssv);
+
             fetch(API_URL, {
                 method: "POST",
+                // Chuyển sang mode cors để đọc được phản hồi nếu script hỗ trợ
+                // Nếu script chưa cấu hình options, dùng no-cors sẽ không đọc được lỗi
+                // Ở đây dùng no-cors cho an toàn với script cũ, nhưng ở tính năng Reset ta sẽ dùng cors
                 mode: "no-cors",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ name: name, mssv: mssv, class_name: className, device_info: navigator.userAgent })
@@ -129,24 +138,94 @@
                     blockUser("ĐÃ GHI NHẬN", "Cảm ơn bạn đã tham gia.");
                 });
             }).catch(() => {
-                Swal.fire('Lỗi', 'Lỗi mạng!', 'error');
+                Swal.fire('Lỗi', 'Lỗi mạng hoặc cấu hình!', 'error');
                 btn.disabled = false;
                 btn.innerText = "THỬ LẠI";
             });
         });
 
-        // TÍNH NĂNG RESET (Cho phép điểm danh lại trên thiết bị này)
-        function resetDevice() {
-            let p = prompt("Nhập mật khẩu Admin để reset thiết bị này:");
-            if (p === "Admin") { // Bạn có thể đổi pass này
-                localStorage.removeItem('attended_today');
-                alert("Đã reset! Có thể điểm danh lại.");
-                location.reload();
-            } else if (p !== null) {
-                alert("Sai mật khẩu!");
+        // --- TÍNH NĂNG RESET THÔNG MINH ---
+        function smartReset() {
+            const mssv = localStorage.getItem('my_mssv');
+
+            // 1. Nếu không tìm thấy MSSV (do xóa cache hoặc chưa điểm danh) -> Hỏi Pass
+            if (!mssv) {
+                askPassword("Nhập mật khẩu Admin để reset thủ công:");
+                return;
             }
+
+            // 2. Nếu có MSSV -> Hỏi Server xem còn tồn tại không
+            Swal.fire({
+                title: 'Đang kiểm tra...',
+                text: 'Vui lòng chờ...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading() }
+            });
+
+            fetch(API_URL, {
+                method: 'POST',
+                // Quan trọng: Dùng redirect: follow để Apps Script trả về JSON đọc được
+                body: JSON.stringify({ action: "CHECK_STATUS", mssv: mssv })
+            })
+            .then(res => res.json())
+            .then(data => {
+                Swal.close();
+                if (data.exist === true) {
+                    // TRƯỜNG HỢP 1: CHƯA XÓA Ở DANH SÁCH -> CẦN PASS
+                    askPassword(`Sinh viên ${mssv} vẫn còn trong danh sách điểm danh!\nBạn cần mật khẩu Admin để reset máy này.`);
+                } else {
+                    // TRƯỜNG HỢP 2: ĐÃ XÓA Ở DANH SÁCH -> KHÔNG CẦN PASS
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Đã được phép điểm danh lại!',
+                        text: 'Admin đã xóa dữ liệu cũ của bạn. Máy sẽ được reset ngay.',
+                        confirmButtonText: 'Tiến hành'
+                    }).then(() => {
+                        performReset();
+                    });
+                }
+            })
+            .catch(err => {
+                Swal.close();
+                console.error(err);
+                // Lỗi mạng -> Fallback về hỏi pass
+                askPassword("Không thể kết nối server kiểm tra. Nhập mật khẩu Admin để reset:");
+            });
+        }
+
+        function askPassword(msg) {
+            Swal.fire({
+                title: 'Yêu cầu quyền Admin',
+                text: msg,
+                input: 'password',
+                inputPlaceholder: 'Nhập mật khẩu Admin',
+                showCancelButton: true,
+                confirmButtonText: 'Mở khóa',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    if (result.value === "Admin") { // Pass mặc định, có thể đổi
+                        performReset();
+                    } else {
+                        Swal.fire('Lỗi', 'Sai mật khẩu!', 'error');
+                    }
+                }
+            });
+        }
+
+        function performReset() {
+            localStorage.removeItem('attended_today');
+            localStorage.removeItem('my_mssv');
+            Swal.fire({
+                icon: 'success',
+                title: 'Đã Reset!',
+                text: 'Bạn có thể điểm danh lại ngay bây giờ.',
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => {
+                location.reload();
+            });
         }
     </script>
 </body>
 </html>
-
