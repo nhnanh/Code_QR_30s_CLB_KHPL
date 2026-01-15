@@ -4,34 +4,59 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HỆ THỐNG ĐIỂM DANH QR</title>
+    <!-- Thư viện tạo QR -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* CSS Gọn gàng */
-        :root { --primary: #2563eb; --bg: #f1f5f9; --text: #1e293b; }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        :root { --primary: #2563eb; --bg: #f1f5f9; --text: #1e293b; --danger: #ef4444; --marquee-bg: #ea580c; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
         
-        .settings-btn { position: absolute; top: 20px; left: 20px; font-size: 28px; color: #64748b; cursor: pointer; padding: 10px; }
-        .settings-btn:hover { color: var(--primary); transform: rotate(90deg); transition: 0.4s; }
+        /* Nút Cài đặt */
+        .settings-btn { position: absolute; top: 20px; left: 20px; font-size: 28px; color: #64748b; cursor: pointer; padding: 10px; z-index: 100; transition: 0.3s; }
+        .settings-btn:hover { color: var(--primary); transform: rotate(90deg); }
 
-        .qr-card { background: white; padding: 40px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 380px; }
+        /* Khung chứa QR */
+        .qr-card { background: white; padding: 40px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 380px; position: relative; z-index: 10; margin-bottom: 40px; }
         #qrcode { background: white; padding: 15px; border: 2px dashed #cbd5e1; border-radius: 16px; display: inline-block; margin: 20px 0; }
         
-        .timer { font-size: 64px; font-weight: 900; color: #ef4444; line-height: 1; }
+        .timer { font-size: 64px; font-weight: 900; color: var(--danger); line-height: 1; }
         .realtime { margin-top: 20px; font-weight: 600; color: #64748b; border-top: 1px solid #eee; padding-top: 15px;}
 
+        /* Dòng chữ chạy */
+        .marquee-container {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: var(--marquee-bg); color: white;
+            padding: 12px 0; font-weight: bold; font-size: 18px;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+            z-index: 5;
+        }
+
         /* Modal Admin */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
-        .modal-content { background: white; width: 90%; max-width: 450px; border-radius: 20px; padding: 30px; }
-        input { width: 100%; padding: 12px; margin: 5px 0 15px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box;}
-        button { width: 100%; padding: 12px; border: none; border-radius: 8px; background: var(--primary); color: white; font-weight: bold; cursor: pointer; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-content { background: white; width: 90%; max-width: 500px; border-radius: 20px; padding: 30px; max-height: 90vh; overflow-y: auto; text-align: left; }
+        
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; color: #333; }
+        input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
+        
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; color: white; transition: 0.2s; }
+        .btn:hover { opacity: 0.9; }
+        .btn-save { background: var(--primary); }
+        .btn-sheet { background: #10b981; } 
+        .btn-clear { background: var(--danger); }
+        .btn-close { background: #64748b; }
+        
+        .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
     </style>
 </head>
 <body>
 
-    <div class="settings-btn" onclick="checkLogin()"><i class="fa-solid fa-gear"></i></div>
+    <!-- Nút Mở Cài Đặt -->
+    <div class="settings-btn" onclick="checkLogin()" title="Cài đặt Admin"><i class="fa-solid fa-gear"></i></div>
 
+    <!-- Giao diện Chính -->
     <div class="qr-card">
         <h1 id="orgName">ĐIỂM DANH CLB</h1>
         <div id="qrcode"></div>
@@ -42,41 +67,82 @@
         <div class="realtime"><i class="fa-regular fa-clock"></i> <span id="clock">Loading...</span></div>
     </div>
 
+    <!-- Dòng chữ chạy -->
+    <div class="marquee-container">
+        <marquee id="marqueeText" direction="left">📢 HỆ THỐNG ĐANG MỞ ĐIỂM DANH - VUI LÒNG QUÉT MÃ NHANH CHÓNG!</marquee>
+    </div>
+
     <!-- MODAL ADMIN -->
     <div id="adminModal" class="modal">
         <div class="modal-content">
-            <h2 style="margin-top:0">⚙️ Cài Đặt Admin</h2>
-            <label>Link trang Form:</label>
-            <input type="text" id="cfgLink" value="https://nhnanh.github.io/Code_QR_30s_CLB_KHPL/form.html">
+            <h2 style="margin-top:0; border-bottom:1px solid #eee; padding-bottom:10px; color:#333">⚙️ Quản Trị Hệ Thống</h2>
             
-            <label>Thời gian đổi (s):</label>
-            <input type="number" id="cfgTime" value="30">
+            <div class="form-group">
+                <label>Link trang Form (form.html):</label>
+                <input type="text" id="cfgLink">
+            </div>
             
-            <label>Mật khẩu Admin:</label>
-            <input type="text" id="cfgPass" value="Admin">
+            <div class="form-group">
+                <label>Nội dung chữ chạy (Marquee):</label>
+                <input type="text" id="cfgMarquee" placeholder="Nhập thông báo...">
+            </div>
 
-            <button onclick="saveConfig()">💾 LƯU CÀI ĐẶT</button>
-            <button onclick="closeModal()" style="background:#64748b; margin-top:10px">Đóng</button>
+            <div class="form-group">
+                <label>Link Google Sheet (Quản lý):</label>
+                <input type="text" id="cfgSheet" placeholder="Dán link sheet vào đây để mở nhanh...">
+            </div>
+
+            <div class="feature-grid" style="margin-top:0; margin-bottom:15px">
+                <div>
+                    <label>Thời gian đổi (s):</label>
+                    <input type="number" id="cfgTime" value="30">
+                </div>
+                <div>
+                    <label>Mật khẩu Admin:</label>
+                    <input type="text" id="cfgPass" value="Admin">
+                </div>
+            </div>
+
+            <div class="feature-grid">
+                <button class="btn btn-sheet" onclick="openSheet()"><i class="fa-solid fa-table"></i> Mở Sheet DS</button>
+                <button class="btn btn-clear" onclick="clearSheetData()"><i class="fa-solid fa-trash"></i> Xóa dữ liệu cũ</button>
+            </div>
+
+            <button class="btn btn-save" onclick="saveConfig()"><i class="fa-solid fa-floppy-disk"></i> LƯU CÀI ĐẶT</button>
+            <button class="btn btn-close" onclick="closeModal()">Đóng</button>
         </div>
     </div>
 
     <script>
-        // CẤU HÌNH MẶC ĐỊNH
+        // ==========================================
+        // 1. CẤU HÌNH LIÊN KẾT (DÁN API CỦA BẠN VÀO ĐÂY)
+        const API_URL = "https://script.google.com/macros/s/AKfycbw57FoZhAjou0nRXKUgTyA5CY63c-uSVbWWXMahxHXkRxzr2Jhoaon6kwv6AcqjvMvj/exec";
+        // ==========================================
+
         const DEFAULT_LINK = "https://nhnanh.github.io/Code_QR_30s_CLB_KHPL/form.html";
-        
+        const DEFAULT_MARQUEE = "📢 HỆ THỐNG ĐANG MỞ ĐIỂM DANH - VUI LÒNG QUÉT MÃ NHANH CHÓNG!";
+
         let config = {
             link: localStorage.getItem('qr_link') || DEFAULT_LINK,
+            sheet: localStorage.getItem('qr_sheet') || "",
             time: parseInt(localStorage.getItem('qr_time')) || 30,
-            pass: localStorage.getItem('qr_pass') || "Admin"
+            pass: localStorage.getItem('qr_pass') || "Admin",
+            marquee: localStorage.getItem('qr_marquee') || DEFAULT_MARQUEE
         };
 
         let timer = config.time;
         let qrObj = null;
         let interval = null;
 
+        // --- KHỞI CHẠY ---
         window.onload = function() {
+            // Áp dụng nội dung chữ chạy
+            document.getElementById("marqueeText").innerText = config.marquee;
+            
             startSystem();
-            setInterval(() => document.getElementById("clock").innerText = new Date().toLocaleString("vi-VN"), 1000);
+            setInterval(() => {
+                document.getElementById("clock").innerText = new Date().toLocaleString("vi-VN");
+            }, 1000);
         };
 
         function startSystem() {
@@ -96,7 +162,7 @@
 
         function updateQR() {
             const qrDiv = document.getElementById("qrcode");
-            // Token thời gian thực để check hết hạn
+            // Token thời gian thực (để form check hạn 45s)
             const token = Date.now(); 
             const finalLink = `${config.link}?t=${token}`;
 
@@ -109,33 +175,74 @@
             }
         }
 
-        // Admin Functions
+        // --- CHỨC NĂNG ADMIN ---
         function checkLogin() {
-            const p = prompt("Nhập mật khẩu:");
+            const p = prompt("Nhập mật khẩu Admin:");
             if(p === config.pass) openModal();
             else if(p !== null) alert("Sai mật khẩu!");
         }
+
         function openModal() {
             document.getElementById("adminModal").style.display = "flex";
             document.getElementById("cfgLink").value = config.link;
+            document.getElementById("cfgSheet").value = config.sheet;
             document.getElementById("cfgTime").value = config.time;
             document.getElementById("cfgPass").value = config.pass;
+            document.getElementById("cfgMarquee").value = config.marquee; // Điền chữ chạy hiện tại vào ô
         }
+
         function closeModal() { document.getElementById("adminModal").style.display = "none"; }
         
         function saveConfig() {
             config.link = document.getElementById("cfgLink").value;
+            config.sheet = document.getElementById("cfgSheet").value;
             config.time = parseInt(document.getElementById("cfgTime").value);
             config.pass = document.getElementById("cfgPass").value;
+            config.marquee = document.getElementById("cfgMarquee").value;
             
             localStorage.setItem('qr_link', config.link);
+            localStorage.setItem('qr_sheet', config.sheet);
             localStorage.setItem('qr_time', config.time);
             localStorage.setItem('qr_pass', config.pass);
+            localStorage.setItem('qr_marquee', config.marquee);
             
-            alert("Đã lưu!");
+            // Cập nhật giao diện ngay lập tức
+            document.getElementById("marqueeText").innerText = config.marquee;
+
+            alert("Đã lưu cài đặt!");
             closeModal();
             startSystem();
+        }
+
+        function openSheet() {
+            if(config.sheet) window.open(config.sheet, '_blank');
+            else alert("Vui lòng nhập Link Sheet vào ô bên trên trước!");
+        }
+
+        // --- CHỨC NĂNG XÓA DỮ LIỆU CŨ ---
+        function clearSheetData() {
+            if(confirm("⚠️ CẢNH BÁO: Hành động này sẽ xóa toàn bộ danh sách điểm danh cũ trong Sheet (giữ lại tiêu đề).\n\nBạn có chắc chắn muốn xóa để bắt đầu buổi mới không?")) {
+                
+                // Gửi lệnh xóa lên Google Script
+                fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'CLEAR_DATA' })
+                }).then(() => {
+                    alert("✅ Đã gửi lệnh xóa! Dữ liệu sẽ biến mất sau vài giây. Vui lòng kiểm tra Sheet.");
+                }).catch(() => {
+                    alert("❌ Lỗi kết nối! Vui lòng kiểm tra lại mạng.");
+                });
+            }
         }
     </script>
 </body>
 </html>
+```
+
+### Hướng dẫn dùng tính năng chữ chạy:
+1.  Bấm vào biểu tượng **Bánh răng** > Nhập mật khẩu.
+2.  Tìm ô **"Nội dung chữ chạy (Marquee)"**.
+3.  Nhập nội dung mới (Ví dụ: *"Lưu ý: Sinh viên mang theo thẻ sinh viên khi đi học"*).
+4.  Bấm **LƯU CÀI ĐẶT**. Dòng chữ bên dưới sẽ đổi ngay lập tức.
