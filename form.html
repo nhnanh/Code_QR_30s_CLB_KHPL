@@ -15,7 +15,7 @@
         input { width: 100%; padding: 12px; border: 1px solid #dfe6e9; border-radius: 8px; box-sizing: border-box; font-size: 15px; transition: border-color 0.3s; }
         .btn-submit { width: 100%; padding: 15px; background: #2ecc71; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 15px; transition: background 0.3s; }
         .reset-section { margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; display: flex; flex-direction: column; gap: 10px; }
-        .btn-reset { background: #f8f9fa; border: 1px solid #dfe6e9; color: #636e72; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; width: 100%; }
+        .btn-reset { background: #f8f9fa; border: 1px solid #dfe6e9; color: #636e72; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
         .hidden { display: none !important; }
         .error-box { text-align: center; padding: 20px; color: #c0392b; background: #fadbd8; border: 2px dashed #c0392b; border-radius: 10px; }
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
@@ -31,13 +31,13 @@
         </div>
 
         <div id="formScreen">
-            <h2 id="formTitle"><div class="loader" style="margin:0 auto"></div></h2>
+            <h2 id="formTitle"><div class="loader" style="margin:0 auto; width:30px; height:30px; border-width:4px;"></div></h2>
             <form id="dynamicForm"></form>
         </div>
         
         <div class="reset-section">
-            <button class="btn-reset" onclick="requestReset()"><i class="fa-solid fa-paper-plane"></i> Yêu cầu Admin Reset</button>
-            <button class="btn-reset" onclick="manualReset()"><i class="fa-solid fa-key"></i> Nhập mật khẩu Reset</button>
+            <button class="btn-reset" onclick="requestReset()"><i class="fa-solid fa-paper-plane" style="color:#e67e22"></i> Yêu cầu Admin Reset (Gửi thông báo)</button>
+            <button class="btn-reset" onclick="manualReset()"><i class="fa-solid fa-key" style="color:#3498db"></i> Nhập mật khẩu để Reset ngay</button>
         </div>
     </div>
 
@@ -48,14 +48,18 @@
 
         window.onload = function() {
             if (localStorage.getItem('attended_today') === today) {
-                showError("Bạn đã điểm danh hôm nay rồi!");
+                showError("Bạn đã điểm danh thành công hôm nay!<br>Nếu cần làm lại, hãy dùng các nút bên dưới.");
             } else {
                 checkQR();
             }
         };
 
         function checkQR() {
-            loadFormConfig(); // Bỏ qua check time để test, nếu muốn check thì uncomment logic check time
+            const params = new URLSearchParams(window.location.search);
+            const qrTime = parseInt(params.get('t'));
+            const now = Date.now();
+            if (!qrTime || (now - qrTime > 45000)) showError("MÃ QR ĐÃ HẾT HẠN!<br>Vui lòng quét mã mới trên màn hình.");
+            else loadFormConfig();
         }
 
         function loadFormConfig() {
@@ -77,6 +81,7 @@
             })
             .catch(err => {
                 document.getElementById("formTitle").innerText = "Lỗi tải Form";
+                showError("Không thể tải cấu hình Form.<br>Vui lòng kiểm tra kết nối mạng.");
             });
         }
 
@@ -91,7 +96,7 @@
                 div.className = "form-group";
                 let onInputAttr = "";
                 if(f.format === 'uppercase') onInputAttr = `oninput="this.value = this.value.toUpperCase()"`;
-                if(f.format === 'lowercase') onInputAttr = `oninput="this.value = this.value.toLowerCase()"`;
+                if(f.format === 'lowercase') onInputAttr = `oninput="this.value = this.value.toLowerCase()";`;
                 if(f.format === 'capitalize') onInputAttr = `oninput="formatCapitalize(this)"`;
 
                 div.innerHTML = `<label>${f.label} ${f.required ? '<span style="color:red">*</span>' : ''}</label><input type="${f.type}" name="${f.label}" ${f.required ? 'required' : ''} ${onInputAttr} placeholder="Nhập ${f.label}...">`;
@@ -101,8 +106,9 @@
             const btn = document.createElement("button");
             btn.className = "btn-submit";
             btn.type = "submit";
-            btn.innerHTML = `XÁC NHẬN`;
+            btn.innerHTML = `XÁC NHẬN ĐIỂM DANH`;
             form.appendChild(btn);
+
             form.onsubmit = handleSubmit;
         }
 
@@ -115,11 +121,11 @@
         function handleSubmit(e) {
             e.preventDefault();
             const btn = e.target.querySelector("button");
-            btn.disabled = true; btn.innerHTML = "Đang gửi...";
+            btn.disabled = true; btn.innerHTML = `<div class="loader" style="width:20px;height:20px;border-width:2px;"></div> Đang gửi...`;
             
             const formData = new FormData(e.target);
             const dataObj = {};
-            for (let [key, value] of formData.entries()) dataObj[key] = value.trim();
+            for (let [key, value] of formData.entries()) { dataObj[key] = value.trim(); }
             
             const fieldLabels = formConfig.fields.map(f => f.label);
             const payload = {
@@ -138,10 +144,10 @@
                 localStorage.setItem('attended_today', today);
                 localStorage.setItem('my_mssv', payload.mssv);
                 localStorage.setItem('my_name', payload.name);
-                Swal.fire({ icon: 'success', title: 'THÀNH CÔNG!', text: 'Dữ liệu đã được ghi nhận.', confirmButtonText: 'HOÀN TẤT', allowOutsideClick: false }).then(() => { showError("✅ ĐÃ ĐIỂM DANH XONG"); });
+                Swal.fire({ icon: 'success', title: 'THÀNH CÔNG!', text: 'Dữ liệu đã được ghi nhận.', confirmButtonText: 'HOÀN TẤT', allowOutsideClick: false }).then(() => { showError("✅ ĐÃ ĐIỂM DANH XONG<br>Bạn có thể tắt trình duyệt."); });
             }).catch(err => {
                 btn.disabled = false; btn.innerHTML = "THỬ LẠI";
-                Swal.fire('Lỗi', 'Lỗi mạng', 'error');
+                Swal.fire('Lỗi', 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra mạng!', 'error');
             });
         }
 
@@ -153,29 +159,45 @@
 
         function requestReset() {
             const mssv = localStorage.getItem('my_mssv');
-            if(!mssv) { Swal.fire('Thông báo', 'Chưa có dữ liệu điểm danh cũ.', 'info'); return; }
+            if(!mssv) { Swal.fire('Thông báo', 'Bạn chưa điểm danh lần nào nên không cần reset.', 'info'); return; }
             Swal.fire({
-                title: 'YÊU CẦU RESET', input: 'text', inputPlaceholder: 'Nhập lý do...', showCancelButton: true, confirmButtonText: 'Gửi'
+                title: 'YÊU CẦU ĐIỂM DANH LẠI',
+                html: `<p style="font-size:14px; color:#555">Gửi thông báo đến Admin để xin phép reset máy.</p>`,
+                input: 'text',
+                inputPlaceholder: 'Nhập lý do (VD: Sai tên, Nhầm lớp...)',
+                showCancelButton: true,
+                confirmButtonText: 'Gửi Yêu Cầu'
             }).then((result) => {
                 if (result.isConfirmed && result.value) {
-                    fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "REQUEST_RESET", mssv: mssv, name: localStorage.getItem('my_name') || "Unknown", reason: result.value }) })
-                    .then(() => { Swal.fire('Đã gửi!', 'Đã gửi yêu cầu đến Admin.', 'success'); });
+                    fetch(API_URL, {
+                        method: 'POST', mode: 'no-cors',
+                        body: JSON.stringify({ action: "REQUEST_RESET", mssv: mssv, name: localStorage.getItem('my_name') || "Unknown", reason: result.value })
+                    }).then(() => {
+                        Swal.fire('Đã gửi!', 'Yêu cầu của bạn đã được chuyển đến Admin.', 'success');
+                    });
                 }
             });
         }
 
         function manualReset() {
-            Swal.fire({ title: 'NHẬP MẬT KHẨU', input: 'password', showCancelButton: true }).then((result) => {
+            Swal.fire({
+                title: 'NHẬP MẬT KHẨU RESET',
+                text: 'Nhập mật khẩu do Giáo viên cung cấp:',
+                input: 'password',
+                showCancelButton: true,
+                confirmButtonText: 'Mở Khóa'
+            }).then((result) => {
                 if (result.isConfirmed) {
-                    const correctPass = "Admin"; 
-                    if (result.value === correctPass) { localStorage.removeItem('attended_today'); location.reload(); }
-                    else { Swal.fire('Lỗi', 'Sai mật khẩu!', 'error'); }
+                    const correctPass = "Admin"; // Hoặc lưu pass vào localStorage nếu chung domain
+                    if (result.value === correctPass) {
+                        localStorage.removeItem('attended_today');
+                        Swal.fire({ icon: 'success', title: 'Đã mở khóa!', timer: 1500, showConfirmButton: false }).then(() => { location.reload(); });
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Sai mật khẩu!' });
+                    }
                 }
             });
         }
     </script>
 </body>
 </html>
-```
-
-Nhớ **Deploy lại Google Apps Script** để tính năng Lưu cấu hình Form hoạt động nhé!
