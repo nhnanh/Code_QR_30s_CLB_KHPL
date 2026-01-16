@@ -16,10 +16,10 @@
         .btn-submit { width: 100%; padding: 15px; background: #2ecc71; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 15px; transition: background 0.3s; }
         .reset-options { margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; display: flex; flex-direction: column; gap: 10px; }
         .btn-reset { background: #f8f9fa; border: 1px solid #dfe6e9; color: #636e72; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
-        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .hidden { display: none !important; }
         .error-box { text-align: center; padding: 20px; color: #c0392b; background: #fadbd8; border: 2px dashed #c0392b; border-radius: 10px; margin-bottom: 20px; }
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -42,7 +42,7 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbxfHTs2JITdjO2eloUj0XCAWsxkxYKPEc-_eZoJ7RQZLJWw_KNXO7rtz2yKZ6DREsQ9/exec"; 
+        const API_URL = "https://script.google.com/macros/s/AKfycbxQgOytzD2nJwoCSdTLiRaGnl567gcNKVOmHTsA_u8dJ7Y87rBBFlJc1c32uuYLtauy/exec"; 
         const today = new Date().toLocaleDateString('vi-VN');
         let formConfig = null;
 
@@ -55,9 +55,9 @@
         };
 
         function checkQR() {
-            const params = new URLSearchParams(window.location.search);
-            const qrTime = parseInt(params.get('t'));
-            loadFormConfig();
+            const p = new URLSearchParams(window.location.search);
+            const t = parseInt(p.get('t'));
+            loadFormConfig(); // Bỏ qua check time để test, nếu muốn check thì uncomment logic check time
         }
 
         function loadFormConfig() {
@@ -70,8 +70,8 @@
                     renderForm({
                         title: "ĐIỂM DANH",
                         fields: [
-                            {label: "Họ và tên", type: "text", format: "capitalize", required: true},
-                            {label: "Mã sinh viên", type: "tel", format: "none", required: true},
+                            {label: "Họ tên", type: "text", format: "capitalize", required: true},
+                            {label: "MSSV", type: "tel", format: "none", required: true},
                             {label: "Lớp", type: "text", format: "uppercase", required: true}
                         ]
                     });
@@ -79,7 +79,6 @@
             })
             .catch(err => {
                 document.getElementById("formTitle").innerText = "Lỗi tải Form";
-                showError("Không thể tải cấu hình Form.<br>Vui lòng kiểm tra kết nối mạng.");
             });
         }
 
@@ -92,12 +91,12 @@
             cfg.fields.forEach((f, index) => {
                 const div = document.createElement("div");
                 div.className = "form-group";
-                let onInputAttr = "";
-                if(f.format === 'uppercase') onInputAttr = `oninput="this.value = this.value.toUpperCase()"`;
-                if(f.format === 'lowercase') onInputAttr = `oninput="this.value = this.value.toLowerCase()";`;
-                if(f.format === 'capitalize') onInputAttr = `oninput="formatCapitalize(this)"`;
+                let oninput = "";
+                if(f.format === 'uppercase') oninput = "this.value = this.value.toUpperCase()";
+                if(f.format === 'lowercase') oninput = "this.value = this.value.toLowerCase()";
+                if(f.format === 'capitalize') oninput = "formatCap(this)";
 
-                div.innerHTML = `<label>${f.label} ${f.required ? '<span style="color:red">*</span>' : ''}</label><input type="${f.type}" name="${f.label}" ${f.required ? 'required' : ''} ${onInputAttr} placeholder="Nhập ${f.label}...">`;
+                div.innerHTML = `<label>${f.label} ${f.required ? '<span style="color:red">*</span>' : ''}</label><input type="${f.type}" name="${f.label}" ${f.required ? 'required' : ''} ${oninput} placeholder="${f.placeholder || ''}">`;
                 form.appendChild(div);
             });
             
@@ -106,11 +105,10 @@
             btn.type = "submit";
             btn.innerHTML = `XÁC NHẬN`;
             form.appendChild(btn);
-
             form.onsubmit = handleSubmit;
         }
 
-        function formatCapitalize(el) {
+        function formatCap(el) {
             let words = el.value.toLowerCase().split(' ');
             for (let i = 0; i < words.length; i++) { if(words[i]) words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1); }
             el.value = words.join(' ');
@@ -119,7 +117,7 @@
         function handleSubmit(e) {
             e.preventDefault();
             const btn = e.target.querySelector("button");
-            btn.disabled = true; btn.innerHTML = `<div class="loader" style="width:20px;height:20px;border-width:2px;"></div> Đang gửi...`;
+            btn.disabled = true; btn.innerHTML = "Đang gửi...";
             
             const formData = new FormData(e.target);
             const dataObj = {};
@@ -131,7 +129,8 @@
                 mssv: dataObj[fieldLabels[1]] || "", 
                 class_name: dataObj[fieldLabels[2]] || "",
                 device_info: navigator.userAgent,
-                extraData: JSON.stringify(dataObj) 
+                extraData: JSON.stringify(dataObj),
+                submitData: Object.values(dataObj) // Gửi mảng giá trị theo thứ tự
             };
 
             fetch(API_URL, {
@@ -140,12 +139,12 @@
                 body: JSON.stringify(payload)
             }).then(() => {
                 localStorage.setItem('attended_today', today);
-                localStorage.setItem('my_mssv', payload.mssv);
+                localStorage.setItem('my_unique_id', payload.mssv); 
                 localStorage.setItem('my_name', payload.name);
-                Swal.fire({ icon: 'success', title: 'THÀNH CÔNG!', text: 'Dữ liệu đã được ghi nhận.', confirmButtonText: 'HOÀN TẤT', allowOutsideClick: false }).then(() => { showError("✅ ĐÃ ĐIỂM DANH XONG<br>Bạn có thể tắt trình duyệt."); });
+                Swal.fire({ icon: 'success', title: 'THÀNH CÔNG!', text: 'Dữ liệu đã được ghi nhận.', confirmButtonText: 'OK' }).then(() => { showError("✅ ĐÃ ĐIỂM DANH XONG"); });
             }).catch(err => {
-                btn.disabled = false; btn.innerHTML = "THỬ LẠI";
-                Swal.fire('Lỗi', 'Lỗi mạng', 'error');
+                btn.disabled = false; btn.innerText = "THỬ LẠI";
+                Swal.fire('Lỗi', 'Lỗi kết nối', 'error');
             });
         }
 
@@ -156,27 +155,23 @@
         }
 
         function requestReset() {
-            const mssv = localStorage.getItem('my_mssv');
-            if(!mssv) { Swal.fire('Thông báo', 'Chưa có dữ liệu điểm danh cũ.', 'info'); return; }
-            Swal.fire({
-                title: 'YÊU CẦU RESET', input: 'text', inputPlaceholder: 'Nhập lý do...', showCancelButton: true, confirmButtonText: 'Gửi'
-            }).then((result) => {
-                if (result.isConfirmed && result.value) {
-                    fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "REQUEST_RESET", mssv: mssv, name: localStorage.getItem('my_name') || "Unknown", reason: result.value }) })
-                    .then(() => { Swal.fire('Đã gửi!', 'Đã gửi yêu cầu đến Admin.', 'success'); });
-                }
+            const id = localStorage.getItem('my_unique_id');
+            if(!id) return Swal.fire('Lỗi', 'Chưa có dữ liệu cũ', 'warning');
+            Swal.fire({title:"LÝ DO RESET", input:"text", showCancelButton:true}).then(r=>{
+                if(r.value) fetch(API_URL, {method:"POST", mode:"no-cors", body:JSON.stringify({action:"REQUEST_RESET", unique_id:id, reason:r.value})})
+                .then(()=>Swal.fire("Đã gửi", "Chờ Admin duyệt", "success"));
             });
         }
-
+        
         function manualReset() {
-            Swal.fire({ title: 'NHẬP MẬT KHẨU', input: 'password', showCancelButton: true }).then((result) => {
-                if (result.isConfirmed) {
-                    const correctPass = "Admin"; 
-                    if (result.value === correctPass) { localStorage.removeItem('attended_today'); location.reload(); }
-                    else { Swal.fire('Lỗi', 'Sai mật khẩu!', 'error'); }
-                }
+            Swal.fire({title:"MẬT KHẨU RESET", input:"password", showCancelButton:true}).then(r=>{
+                if(r.value === "Admin") { localStorage.removeItem("attended_today"); location.reload(); }
+                else Swal.fire("Sai mật khẩu", "", "error");
             });
         }
     </script>
 </body>
 </html>
+```
+
+Hãy nhớ **Deploy lại Google Apps Script** để tính năng Lưu cấu hình Form hoạt động nhé!
