@@ -59,6 +59,9 @@
         .live-toast-title { font-weight: bold; font-size: 14px; display: block; }
         .live-toast-msg { font-size: 13px; opacity: 0.9; margin-top: 2px;}
         .live-toast-time { font-size: 11px; opacity: 0.7; }
+        .live-toast:nth-last-child(n+2) { opacity: 0.8; transform: scale(0.98); }
+        .live-toast:nth-last-child(n+3) { opacity: 0.6; transform: scale(0.96); }
+
         @keyframes slideIn { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; transform: scale(0.9); } }
 
@@ -114,9 +117,11 @@
         /* Tabs & Table */
         .tabs { display: flex; gap: 5px; margin-bottom: 15px; background: var(--white); padding: 5px; border-radius: 10px; border: 1px solid var(--border); width: fit-content; flex-wrap: wrap; }
         .tab-btn { padding: 8px 16px; border: none; background: none; font-weight: 600; color: #64748b; cursor: pointer; border-radius: 6px; transition: 0.2s; font-size: 13px; }
+        .tab-btn:hover { background: var(--bg); }
         .tab-btn.active { background: var(--primary); color: white; }
-        .tab-content { display: none; flex: 1; flex-direction: column; }
+        .tab-content { display: none; flex: 1; flex-direction: column; animation: fadeIn 0.3s; }
         .tab-content.active { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         /* FORM BUILDER STYLES */
         .fb-container { border: 1px solid var(--border); background: var(--white); border-radius: 8px; padding: 15px; max-height: 400px; overflow-y: auto; }
@@ -127,7 +132,7 @@
         .pass-group { position: relative; display: flex; align-items: center; width: 100%; }
         .pass-group input { padding-right: 80px; flex: 1; } 
         .pass-controls { position: absolute; right: 5px; display: flex; gap: 5px; background: transparent; }
-        .icon-btn { background: #f1f5f9; border: 1px solid #cbd5e1; cursor: pointer; color: #64748b; padding: 6px; font-size: 14px; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; }
+        .icon-btn { background: #f1f5f9; border: 1px solid #cbd5e1; cursor: pointer; color: #64748b; padding: 6px; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; }
         .icon-btn:hover { color: var(--primary); background: #e2e8f0; }
 
         input[readonly] { background-color: #f1f5f9; color: #64748b; border: 1px dashed #cbd5e1; cursor: not-allowed; }
@@ -181,9 +186,6 @@
         /* Dashboard */
         .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .stat-card { background: var(--white); padding: 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; align-items: center; gap: 15px; }
-        .stat-icon { width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
-        .stat-info h4 { margin: 0; font-size: 13px; color: #64748b; font-weight: 600; text-transform: uppercase; }
-        .stat-info p { margin: 5px 0 0 0; font-size: 24px; font-weight: 800; color: var(--text); }
         .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; min-height: 300px; }
         .chart-box { background: var(--white); padding: 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; }
         .chart-canvas-container { flex: 1; position: relative; min-height: 250px; }
@@ -208,6 +210,7 @@
             <h1 id="orgName" style="color:var(--primary)">ĐIỂM DANH CLB</h1>
             <div id="qrcode"></div>
             <div class="timer" id="countdown">--</div>
+            <div style="font-size:13px; color:#94a3b8; margin-top:5px;">Giây làm mới</div>
             <div class="realtime"><i class="fa-regular fa-clock"></i> <span id="clock">Loading...</span></div>
         </div>
         <div id="marqueeContainer" class="marquee-container"><marquee id="marqueeText"></marquee></div>
@@ -243,9 +246,9 @@
                 <!-- Tab 1: Thống kê -->
                 <div id="tab-stats" class="tab-content active">
                     <div class="dashboard-grid">
-                        <div class="stat-card"><div class="stat-icon" style="background:#dbeafe; color:var(--primary)"><i class="fa-solid fa-users"></i></div><div class="stat-info"><h4>Tổng SV</h4><p id="statTotal">0</p></div></div>
-                        <div class="stat-card"><div class="stat-icon" style="background:#dcfce7; color:var(--success)"><i class="fa-solid fa-layer-group"></i></div><div class="stat-info"><h4>Số Lớp</h4><p id="statClasses">0</p></div></div>
-                        <div class="stat-card"><div class="stat-icon" style="background:#fee2e2; color:var(--danger)"><i class="fa-regular fa-clock"></i></div><div class="stat-info"><h4>Mới nhất</h4><p id="statLatest">--:--</p></div></div>
+                        <div class="stat-card"><div class="stat-icon" style="background:#dbeafe; color:var(--primary)"><i class="fa-solid fa-users"></i></div><div class="stat-info"><h4>Tổng SV</h4><p id="statTotal" style="font-size:28px; font-weight:900; color:var(--primary)">0</p></div></div>
+                        <div class="stat-card"><div class="stat-icon" style="background:#dcfce7; color:var(--success)"><i class="fa-solid fa-layer-group"></i></div><div class="stat-info"><h4>Số Lớp</h4><p id="statClasses" style="font-size:28px; font-weight:900; color:var(--success)">0</p></div></div>
+                        <div class="stat-card"><div class="stat-icon" style="background:#fee2e2; color:var(--danger)"><i class="fa-regular fa-clock"></i></div><div class="stat-info"><h4>Mới nhất</h4><p id="statLatest" style="font-size:18px; font-weight:bold">--:--</p></div></div>
                     </div>
                     <div class="charts-row">
                         <div class="chart-box"><div class="chart-title"><span><i class="fa-solid fa-chart-column"></i> Mật độ (Giờ)</span></div><div class="chart-canvas-container"><canvas id="timeChart"></canvas></div></div>
@@ -279,6 +282,7 @@
                     <div class="fb-container" id="fbFields"></div>
                     <button class="btn btn-gray" onclick="addFormField()" style="width:100%; margin-top:10px">+ Thêm trường dữ liệu</button>
                     <div style="margin-top:20px; padding-top:15px; border-top:1px solid #eee; display:flex; justify-content:space-between">
+                        <span style="font-size:12px; color:#666">* Lưu ý: 3 trường đầu luôn là Tên, MSSV, Lớp.</span>
                         <button class="btn btn-success" onclick="saveFormConfig()"><i class="fa-solid fa-cloud-arrow-up"></i> Lưu & Đồng bộ lên Server</button>
                     </div>
                 </div>
@@ -393,9 +397,9 @@
         let timer=30, qrObj=null, lastReq=0, isResizing=false, isUnlockMode=false;
 
         // Split Screen Logic
-        const resizer=document.getElementById('resizer'); const adminModal=document.getElementById('adminModal');
+        const resizer=document.getElementById('resizer'); const adminSection=document.getElementById('adminSection');
         resizer.addEventListener('mousedown', ()=>{isResizing=true; document.body.style.cursor='col-resize';});
-        document.addEventListener('mousemove', e=>{if(isResizing){const w=window.innerWidth-e.clientX; if(w>300 && w<window.innerWidth-300) { adminModal.style.width=w+'px'; document.getElementById('qrSection').style.flex='none'; document.getElementById('qrSection').style.width=(window.innerWidth-w)+'px'; } }});
+        document.addEventListener('mousemove', e=>{if(isResizing){const w=window.innerWidth-e.clientX; if(w>300 && w<window.innerWidth-300) { adminSection.style.width=w+'px'; document.getElementById('qrSection').style.flex='none'; document.getElementById('qrSection').style.width=(window.innerWidth-w)+'px'; } }});
         document.addEventListener('mouseup', ()=>{isResizing=false; document.body.style.cursor='default';});
 
         window.onload = () => {
@@ -403,6 +407,8 @@
             document.getElementById('adminNote').value = localStorage.getItem('admin_note') || "";
             document.querySelectorAll('.secure-locked').forEach(el => { el.addEventListener('mousedown', e => { if(el.readOnly) { e.preventDefault(); el.click(); } }); });
             applyUI(); startQR(); renderLogs();
+            
+            // Tải cấu hình form từ server & bắt đầu polling
             if(cfg.api) {
                 fetch(`${cfg.api}?action=GET_FORM_CONFIG`).then(r=>r.json()).then(res=>{
                     if(res.status==="success" && res.config) formCfg = res.config;
@@ -421,12 +427,26 @@
             updateQR();
             setInterval(()=>document.getElementById('clock').innerText=new Date().toLocaleString('vi-VN'),1000);
         }
+        
         function updateQR() {
+            // Logic tạo URL: Nếu có link trong config thì dùng, không thì tự động suy diễn từ URL hiện tại
+            let baseUrl = cfg.link;
+            if (!baseUrl) {
+                // Tự động lấy URL hiện tại, thay index.html bằng form.html
+                // Ví dụ: https://domain.com/index.html -> https://domain.com/form.html
+                baseUrl = window.location.href.replace(/\/index\.html$|\/$/, '/form.html');
+            }
+            const url = `${baseUrl}?t=${Date.now()}`;
+            
             const div=document.getElementById('qrcode');
-            const url=`${window.location.href.replace('index.html','form.html')}?t=${Date.now()}`;
             if(!qrObj) { div.innerHTML=""; qrObj=new QRCode(div,{text:url,width:250,height:250,colorDark:cfg.qrColor,colorLight:cfg.qrBg}); }
             else { qrObj.clear(); qrObj.makeCode(url); }
+            
+            // Update zoom QR
+            const zd = document.getElementById('qrcodeZoom');
+            if(zd.style.display!=='none') { zd.innerHTML=""; new QRCode(zd,{text:url,width:250,height:250,colorDark:cfg.qrColor,colorLight:cfg.qrBg}); }
         }
+        
         function applyUI() {
             document.getElementById('orgName').innerText = cfg.title;
             const mq=document.getElementById('marqueeContainer'); 
@@ -434,7 +454,10 @@
             mq.className = 'marquee-container ' + (cfg.mqPos === 'top' ? 'marquee-top' : 'marquee-bottom');
             mq.style.background = cfg.mqBg; mq.style.color = cfg.mqColor;
             mq.innerHTML=`<marquee>${cfg.mqText}</marquee>`;
+            
             if(cfg.darkMode) document.body.classList.add("dark-mode");
+            else document.body.classList.remove("dark-mode");
+            
             const tc=document.getElementById("liveToastContainer"); tc.className="pos-"+cfg.notifPos;
         }
 
@@ -449,10 +472,18 @@
                 else {
                     document.body.classList.add('admin-open');
                     document.getElementById('adminModal').style.display='flex';
-                    document.getElementById('cfgApi').value = cfg.api; document.getElementById('cfgLink').value = cfg.link;
-                    document.getElementById('cfgPass').value = cfg.pass; document.getElementById('cfgReset').value = cfg.reset;
-                    document.getElementById('cfgTitle').value = cfg.title; document.getElementById('cfgMqText').value = cfg.mqText;
-                    document.getElementById('cfgQrColor').value = cfg.qrColor; document.getElementById('cfgQrBg').value = cfg.qrBg;
+                    // Load data
+                    document.getElementById('cfgApi').value = cfg.api;
+                    document.getElementById('cfgLink').value = cfg.link;
+                    document.getElementById('cfgPass').value = cfg.pass;
+                    document.getElementById('cfgReset').value = cfg.reset;
+                    document.getElementById('cfgTitle').value = cfg.title;
+                    document.getElementById('cfgMqText').value = cfg.mqText;
+                    document.getElementById('cfgQrColor').value = cfg.qrColor;
+                    document.getElementById('cfgQrBg').value = cfg.qrBg;
+                    document.getElementById('cfgMqBg').value = cfg.mqBg;
+                    document.getElementById('cfgMqColor').value = cfg.mqColor;
+                    document.getElementById('cfgMqPos').value = cfg.mqPos;
                     fetchList(); addLog("Hệ thống", "Đăng nhập thành công", "success");
                 }
             } else alert("Sai mật khẩu");
@@ -465,7 +496,11 @@
             cfg.pass = document.getElementById('cfgPass').value; cfg.reset = document.getElementById('cfgReset').value;
             cfg.title = document.getElementById('cfgTitle').value; cfg.mqText = document.getElementById('cfgMqText').value;
             cfg.qrColor = document.getElementById('cfgQrColor').value; cfg.qrBg = document.getElementById('cfgQrBg').value;
-            localStorage.setItem('qr_cfg', JSON.stringify(cfg)); localStorage.setItem('admin_reset_pass', cfg.reset);
+            cfg.mqBg = document.getElementById('cfgMqBg').value; cfg.mqColor = document.getElementById('cfgMqColor').value;
+            cfg.mqPos = document.getElementById('cfgMqPos').value;
+            localStorage.setItem('qr_cfg', JSON.stringify(cfg));
+            // Cập nhật reset pass để form dùng
+            localStorage.setItem('admin_reset_pass', cfg.reset);
             alert("Đã lưu!"); location.reload();
         }
 
@@ -509,7 +544,7 @@
             fetch(`${cfg.api}?action=GET_LIST&date=${d}`).then(r=>r.json()).then(r=>{
                 if(r.status==="success") {
                     if(r.totalRequests > lastReq) {
-                        showToast(`🔔 Có yêu cầu reset mới!`); lastReq = r.totalRequests;
+                        showToast(`🔔 Có yêu cầu reset mới!`, "warning"); lastReq = r.totalRequests;
                         addLog("Yêu cầu", "Có yêu cầu reset mới", "warning");
                         if(document.body.classList.contains('admin-open')) fetchList();
                     }
@@ -536,6 +571,7 @@
             let html = "";
             filteredData.forEach(i => {
                 let bell = i.request ? `<i class="fa-solid fa-bell bell-active" title="${i.request.reason}" onclick="alert('${i.request.reason}')"></i>` : "";
+                
                 let rowCols = "";
                 let extra = {}; try { extra = JSON.parse(i.extra || "{}"); } catch(e){}
                 
@@ -582,10 +618,11 @@
         function toggleFullscreen() { if(!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
         function downloadQR() { const i=document.querySelector("#qrcode img"); if(i){const a=document.createElement("a"); a.href=i.src; a.download="QR.png"; a.click();} }
         function exportCSV() { if(filteredData.length===0) return alert("Trống"); let c="Time,Data\n"; filteredData.forEach(i=>c+=`${i.time},${i.extra}\n`); const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([c],{type:'text/csv'})); a.download="Data.csv"; a.click(); }
+        // Các hàm tools khác... (print, exportConfig, importConfig, checkPing, etc...)
         function printList() { window.print(); }
         function exportConfig() { const a=document.createElement('a'); a.href="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(cfg)); a.download="config.json"; a.click(); }
         function importConfig() { const i=document.createElement('input'); i.type='file'; i.onchange=e=>{const r=new FileReader(); r.onload=ev=>{cfg=JSON.parse(ev.target.result); localStorage.setItem('qr_cfg',JSON.stringify(cfg)); location.reload();}; r.readAsText(e.target.files[0]);}; i.click(); }
-        function openFormLink() { window.open(cfg.link, "_blank"); }
+        function openFormLink() { window.open(cfg.link||window.location.href.replace('index.html','form.html'), "_blank"); }
         function showStaticQR() { document.getElementById("qrZoomModal").style.display="flex"; const z=document.getElementById("qrcodeZoom"); z.innerHTML=""; new QRCode(z,{text:cfg.link,width:300,height:300}); }
         function checkPing() { showToast(navigator.onLine?"✅ Online":"❌ Offline"); }
         function toggleNote() { const n=document.getElementById("notePad"); n.style.display=n.style.display==="none"?"block":"none"; }
