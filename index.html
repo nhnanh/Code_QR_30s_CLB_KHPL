@@ -3,328 +3,279 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HỆ THỐNG ĐIỂM DANH QR PRO</title>
+    <title>QUẢN TRỊ ĐIỂM DANH PRO MAX</title>
+    
+    <!-- Thư viện QR -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Thư viện Icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Thư viện Biểu đồ (Chart.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
             --primary: #2563eb;
-            --bg: #f1f5f9;
+            --bg: #f8fafc;
             --text: #1e293b;
             --danger: #ef4444;
             --success: #10b981;
-            --card-bg: #ffffff;
+            --warning: #f59e0b;
+            --white: #ffffff;
+            --border: #e2e8f0;
         }
 
-        body.dark-mode {
-            --primary: #60a5fa;
-            --bg: #0f172a;
-            --text: #f1f5f9;
-            --card-bg: #1e293b;
-        }
-
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; transition: 0.3s; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
         
-        /* Cài đặt & Logo */
-        .settings-btn { position: absolute; top: 20px; left: 20px; font-size: 28px; color: #64748b; cursor: pointer; padding: 10px; z-index: 100; transition: 0.3s; }
+        /* --- GIAO DIỆN QR --- */
+        .settings-btn { position: absolute; top: 20px; left: 20px; font-size: 28px; color: #94a3b8; cursor: pointer; padding: 10px; z-index: 100; transition: 0.3s; }
         .settings-btn:hover { color: var(--primary); transform: rotate(90deg); }
 
-        /* QR Card */
-        .qr-card { 
-            background: var(--card-bg); padding: 40px; border-radius: 24px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 380px; 
-            position: relative; z-index: 10; transition: 0.3s;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .logo-img { max-height: 60px; margin-bottom: 10px; display: none; }
-        h1 { margin: 0 0 20px 0; font-size: 24px; color: var(--primary); }
-        
-        #qrcode { background: white; padding: 10px; border: 2px dashed #cbd5e1; border-radius: 16px; display: inline-block; margin: 10px 0; transition: 0.3s; }
-        
-        .timer { font-size: 64px; font-weight: 900; color: var(--danger); line-height: 1; transition: 0.2s; }
-        .realtime { margin-top: 20px; font-weight: 600; color: #64748b; border-top: 1px solid #eee; padding-top: 15px;}
+        .qr-card { background: var(--white); padding: 40px; border-radius: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); text-align: center; width: 380px; position: relative; z-index: 10; border: 1px solid var(--border); }
+        #qrcode { background: var(--white); padding: 15px; border: 2px dashed #cbd5e1; border-radius: 16px; display: inline-block; margin: 20px 0; transition: 0.3s; }
+        .timer { font-size: 64px; font-weight: 900; color: var(--danger); line-height: 1; font-variant-numeric: tabular-nums; }
+        .realtime { margin-top: 20px; font-weight: 600; color: #64748b; border-top: 1px solid var(--border); padding-top: 15px;}
 
-        /* Marquee */
-        .marquee-container {
-            position: fixed; left: 0; width: 100%;
-            padding: 10px 0; font-weight: bold; font-size: 16px;
-            z-index: 50; text-transform: uppercase;
-            display: none;
-        }
-        .marquee-top { top: 0; }
-        .marquee-bottom { bottom: 0; }
-
-        /* MODAL ADMIN */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .modal-content { background: var(--card-bg); width: 95%; max-width: 800px; border-radius: 16px; padding: 0; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+        /* --- MODAL ADMIN --- */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-content { background: var(--white); width: 95%; max-width: 1000px; border-radius: 16px; display: flex; flex-direction: column; max-height: 95vh; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); overflow: hidden; }
         
-        /* Tabs Header */
-        .modal-header { display: flex; background: #e2e8f0; padding: 0; }
-        .tab-btn { flex: 1; padding: 15px; border: none; background: none; cursor: pointer; font-weight: bold; color: #64748b; border-bottom: 3px solid transparent; transition: 0.2s; }
-        .tab-btn.active { background: var(--card-bg); color: var(--primary); border-bottom-color: var(--primary); }
-        .tab-btn:hover { background: rgba(255,255,255,0.5); }
+        .modal-header { padding: 15px 25px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-title { font-size: 18px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+        .close-modal { font-size: 24px; cursor: pointer; color: #94a3b8; }
+        .close-modal:hover { color: var(--danger); }
 
-        /* Tabs Content */
-        .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
-        .tab-content { display: none; animation: fadeIn 0.3s; }
-        .tab-content.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .modal-body { padding: 20px; overflow-y: auto; background: #f1f5f9; flex: 1; display: flex; flex-direction: column; }
 
+        /* --- TABS --- */
+        .tabs { display: flex; gap: 5px; margin-bottom: 15px; background: white; padding: 5px; border-radius: 10px; border: 1px solid var(--border); width: fit-content; }
+        .tab-btn { padding: 8px 16px; border: none; background: none; font-weight: 600; color: #64748b; cursor: pointer; border-radius: 6px; transition: 0.2s; font-size: 13px; }
+        .tab-btn:hover { background: #f1f5f9; }
+        .tab-btn.active { background: var(--primary); color: white; shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .tab-content { display: none; animation: fadeEffect 0.3s; flex: 1; }
+        .tab-content.active { display: flex; flex-direction: column; }
+        @keyframes fadeEffect { from {opacity: 0; transform: translateY(5px);} to {opacity: 1; transform: translateY(0);} }
+
+        /* --- DASHBOARD & CHARTS --- */
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; align-items: center; gap: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .stat-icon { width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        .stat-info h4 { margin: 0; font-size: 13px; color: #64748b; font-weight: 600; text-transform: uppercase; }
+        .stat-info p { margin: 5px 0 0 0; font-size: 24px; font-weight: 800; color: var(--text); }
+
+        .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; min-height: 300px; }
+        .chart-box { background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
+        .chart-title { font-weight: 700; margin-bottom: 15px; font-size: 14px; color: #475569; display: flex; justify-content: space-between; }
+        .chart-canvas-container { flex: 1; position: relative; min-height: 250px; }
+
+        /* --- DATA TABLE --- */
+        .excel-toolbar { background: white; padding: 10px; border-radius: 8px 8px 0 0; border: 1px solid var(--border); border-bottom: none; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .excel-table-container { flex: 1; overflow: auto; border: 1px solid var(--border); background: white; border-radius: 0 0 8px 8px; min-height: 300px; }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #f8fafc; padding: 12px; text-align: left; font-weight: 700; color: #475569; position: sticky; top: 0; z-index: 10; border-bottom: 2px solid var(--border); cursor: pointer; user-select: none; }
+        th:hover { background: #e2e8f0; color: var(--primary); }
+        th i { font-size: 10px; margin-left: 5px; opacity: 0.5; }
+        td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: #334155; }
+        tr:hover td { background-color: #f0fdfa; }
+
+        /* --- FORM ELEMENTS --- */
         .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 13px; color: var(--text); opacity: 0.8; }
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; background: var(--bg); color: var(--text); }
-        
-        .row { display: flex; gap: 15px; }
-        .col { flex: 1; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px; }
+        input, select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; font-family: inherit; }
+        input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
 
-        /* Buttons */
-        .modal-footer { padding: 15px 20px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px; background: var(--bg); }
-        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; color: white; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; font-size: 13px; }
         .btn:hover { opacity: 0.9; transform: translateY(-1px); }
-        
         .btn-primary { background: var(--primary); }
         .btn-danger { background: var(--danger); }
-        .btn-success { background: var(--success); }
-        .btn-secondary { background: #64748b; }
-        .btn-purple { background: #8b5cf6; }
+        .btn-gray { background: #64748b; }
+        
+        .loader { width: 48px; height: 48px; border: 5px solid #FFF; border-bottom-color: var(--primary); border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none; z-index: 50;}
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Tools Grid */
-        .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
-        .tool-card { background: var(--bg); padding: 15px; border-radius: 8px; text-align: center; cursor: pointer; border: 1px solid transparent; transition: 0.2s; }
-        .tool-card:hover { border-color: var(--primary); background: rgba(37, 99, 235, 0.05); }
-        .tool-card i { font-size: 20px; margin-bottom: 5px; color: var(--primary); display: block; }
-        .tool-card span { font-size: 12px; font-weight: 600; }
-
-        /* Table */
-        .student-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
-        .student-table th { background: var(--bg); padding: 10px; text-align: left; position: sticky; top: 0; color: var(--text); }
-        .student-table td { padding: 8px 10px; border-bottom: 1px solid #eee; color: var(--text); }
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto; display: none; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @media (max-width: 768px) {
+            .charts-row { grid-template-columns: 1fr; }
+            .excel-toolbar { flex-direction: column; align-items: stretch; }
+        }
     </style>
 </head>
 <body>
 
-    <!-- Nút Cài đặt -->
-    <div class="settings-btn" onclick="checkLogin()" title="Mở bảng điều khiển"><i class="fa-solid fa-gear"></i></div>
+    <div class="settings-btn" onclick="checkLogin()"><i class="fa-solid fa-sliders"></i></div>
 
-    <!-- Khung QR Chính -->
-    <div class="qr-card" id="mainCard">
-        <img src="" id="logoDisplay" class="logo-img" alt="Logo">
-        <h1 id="titleDisplay">ĐIỂM DANH CLB</h1>
-        
-        <div id="qrContainer">
-            <div id="qrcode"></div>
-        </div>
-        
+    <!-- Màn hình QR -->
+    <div class="qr-card">
+        <h1 id="orgName" style="color:var(--primary)">ĐIỂM DANH CLB</h1>
+        <div id="qrcode"></div>
         <div class="timer" id="countdown">--</div>
-        <div style="font-size:13px; opacity: 0.7;">Giây đổi mã</div>
-        
-        <div class="realtime" id="clockBox">
-            <i class="fa-regular fa-clock"></i> <span id="clock">Loading...</span>
-        </div>
-    </div>
-
-    <!-- Chữ chạy -->
-    <div id="marqueeContainer" class="marquee-container">
-        <marquee id="marqueeText"></marquee>
+        <div style="font-size:13px; color:#94a3b8; margin-top:5px;">Giây làm mới</div>
+        <div class="realtime"><i class="fa-regular fa-clock"></i> <span id="clock">Loading...</span></div>
     </div>
 
     <!-- MODAL ADMIN -->
     <div id="adminModal" class="modal">
         <div class="modal-content">
-            <!-- Tabs Header -->
             <div class="modal-header">
-                <button class="tab-btn active" onclick="switchTab('tab-general')"><i class="fa-solid fa-sliders"></i> Cấu Hình</button>
-                <button class="tab-btn" onclick="switchTab('tab-ui')"><i class="fa-solid fa-palette"></i> Giao Diện</button>
-                <button class="tab-btn" onclick="switchTab('tab-list')"><i class="fa-solid fa-list"></i> Danh Sách</button>
-                <button class="tab-btn" onclick="switchTab('tab-security')"><i class="fa-solid fa-shield-halved"></i> Bảo Mật</button>
-                <button class="tab-btn" onclick="switchTab('tab-tools')"><i class="fa-solid fa-toolbox"></i> Tiện Ích</button>
+                <div class="modal-title"><i class="fa-solid fa-shield-halved"></i> QUẢN TRỊ VIÊN</div>
+                <div class="close-modal" onclick="closeModal()">&times;</div>
             </div>
 
-            <!-- Tabs Content -->
             <div class="modal-body">
-                
-                <!-- TAB 1: CẤU HÌNH CƠ BẢN -->
-                <div id="tab-general" class="tab-content active">
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab('tab-stats')"><i class="fa-solid fa-chart-pie"></i> Thống Kê & Biểu Đồ</button>
+                    <button class="tab-btn" onclick="switchTab('tab-data')"><i class="fa-solid fa-table"></i> Dữ Liệu Excel</button>
+                    <button class="tab-btn" onclick="switchTab('tab-config')"><i class="fa-solid fa-gear"></i> Cấu Hình</button>
+                </div>
+
+                <div id="loader" class="loader"></div>
+
+                <!-- TAB 1: THỐNG KÊ & BIỂU ĐỒ -->
+                <div id="tab-stats" class="tab-content active">
+                    <div class="dashboard-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background:#dbeafe; color:var(--primary)"><i class="fa-solid fa-users"></i></div>
+                            <div class="stat-info"><h4>Tổng Sinh Viên</h4><p id="statTotal">0</p></div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background:#dcfce7; color:var(--success)"><i class="fa-solid fa-layer-group"></i></div>
+                            <div class="stat-info"><h4>Số Lớp</h4><p id="statClasses">0</p></div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background:#fee2e2; color:var(--danger)"><i class="fa-regular fa-clock"></i></div>
+                            <div class="stat-info"><h4>Mới nhất</h4><p id="statLatest" style="font-size:18px">--:--</p></div>
+                        </div>
+                    </div>
+
+                    <div class="charts-row">
+                        <!-- Biểu đồ Cột: Điểm danh theo giờ -->
+                        <div class="chart-box">
+                            <div class="chart-title">
+                                <span><i class="fa-solid fa-chart-column"></i> Mật độ điểm danh (Giờ)</span>
+                            </div>
+                            <div class="chart-canvas-container">
+                                <canvas id="timeChart"></canvas>
+                            </div>
+                        </div>
+                        <!-- Biểu đồ Tròn: Tỷ lệ Lớp -->
+                        <div class="chart-box">
+                            <div class="chart-title">
+                                <span><i class="fa-solid fa-chart-pie"></i> Tỷ lệ tham gia theo Lớp</span>
+                            </div>
+                            <div class="chart-canvas-container">
+                                <canvas id="classChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: DỮ LIỆU EXCEL -->
+                <div id="tab-data" class="tab-content">
+                    <div class="excel-toolbar">
+                        <div style="flex:1">
+                            <input type="date" id="viewDate" onchange="fetchList()">
+                        </div>
+                        <div style="flex:2">
+                            <input type="text" id="searchInput" placeholder="🔍 Lọc nhanh (Tên, MSSV, Lớp)..." onkeyup="applyFilter()">
+                        </div>
+                        <button class="btn btn-primary" onclick="fetchList()"><i class="fa-solid fa-rotate"></i> Tải lại</button>
+                    </div>
+
+                    <div class="excel-table-container">
+                        <table id="dataTable">
+                            <thead>
+                                <tr>
+                                    <th onclick="sortTable('time')">Giờ <i class="fa-solid fa-sort"></i></th>
+                                    <th onclick="sortTable('name')">Họ và Tên <i class="fa-solid fa-sort"></i></th>
+                                    <th onclick="sortTable('mssv')">MSSV <i class="fa-solid fa-sort"></i></th>
+                                    <th onclick="sortTable('class_name')">Lớp <i class="fa-solid fa-sort"></i></th>
+                                    <th style="text-align:center">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                                <tr><td colspan="5" style="text-align:center; padding:30px; color:#999">Vui lòng chọn ngày để xem dữ liệu</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="margin-top:10px; font-size:12px; color:#64748b; text-align:right">
+                        Tổng dòng hiển thị: <b id="rowCount">0</b>
+                    </div>
+                </div>
+
+                <!-- TAB 3: CẤU HÌNH -->
+                <div id="tab-config" class="tab-content">
                     <div class="form-group">
-                        <label>Link trang Form (form.html):</label>
+                        <label>Link Form (form.html):</label>
                         <input type="text" id="cfgLink">
                     </div>
                     <div class="form-group">
-                        <label>Link API Google Apps Script:</label>
-                        <input type="text" id="cfgApi" placeholder="https://script.google.com/macros/s/.../exec">
+                        <label>API Google Apps Script:</label>
+                        <input type="text" id="cfgApi">
                     </div>
-                    <div class="row">
-                        <div class="col">
-                            <label>Thời gian đổi QR (giây):</label>
-                            <input type="number" id="cfgTime" value="30" min="5">
+                    <div style="display:flex; gap:15px">
+                        <div class="form-group" style="flex:1">
+                            <label>Thời gian QR (s):</label>
+                            <input type="number" id="cfgTime" value="30">
                         </div>
-                        <div class="col">
-                            <label>Độ khó QR (Correction Level):</label>
-                            <select id="cfgQrLevel">
-                                <option value="L">L (Thấp - Mật độ thưa)</option>
-                                <option value="M" selected>M (Trung bình)</option>
-                                <option value="Q">Q (Cao)</option>
-                                <option value="H">H (Cao nhất)</option>
-                            </select>
+                        <div class="form-group" style="flex:1">
+                            <label>Mật khẩu Admin:</label>
+                            <input type="text" id="cfgPass" value="Admin">
                         </div>
+                        <div class="form-group" style="flex:1">
+                            <label>Pass Reset Máy:</label>
+                            <input type="text" id="cfgResetPass" value="Admin">
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+                        <button class="btn btn-gray" onclick="closeModal()">Hủy</button>
+                        <button class="btn btn-primary" onclick="saveConfig()"><i class="fa-solid fa-floppy-disk"></i> Lưu Cấu Hình</button>
                     </div>
                 </div>
 
-                <!-- TAB 2: GIAO DIỆN & CHỮ CHẠY -->
-                <div id="tab-ui" class="tab-content">
-                    <div class="form-group">
-                        <label>Tiêu đề trang:</label>
-                        <input type="text" id="cfgTitle" value="ĐIỂM DANH CLB">
-                    </div>
-                    <div class="form-group">
-                        <label>Link Logo (URL ảnh):</label>
-                        <input type="text" id="cfgLogo" placeholder="Để trống nếu không dùng logo">
-                    </div>
-                    
-                    <fieldset style="border:1px solid #cbd5e1; border-radius:8px; padding:10px; margin-bottom:10px;">
-                        <legend style="font-weight:bold; font-size:13px; color:var(--primary);">Cài đặt Chữ Chạy (Marquee)</legend>
-                        <div class="form-group">
-                            <label>Nội dung:</label>
-                            <input type="text" id="cfgMarqueeText" placeholder="Nhập nội dung thông báo...">
-                        </div>
-                        <div class="row">
-                            <div class="col">
-                                <label>Vị trí:</label>
-                                <select id="cfgMarqueePos">
-                                    <option value="none">Tắt</option>
-                                    <option value="bottom">Chạy dưới đáy</option>
-                                    <option value="top">Chạy trên cùng</option>
-                                </select>
-                            </div>
-                            <div class="col">
-                                <label>Màu nền:</label>
-                                <input type="color" id="cfgMarqueeBg" value="#ef4444" style="height:40px; padding:2px;">
-                            </div>
-                            <div class="col">
-                                <label>Màu chữ:</label>
-                                <input type="color" id="cfgMarqueeColor" value="#ffffff" style="height:40px; padding:2px;">
-                            </div>
-                        </div>
-                    </fieldset>
-
-                    <div class="row">
-                        <div class="col">
-                            <label>Màu chủ đạo:</label>
-                            <input type="color" id="cfgPrimaryColor" value="#2563eb" style="height:40px; padding:2px;">
-                        </div>
-                        <div class="col">
-                            <label>Kích thước QR (px):</label>
-                            <input type="number" id="cfgQrSize" value="250" min="100" max="500">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- TAB 3: DANH SÁCH & API -->
-                <div id="tab-list" class="tab-content">
-                    <div class="row" style="margin-bottom:10px;">
-                        <div class="col"><input type="date" id="viewDate"></div>
-                        <button class="btn btn-purple" onclick="fetchList()">Xem Dữ Liệu</button>
-                    </div>
-                    <div id="loader" class="loader"></div>
-                    <div style="max-height: 300px; overflow-y: auto; border: 1px solid #eee;">
-                        <table class="student-table">
-                            <thead><tr><th>Giờ</th><th>Họ Tên</th><th>MSSV</th><th>Xóa</th></tr></thead>
-                            <tbody id="tableBody"><tr><td colspan="4" style="text-align:center; padding:20px; color:#999">Chọn ngày và bấm Xem</td></tr></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- TAB 4: BẢO MẬT -->
-                <div id="tab-security" class="tab-content">
-                    <div class="form-group">
-                        <label>Mật khẩu đăng nhập Admin:</label>
-                        <input type="text" id="cfgPass" value="Admin">
-                    </div>
-                    <div class="form-group">
-                        <label>Mật khẩu Reset máy (Dành cho Sinh viên):</label>
-                        <input type="text" id="cfgResetPass" value="Admin" placeholder="Mật khẩu nhập ở form.html">
-                        <small style="color:var(--danger)">* Pass này dùng khi sinh viên cần reset thủ công thiết bị.</small>
-                    </div>
-                </div>
-
-                <!-- TAB 5: TIỆN ÍCH -->
-                <div id="tab-tools" class="tab-content">
-                    <div class="tools-grid">
-                        <div class="tool-card" onclick="togglePause()"><i class="fa-solid fa-pause"></i><span>Tạm dừng</span></div>
-                        <div class="tool-card" onclick="toggleDarkMode()"><i class="fa-solid fa-moon"></i><span>Chế độ Tối</span></div>
-                        <div class="tool-card" onclick="toggleFullscreen()"><i class="fa-solid fa-expand"></i><span>Toàn màn hình</span></div>
-                        <div class="tool-card" onclick="downloadQR()"><i class="fa-solid fa-download"></i><span>Tải ảnh QR</span></div>
-                        <div class="tool-card" onclick="toggleClock()"><i class="fa-regular fa-clock"></i><span>Ẩn/Hiện Giờ</span></div>
-                        <div class="tool-card" onclick="exportConfig()"><i class="fa-solid fa-file-export"></i><span>Sao lưu Cài đặt</span></div>
-                        <div class="tool-card" onclick="importConfig()"><i class="fa-solid fa-file-import"></i><span>Khôi phục Cài đặt</span></div>
-                        <div class="tool-card" onclick="clearSheetData()" style="color:var(--danger)"><i class="fa-solid fa-trash"></i><span>Xóa sạch Sheet</span></div>
-                        <div class="tool-card" onclick="resetFactory()" style="color:var(--danger)"><i class="fa-solid fa-rotate-left"></i><span>Reset Gốc</span></div>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Footer Buttons -->
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal()">Đóng</button>
-                <button class="btn btn-success" onclick="saveConfig()"><i class="fa-solid fa-save"></i> LƯU & ÁP DỤNG</button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- DEFAULT CONFIG ---
-        const DEFAULT_CONFIG = {
-            link: "https://nhnanh.github.io/Code_QR_30s_CLB_KHPL/form.html",
-            api: "",
-            time: 30,
-            pass: "Admin",
-            resetPass: "Admin",
-            title: "ĐIỂM DANH CLB",
-            logo: "",
-            qrSize: 250,
-            qrLevel: "M",
-            primaryColor: "#2563eb",
-            darkMode: false,
-            marqueeText: "HỆ THỐNG ĐANG MỞ ĐIỂM DANH",
-            marqueePos: "bottom",
-            marqueeBg: "#ef4444",
-            marqueeColor: "#ffffff",
-            showClock: true
+        // --- CẤU HÌNH MẶC ĐỊNH ---
+        const DEFAULT_LINK = "https://nhnanh.github.io/Code_QR_30s_CLB_KHPL/form.html";
+        
+        let config = {
+            link: localStorage.getItem('qr_link') || DEFAULT_LINK,
+            api: localStorage.getItem('qr_api') || "",
+            time: parseInt(localStorage.getItem('qr_time')) || 30,
+            pass: localStorage.getItem('qr_pass') || "Admin",
+            resetPass: localStorage.getItem('admin_reset_pass') || "Admin"
         };
 
-        // --- GLOBAL VARIABLES ---
-        let config = JSON.parse(localStorage.getItem('qr_config_pro')) || DEFAULT_CONFIG;
+        // Biến toàn cục
+        let allData = []; 
+        let filteredData = []; 
+        let sortState = { key: 'time', dir: 'desc' };
         let timer = config.time;
-        let interval = null;
         let qrObj = null;
-        let isPaused = false;
+        let interval = null;
+        
+        // Biến Chart.js
+        let classChartInstance = null;
+        let timeChartInstance = null;
 
-        // --- INIT ---
+        // --- KHỞI TẠO ---
         window.onload = function() {
-            applyUI();
+            document.getElementById('viewDate').valueAsDate = new Date();
             startSystem();
             setInterval(() => document.getElementById("clock").innerText = new Date().toLocaleString("vi-VN"), 1000);
-            document.getElementById('viewDate').valueAsDate = new Date();
         };
 
-        // --- CORE FUNCTIONS ---
         function startSystem() {
             if (interval) clearInterval(interval);
             updateQR();
             timer = config.time;
             interval = setInterval(() => {
-                if(!isPaused) {
-                    timer--;
-                    document.getElementById("countdown").innerText = timer;
-                    if (timer <= 0) { timer = config.time; updateQR(); }
-                } else {
-                    document.getElementById("countdown").innerText = "--";
-                }
+                timer--;
+                document.getElementById("countdown").innerText = timer;
+                if (timer <= 0) { timer = config.time; updateQR(); }
             }, 1000);
         }
 
@@ -332,216 +283,245 @@
             const qrDiv = document.getElementById("qrcode");
             const token = Date.now(); 
             const finalLink = `${config.link}?t=${token}`;
-            
-            // Set kích thước QR
-            const size = parseInt(config.qrSize) || 250;
-
             if (qrObj === null) {
                 qrDiv.innerHTML = "";
-                qrObj = new QRCode(qrDiv, { 
-                    text: finalLink, width: size, height: size,
-                    colorDark : "#000000", colorLight : "#ffffff",
-                    correctLevel : QRCode.CorrectLevel[config.qrLevel]
-                });
+                qrObj = new QRCode(qrDiv, { text: finalLink, width: 250, height: 250, colorDark : "#2563eb" });
             } else {
                 qrObj.clear();
                 qrObj.makeCode(finalLink);
             }
         }
 
-        function applyUI() {
-            // Apply Title & Logo
-            document.getElementById("titleDisplay").innerText = config.title;
-            const logo = document.getElementById("logoDisplay");
-            if(config.logo) { logo.src = config.logo; logo.style.display = "inline-block"; }
-            else { logo.style.display = "none"; }
-
-            // Apply Colors
-            document.documentElement.style.setProperty('--primary', config.primaryColor);
-            if(config.darkMode) document.body.classList.add('dark-mode');
-            else document.body.classList.remove('dark-mode');
-
-            // Apply Clock
-            document.getElementById("clockBox").style.display = config.showClock ? "block" : "none";
-
-            // Apply Marquee
-            const mqBox = document.getElementById("marqueeContainer");
-            const mqText = document.getElementById("marqueeText");
-            
-            if(config.marqueePos === "none") {
-                mqBox.style.display = "none";
-            } else {
-                mqBox.style.display = "block";
-                mqBox.className = "marquee-container " + (config.marqueePos === "top" ? "marquee-top" : "marquee-bottom");
-                mqBox.style.backgroundColor = config.marqueeBg;
-                mqBox.style.color = config.marqueeColor;
-                mqText.innerText = config.marqueeText;
-            }
-        }
-
-        // --- ADMIN MODAL LOGIC ---
+        // --- ADMIN & MODAL ---
         function checkLogin() {
             const p = prompt("Nhập mật khẩu Admin:");
-            if(p === config.pass) openAdmin();
-            else if(p !== null) alert("Sai mật khẩu!");
+            if(p === config.pass) {
+                document.getElementById("adminModal").style.display = "flex";
+                // Load cấu hình
+                document.getElementById("cfgLink").value = config.link;
+                document.getElementById("cfgApi").value = config.api;
+                document.getElementById("cfgTime").value = config.time;
+                document.getElementById("cfgPass").value = config.pass;
+                document.getElementById("cfgResetPass").value = config.resetPass;
+                // Load dữ liệu hôm nay
+                fetchList();
+            } else if(p !== null) alert("Sai mật khẩu!");
         }
 
-        function openAdmin() {
-            document.getElementById("adminModal").style.display = "flex";
-            switchTab('tab-general'); // Mặc định mở tab đầu
-            
-            // Fill Data
-            document.getElementById("cfgLink").value = config.link;
-            document.getElementById("cfgApi").value = config.api;
-            document.getElementById("cfgTime").value = config.time;
-            document.getElementById("cfgQrLevel").value = config.qrLevel;
-            document.getElementById("cfgTitle").value = config.title;
-            document.getElementById("cfgLogo").value = config.logo;
-            document.getElementById("cfgMarqueeText").value = config.marqueeText;
-            document.getElementById("cfgMarqueePos").value = config.marqueePos;
-            document.getElementById("cfgMarqueeBg").value = config.marqueeBg;
-            document.getElementById("cfgMarqueeColor").value = config.marqueeColor;
-            document.getElementById("cfgPrimaryColor").value = config.primaryColor;
-            document.getElementById("cfgQrSize").value = config.qrSize;
-            document.getElementById("cfgPass").value = config.pass;
-            document.getElementById("cfgResetPass").value = config.resetPass || "Admin";
+        function closeModal() { document.getElementById("adminModal").style.display = "none"; }
+        
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
         }
 
         function saveConfig() {
             config.link = document.getElementById("cfgLink").value;
             config.api = document.getElementById("cfgApi").value;
             config.time = parseInt(document.getElementById("cfgTime").value);
-            config.qrLevel = document.getElementById("cfgQrLevel").value;
-            config.title = document.getElementById("cfgTitle").value;
-            config.logo = document.getElementById("cfgLogo").value;
-            config.marqueeText = document.getElementById("cfgMarqueeText").value;
-            config.marqueePos = document.getElementById("cfgMarqueePos").value;
-            config.marqueeBg = document.getElementById("cfgMarqueeBg").value;
-            config.marqueeColor = document.getElementById("cfgMarqueeColor").value;
-            config.primaryColor = document.getElementById("cfgPrimaryColor").value;
-            config.qrSize = parseInt(document.getElementById("cfgQrSize").value);
             config.pass = document.getElementById("cfgPass").value;
             config.resetPass = document.getElementById("cfgResetPass").value;
-
-            // Lưu Password Reset vào localStorage riêng để form.html có thể đọc (nếu chung domain)
+            
+            localStorage.setItem('qr_link', config.link);
+            localStorage.setItem('qr_api', config.api);
+            localStorage.setItem('qr_time', config.time);
+            localStorage.setItem('qr_pass', config.pass);
             localStorage.setItem('admin_reset_pass', config.resetPass);
             
-            localStorage.setItem('qr_config_pro', JSON.stringify(config));
-            
-            alert("Đã lưu cài đặt!");
+            alert("Đã lưu cấu hình!");
             closeModal();
-            qrObj = null; document.getElementById("qrcode").innerHTML = ""; // Reset QR để vẽ lại size mới
-            applyUI();
             startSystem();
         }
 
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            
-            document.getElementById(tabId).classList.add('active');
-            event.currentTarget.classList.add('active');
-        }
-
-        function closeModal() { document.getElementById("adminModal").style.display = "none"; }
-
-        // --- TOOLS ---
-        function togglePause() { isPaused = !isPaused; alert(isPaused ? "Đã Tạm dừng" : "Đã Tiếp tục"); }
-        function toggleDarkMode() { config.darkMode = !config.darkMode; applyUI(); }
-        function toggleClock() { config.showClock = !config.showClock; applyUI(); }
-        
-        function toggleFullscreen() {
-            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-            else if (document.exitFullscreen) document.exitFullscreen();
-        }
-
-        function downloadQR() {
-            const img = document.querySelector("#qrcode img");
-            if(img) {
-                const link = document.createElement("a");
-                link.download = "QR_Code.png";
-                link.href = img.src;
-                link.click();
-            } else alert("Chưa có QR!");
-        }
-
-        function exportConfig() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(config));
-            const link = document.createElement("a");
-            link.href = dataStr; link.download = "qr_config.json"; link.click();
-        }
-
-        function importConfig() {
-            const input = document.createElement('input'); input.type = 'file';
-            input.onchange = e => {
-                const file = e.target.files[0];
-                const reader = new FileReader();
-                reader.onload = readerEvent => {
-                    try {
-                        const content = JSON.parse(readerEvent.target.result);
-                        config = content;
-                        localStorage.setItem('qr_config_pro', JSON.stringify(config));
-                        alert("Đã khôi phục cài đặt! Trang sẽ tải lại.");
-                        location.reload();
-                    } catch(err) { alert("File lỗi!"); }
-                }
-                reader.readAsText(file);
-            }
-            input.click();
-        }
-
-        function resetFactory() {
-            if(confirm("Bạn có chắc muốn Reset toàn bộ cài đặt về mặc định?")) {
-                localStorage.removeItem('qr_config_pro');
-                location.reload();
-            }
-        }
-
-        // --- LIST & API CALLS ---
+        // --- FETCH DỮ LIỆU ---
         function fetchList() {
-            if(!config.api) { alert("Chưa có Link API!"); return; }
+            if(!config.api) { alert("Chưa nhập API!"); return; }
             const date = document.getElementById('viewDate').value;
             const loader = document.getElementById('loader');
-            const tbody = document.getElementById('tableBody');
             
-            loader.style.display = "block"; tbody.innerHTML = "";
-            
+            loader.style.display = "block";
+
             fetch(`${config.api}?action=GET_LIST&date=${date}`)
             .then(res => res.json())
             .then(res => {
                 loader.style.display = "none";
-                if(res.status === "success" && res.data.length > 0) {
-                    let html = "";
-                    res.data.forEach(item => {
-                        let t = item.time.split(" ")[0];
-                        html += `<tr><td>${t}</td><td><b>${item.name}</b></td><td>${item.mssv}</td>
-                        <td><button class="btn-danger" style="padding:5px 10px; font-size:12px" onclick="deleteRow(${item.row_index}, '${item.mssv}')">Xóa</button></td></tr>`;
-                    });
-                    tbody.innerHTML = html;
+                if(res.status === "success") {
+                    allData = res.data;
+                    applyFilter(); // Tự động lọc và vẽ lại bảng + biểu đồ
                 } else {
-                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:20px;">Không có dữ liệu</td></tr>`;
+                    document.getElementById('tableBody').innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px;">${res.message}</td></tr>`;
                 }
             })
-            .catch(() => { loader.style.display="none"; alert("Lỗi kết nối!"); });
+            .catch(err => {
+                loader.style.display = "none";
+                alert("Lỗi kết nối API!");
+            });
         }
 
-        function deleteRow(idx, mssv) {
-            if(!confirm("Xóa sinh viên này?")) return;
+        function applyFilter() {
+            const term = document.getElementById("searchInput").value.toLowerCase();
+            
+            filteredData = allData.filter(item => 
+                item.name.toLowerCase().includes(term) || 
+                item.mssv.toString().includes(term) || 
+                item.class_name.toLowerCase().includes(term)
+            );
+
+            runSort();
+            renderTable();
+            calculateStats();
+            renderCharts(); // VẼ BIỂU ĐỒ
+        }
+
+        // --- XỬ LÝ BẢNG & SẮP XẾP ---
+        function sortTable(key) {
+            if (sortState.key === key) {
+                sortState.dir = sortState.dir === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortState.key = key;
+                sortState.dir = 'asc';
+            }
+            updateSortIcons();
+            runSort();
+            renderTable();
+        }
+
+        function updateSortIcons() {
+            document.querySelectorAll('th i').forEach(i => i.className = 'fa-solid fa-sort');
+            const activeHeader = document.querySelector(`th[onclick="sortTable('${sortState.key}')"] i`);
+            if(activeHeader) {
+                activeHeader.className = sortState.dir === 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down';
+                activeHeader.style.color = 'var(--primary)';
+            }
+        }
+
+        function runSort() {
+            const { key, dir } = sortState;
+            filteredData.sort((a, b) => {
+                let valA = a[key].toString().toLowerCase();
+                let valB = b[key].toString().toLowerCase();
+                if (valA < valB) return dir === 'asc' ? -1 : 1;
+                if (valA > valB) return dir === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            document.getElementById('rowCount').innerText = filteredData.length;
+
+            if (filteredData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:30px; font-style:italic">Không có dữ liệu</td></tr>`;
+                return;
+            }
+
+            let html = "";
+            filteredData.forEach(item => {
+                let timeOnly = item.time.split(" ")[0];
+                html += `
+                    <tr>
+                        <td>${timeOnly}</td>
+                        <td style="font-weight:600">${item.name}</td>
+                        <td><span style="background:#e2e8f0; padding:2px 6px; border-radius:4px; font-size:12px">${item.mssv}</span></td>
+                        <td>${item.class_name}</td>
+                        <td style="text-align:center">
+                            <button onclick="deleteRow(${item.row_index}, '${item.mssv}', '${item.name}')" 
+                                    style="background:none; border:none; color:var(--danger); cursor:pointer" title="Xóa">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        // --- TÍNH TOÁN & VẼ BIỂU ĐỒ ---
+        function calculateStats() {
+            document.getElementById('statTotal').innerText = filteredData.length;
+            if(filteredData.length > 0) {
+                document.getElementById('statLatest').innerText = filteredData[0].time.split(" ")[0]; 
+            } else {
+                document.getElementById('statLatest').innerText = "--:--";
+            }
+        }
+
+        function renderCharts() {
+            // 1. Chuẩn bị dữ liệu cho Lớp (Pie Chart)
+            const classCounts = {};
+            filteredData.forEach(item => {
+                const cls = item.class_name || "Khác";
+                classCounts[cls] = (classCounts[cls] || 0) + 1;
+            });
+            document.getElementById('statClasses').innerText = Object.keys(classCounts).length;
+
+            // 2. Chuẩn bị dữ liệu cho Giờ (Bar Chart)
+            const hourCounts = {};
+            filteredData.forEach(item => {
+                const hour = item.time.split(":")[0] + "h"; // Lấy giờ (07h, 08h...)
+                hourCounts[hour] = (hourCounts[hour] || 0) + 1;
+            });
+            // Sắp xếp giờ tăng dần
+            const sortedHours = Object.keys(hourCounts).sort();
+            const sortedHourValues = sortedHours.map(h => hourCounts[h]);
+
+            // 3. Vẽ Biểu đồ Lớp (Pie)
+            const ctxClass = document.getElementById('classChart').getContext('2d');
+            if (classChartInstance) classChartInstance.destroy();
+            
+            classChartInstance = new Chart(ctxClass, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(classCounts),
+                    datasets: [{
+                        data: Object.values(classCounts),
+                        backgroundColor: ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'],
+                        borderWidth: 1
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
+            });
+
+            // 4. Vẽ Biểu đồ Giờ (Bar)
+            const ctxTime = document.getElementById('timeChart').getContext('2d');
+            if (timeChartInstance) timeChartInstance.destroy();
+
+            timeChartInstance = new Chart(ctxTime, {
+                type: 'bar',
+                data: {
+                    labels: sortedHours,
+                    datasets: [{
+                        label: 'Số lượng',
+                        data: sortedHourValues,
+                        backgroundColor: '#2563eb',
+                        borderRadius: 4
+                    }]
+                },
+                options: { 
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                }
+            });
+        }
+
+        // --- XÓA SINH VIÊN ---
+        function deleteRow(idx, mssv, name) {
+            if(!confirm(`Xóa sinh viên ${name} (${mssv})?\n\nSinh viên cần bấm RESET trên máy họ để điểm danh lại.`)) return;
+            
             fetch(config.api, {
                 method: 'POST',
                 body: JSON.stringify({ action: "DELETE_ROW", row_index: idx, mssv: mssv })
-            }).then(res => res.json()).then(res => {
-                if(res.status === "success") { alert("Đã xóa!"); fetchList(); }
-                else alert("Lỗi: " + res.message);
-            }).catch(() => alert("Lỗi kết nối!"));
-        }
-
-        function clearSheetData() {
-            if(!confirm("CẢNH BÁO: Xóa toàn bộ dữ liệu trên Sheet?")) return;
-            fetch(config.api, {
-                method: 'POST',
-                body: JSON.stringify({ action: "CLEAR_DATA" })
-            }).then(() => alert("Đã gửi lệnh xóa!")).catch(() => alert("Lỗi kết nối!"));
+            })
+            .then(res => res.json())
+            .then(res => {
+                if(res.status === "success") {
+                    alert("Đã xóa!");
+                    fetchList(); 
+                } else alert("Lỗi: " + res.message);
+            })
+            .catch(() => alert("Đã gửi lệnh xóa!"));
         }
     </script>
 </body>
