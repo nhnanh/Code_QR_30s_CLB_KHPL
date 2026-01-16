@@ -15,7 +15,7 @@
     
     <style>
         :root {
-            --primary: #4f46e5; /* Indigo hiện đại */
+            --primary: #4f46e5;
             --primary-hover: #4338ca;
             --bg: #f3f4f6; 
             --text: #1f2937;
@@ -47,7 +47,7 @@
         }
         .settings-btn:hover { color: var(--primary); transform: rotate(90deg); box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
 
-        /* --- QR CARD (Giao diện mới) --- */
+        /* --- QR CARD --- */
         .qr-card { 
             background: var(--white); padding: 50px; border-radius: 30px; 
             box-shadow: var(--card-shadow); text-align: center; 
@@ -92,17 +92,20 @@
             border-left: 1px solid var(--border); overflow: hidden; 
             position: relative; z-index: 100; box-shadow: -10px 0 30px rgba(0,0,0,0.05); 
         }
+        
         body.admin-open #adminSection { display: flex; width: 50%; min-width: 500px; }
         body.admin-open #qrSection { width: 50%; flex: none; }
         body.admin-open.full-width #adminSection { width: 100% !important; border-left: none; }
         body.admin-open.full-width #qrSection { width: 0; padding: 0; opacity: 0; min-width: 0; }
+        
         #resizer { width: 6px; background: var(--border); cursor: col-resize; display: none; z-index: 101; transition: background 0.2s; }
         #resizer:hover { background: var(--primary); }
         body.admin-open #resizer { display: block; }
 
-        /* ADMIN COMPONENTS */
+        /* ADMIN HEADER */
         .admin-header { padding: 15px 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--white); }
         .admin-title { font-size: 18px; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 10px; }
+        .credit-text { font-size: 11px; color: #64748b; font-style: italic; margin-top: 4px; display: block; font-weight: normal; }
         .admin-body { padding: 25px; overflow-y: auto; flex: 1; background: #f8fafc; }
 
         /* TABS */
@@ -114,32 +117,34 @@
         .tab-content.active { display: flex; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- FORM BUILDER (CẢI TIẾN) --- */
+        /* TABLE */
+        .excel-table-container { flex: 1; overflow: auto; border: 1px solid var(--border); background: var(--white); border-radius: 0 0 12px 12px; min-height: 300px; }
+        .excel-toolbar { background: var(--white); padding: 15px; border-radius: 12px 12px 0 0; border: 1px solid var(--border); border-bottom: none; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #f1f5f9; padding: 12px; text-align: left; font-weight: 700; color: #475569; position: sticky; top: 0; z-index: 10; border-bottom: 2px solid var(--border); cursor: pointer; white-space: nowrap; }
+        td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text); white-space: nowrap; }
+        tr:hover td { background-color: #f8fafc; }
+        .filter-row th { background: #fff; padding: 5px; }
+        .filter-input { width: 100%; padding: 6px; font-size: 12px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; }
+        
+        .bell-active { color: var(--danger); animation: swing 1s infinite; cursor: pointer; font-size: 16px; }
+        @keyframes swing { 20% { transform: rotate(15deg); } 40% { transform: rotate(-10deg); } 60% { transform: rotate(5deg); } 80% { transform: rotate(-5deg); } }
+
+        /* FORM BUILDER */
         .fb-container { border: 1px solid var(--border); background: var(--white); border-radius: 12px; padding: 20px; max-height: 500px; overflow-y: auto; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); }
-        .fb-item { 
-            display: flex; gap: 15px; align-items: center; background: #f8fafc; 
-            padding: 15px; border-radius: 10px; margin-bottom: 12px; 
-            border: 1px solid var(--border); transition: 0.2s;
-        }
-        .fb-item:hover { border-color: #cbd5e1; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .fb-item { display: flex; gap: 15px; align-items: center; background: #f8fafc; padding: 15px; border-radius: 10px; margin-bottom: 12px; border: 1px solid var(--border); }
         .fb-settings { flex: 1; display: grid; grid-template-columns: 2fr 2fr 1fr 1fr 1fr auto; gap: 10px; align-items: center; }
 
         /* COMMON INPUTS */
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: #475569; }
-        input, select { 
-            width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; 
-            border-radius: 8px; box-sizing: border-box; background: var(--white); 
-            color: var(--text); font-size: 14px; font-family: inherit; transition: 0.2s;
-        }
+        input:not([type=checkbox]), select { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; background: var(--white); color: var(--text); font-size: 14px; transition: 0.2s; }
         input:focus, select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
         input[readonly] { background-color: #f1f5f9; color: #94a3b8; border: 1px dashed #cbd5e1; cursor: not-allowed; }
         input.unlocked { background-color: #f0fdfa; border: 1px solid var(--success); color: var(--success); font-weight: bold; cursor: text; }
 
-        /* BUTTONS */
         .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; color: white; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; transition: 0.2s; }
         .btn:hover { transform: translateY(-1px); filter: brightness(110%); }
-        .btn:active { transform: translateY(0); }
         .btn-primary { background: var(--primary); }
         .btn-success { background: var(--success); }
         .btn-danger { background: var(--danger); }
@@ -147,28 +152,39 @@
         .icon-btn { background: #fff; border: 1px solid #e2e8f0; cursor: pointer; padding: 8px; border-radius: 6px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; color: #64748b; transition: 0.2s; }
         .icon-btn:hover { color: var(--primary); border-color: var(--primary); background: #eff6ff; }
 
-        /* PASSWORD FIELD */
+        /* PASSWORD GROUP */
         .pass-group { position: relative; width: 100%; }
         .pass-group input { padding-right: 85px; }
         .pass-controls { position: absolute; right: 5px; top: 50%; transform: translateY(-50%); display: flex; gap: 4px; }
 
         /* TOASTS */
         #liveToastContainer { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column-reverse; gap: 10px; pointer-events: none; }
-        .live-toast { background: white; border-left: 5px solid var(--success); padding: 15px; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); width: 320px; animation: slideIn 0.3s ease; pointer-events: auto; display: flex; align-items: flex-start; gap: 12px; }
+        .live-toast { background: white; border-left: 5px solid var(--success); padding: 15px; border-radius: 8px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); width: 320px; animation: slideIn 0.3s ease; pointer-events: auto; display: flex; align-items: flex-start; gap: 12px; }
         .live-toast.warning { border-left-color: var(--warning); }
         @keyframes slideIn { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
         
-        /* SYSTEM TOAST */
         #systemToast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 10px 20px; border-radius: 30px; font-size: 14px; z-index: 10000; opacity: 0; transition: 0.3s; pointer-events: none; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
         #systemToast.show { opacity: 1; bottom: 50px; }
 
         /* MODALS */
         #authModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         #authModal .content { background: white; padding: 30px; border-radius: 20px; text-align: center; width: 350px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+        #authModal input { font-size: 18px; text-align: center; letter-spacing: 5px; }
+
         #lockScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; color: white; }
         #qrZoomModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 5000; align-items: center; justify-content: center; flex-direction: column; }
 
-        /* GRID LAYOUTS CHO CÀI ĐẶT (RESTORED) */
+        /* LOG TIMELINE */
+        .timeline { list-style: none; padding: 0 0 0 20px; border-left: 2px solid #e2e8f0; margin: 10px 0 0 10px; }
+        .timeline-item { margin-bottom: 20px; position: relative; }
+        .timeline-item::before { content: ''; position: absolute; left: -26px; top: 15px; width: 10px; height: 10px; border-radius: 50%; background: var(--white); border: 2px solid var(--primary); }
+        .timeline-item.warning::before { border-color: var(--warning); background: #fffbeb; }
+        .timeline-item.danger::before { border-color: var(--danger); background: #fef2f2; }
+        .log-card { background: var(--white); padding: 12px; border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .log-header { display: flex; justify-content: space-between; font-size: 12px; color: #64748b; margin-bottom: 5px; }
+        .log-body { font-weight: 600; color: var(--text); font-size: 14px; }
+
+        /* CONFIG GRID */
         .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .config-section { background: var(--white); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; }
         .config-title { font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; }
@@ -181,29 +197,12 @@
         .tool-active { border: 2px solid var(--success) !important; background: #ecfdf5 !important; }
         .tool-active i { color: var(--success) !important; }
 
-        /* TABLE */
-        .excel-table-container { flex: 1; overflow: auto; border: 1px solid var(--border); background: var(--white); border-radius: 0 0 12px 12px; min-height: 300px; }
-        .excel-toolbar { background: var(--white); padding: 15px; border-radius: 12px 12px 0 0; border: 1px solid var(--border); border-bottom: none; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background: #f8fafc; padding: 12px; text-align: left; font-weight: 700; color: #475569; position: sticky; top: 0; z-index: 10; border-bottom: 2px solid var(--border); cursor: pointer; }
-        td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text); }
-        tr:hover td { background-color: #f1f5f9; }
-        input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
-
+        .dashboard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
+        .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; min-height: 300px; }
+        .chart-box { background: var(--white); padding: 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; }
+        
         .loader { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; display: none; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* Timeline Log */
-        .timeline { list-style: none; padding: 0 0 0 20px; border-left: 2px solid #e2e8f0; margin: 10px 0 0 10px; }
-        .timeline-item { margin-bottom: 15px; position: relative; }
-        .timeline-item::before { content: ''; position: absolute; left: -26px; top: 15px; width: 10px; height: 10px; border-radius: 50%; background: var(--white); border: 2px solid var(--primary); }
-        .timeline-item.warning::before { border-color: var(--warning); background: #fffbeb; }
-        .timeline-item.danger::before { border-color: var(--danger); background: #fef2f2; }
-        .log-card { background: var(--white); padding: 12px; border-radius: 8px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .log-time { font-size: 11px; color: #94a3b8; }
-        
-        .chart-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
-        .download-chart-btn { border: 1px solid #e2e8f0; background: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; }
 
         @media (max-width: 1024px) {
             body.admin-open #adminSection { width: 100%; position: absolute; }
@@ -214,7 +213,7 @@
 </head>
 <body>
 
-    <div class="settings-btn" onclick="openLoginModal()"><i class="fa-solid fa-sliders"></i></div>
+    <div class="settings-btn" onclick="openAuth()"><i class="fa-solid fa-sliders"></i></div>
     <div id="liveToastContainer" class="pos-top-right"></div>
     <div id="systemToast"></div>
 
@@ -240,7 +239,7 @@
         <div class="admin-header">
             <div>
                 <div class="admin-title"><i class="fa-solid fa-shield-halved"></i> QUẢN TRỊ VIÊN</div>
-                <span class="credit-text">#Made by Nguyễn Hữu Ngọc Anh</span>
+                <span class="credit-text">#Made by Nguyễn Hữu Ngọc Anh - 035 840 7717</span>
             </div>
             <div style="display: flex; gap: 10px;">
                 <button class="icon-btn expand-btn" onclick="toggleFullAdmin()" title="Mở rộng"><i class="fa-solid fa-expand"></i></button>
@@ -262,33 +261,44 @@
 
             <!-- Tab 1: Thống kê -->
             <div id="tab-stats" class="tab-content active">
-                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
-                    <div class="stat-card" style="flex-direction:column">
-                        <div style="font-size:12px; color:#64748b; font-weight:700">TỔNG SINH VIÊN</div>
-                        <div id="statTotal" style="font-size:32px; font-weight:900; color:var(--primary)">0</div>
+                <div class="dashboard-grid">
+                    <div class="tool-card" style="height:auto; flex-direction:row; justify-content:space-between; padding:20px;">
+                        <div>
+                            <div style="font-size:12px; color:#64748b; font-weight:700">TỔNG SINH VIÊN</div>
+                            <div id="statTotal" style="font-size:32px; font-weight:900; color:var(--primary)">0</div>
+                        </div>
+                        <i class="fa-solid fa-users fa-2x" style="color:var(--primary); opacity:0.2"></i>
                     </div>
-                    <div class="stat-card" style="flex-direction:column">
-                        <div style="font-size:12px; color:#64748b; font-weight:700">LỚP THAM GIA</div>
-                        <div id="statClasses" style="font-size:32px; font-weight:900; color:var(--success)">0</div>
+                    <div class="tool-card" style="height:auto; flex-direction:row; justify-content:space-between; padding:20px;">
+                        <div>
+                            <div style="font-size:12px; color:#64748b; font-weight:700">LỚP THAM GIA</div>
+                            <div id="statClasses" style="font-size:32px; font-weight:900; color:var(--success)">0</div>
+                        </div>
+                        <i class="fa-solid fa-layer-group fa-2x" style="color:var(--success); opacity:0.2"></i>
                     </div>
-                    <div class="stat-card" style="flex-direction:column">
-                        <div style="font-size:12px; color:#64748b; font-weight:700">YÊU CẦU MỚI</div>
-                        <div id="statReq" style="font-size:32px; font-weight:900; color:var(--warning)">0</div>
+                    <div class="tool-card" style="height:auto; flex-direction:row; justify-content:space-between; padding:20px;">
+                        <div>
+                            <div style="font-size:12px; color:#64748b; font-weight:700">YÊU CẦU MỚI</div>
+                            <div id="statReq" style="font-size:32px; font-weight:900; color:var(--warning)">0</div>
+                        </div>
+                        <i class="fa-solid fa-bell fa-2x" style="color:var(--warning); opacity:0.2"></i>
                     </div>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div class="stat-card" style="flex-direction:column; height:300px">
-                        <div class="chart-header" style="width:100%"><span>Tỉ lệ Lớp</span><button class="download-chart-btn" onclick="downloadChart('classChart')">⬇ PNG</button></div>
-                        <div style="flex:1; width:100%"><canvas id="classChart"></canvas></div>
+                
+                <div class="charts-row">
+                    <div class="chart-box">
+                        <div class="chart-header"><span>Tỉ lệ Lớp</span><button class="download-chart-btn" onclick="downloadChart('classChart')">⬇ PNG</button></div>
+                        <div class="chart-canvas-container"><canvas id="classChart"></canvas></div>
                     </div>
-                    <div class="stat-card" style="flex-direction:column; height:300px">
-                         <div class="chart-header" style="width:100%"><span>Mật độ Giờ</span><button class="download-chart-btn" onclick="downloadChart('timeChart')">⬇ PNG</button></div>
-                        <div style="flex:1; width:100%"><canvas id="timeChart"></canvas></div>
+                    <div class="chart-box">
+                        <div class="chart-header"><span>Mật độ Giờ</span><button class="download-chart-btn" onclick="downloadChart('timeChart')">⬇ PNG</button></div>
+                        <div class="chart-canvas-container"><canvas id="timeChart"></canvas></div>
                     </div>
                 </div>
-                 <div class="stat-card" style="flex-direction:column; height:250px; margin-top:15px">
-                     <div class="chart-header" style="width:100%"><span>Xu hướng (Đường)</span><button class="download-chart-btn" onclick="downloadChart('lineChart')">⬇ PNG</button></div>
-                     <div style="flex:1; width:100%"><canvas id="lineChart"></canvas></div>
+                
+                <div class="chart-box" style="margin-top:15px">
+                    <div class="chart-header"><span>Xu hướng (Đường)</span><button class="download-chart-btn" onclick="downloadChart('lineChart')">⬇ PNG</button></div>
+                    <div class="chart-canvas-container" style="height:250px"><canvas id="lineChart"></canvas></div>
                 </div>
             </div>
 
@@ -296,6 +306,7 @@
             <div id="tab-data" class="tab-content">
                 <div class="excel-toolbar">
                     <input type="date" id="viewDate" onchange="fetchList()" style="width:auto">
+                    <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm..." onkeyup="applyFilter()" style="flex:1">
                     <button class="btn btn-danger" id="btnBulkDelete" onclick="deleteSelected()" style="display:none;">Xóa mục chọn</button>
                     <button class="btn btn-primary" onclick="fetchList()"><i class="fa-solid fa-rotate"></i> Tải lại</button>
                 </div>
@@ -303,10 +314,9 @@
                     <table id="dataTable">
                         <thead>
                             <tr id="dynamicHeader"></tr>
-                            <!-- Hàng lọc Excel -->
-                            <tr id="filterRow" style="background:#f1f5f9"></tr>
+                            <tr class="filter-row" id="filterRow" style="background:#f1f5f9; display:none"></tr>
                         </thead>
-                        <tbody id="tableBody"><tr><td colspan="10" style="text-align:center; padding:30px">Vui lòng tải dữ liệu...</td></tr></tbody>
+                        <tbody id="tableBody"><tr><td colspan="10" style="text-align:center; padding:30px">Đang tải dữ liệu...</td></tr></tbody>
                     </table>
                 </div>
                 <div style="text-align:right; font-size:12px; margin-top:5px; color:#666">Tổng dòng: <b id="rowCount">0</b></div>
@@ -328,12 +338,12 @@
                 <ul id="logList" class="timeline"></ul>
             </div>
 
-            <!-- Tab 5: Tools -->
+            <!-- Tab 5: Tiện Ích -->
             <div id="tab-tools" class="tab-content">
                 <div class="tools-grid">
                     <div class="tool-card" id="toolLive" onclick="toggleLiveNotif()"><i class="fa-solid fa-bell"></i><span>Thông Báo Live</span></div>
                     <div class="tool-card" id="toolPause" onclick="togglePause()"><i class="fa-solid fa-pause"></i><span>Tạm dừng</span></div>
-                    <div class="tool-card" id="toolDark" onclick="toggleDarkMode()"><i class="fa-solid fa-moon"></i><span>Giao diện</span></div>
+                    <div class="tool-card" id="toolDark" onclick="toggleDarkMode()"><i class="fa-solid fa-moon"></i><span>Giao diện Tối</span></div>
                     <div class="tool-card" onclick="downloadQR()"><i class="fa-solid fa-download"></i><span>Tải QR</span></div>
                     <div class="tool-card" onclick="exportCSV()"><i class="fa-solid fa-file-csv"></i><span>Xuất Excel</span></div>
                     
@@ -361,7 +371,7 @@
                 </div>
             </div>
 
-            <!-- Tab 6: Config (Giao diện cũ) -->
+            <!-- Tab 6: Config -->
             <div id="tab-config" class="tab-content">
                 <div class="config-section">
                     <div class="config-title"><i class="fa-solid fa-link"></i> KẾT NỐI API</div>
@@ -387,9 +397,11 @@
                     <div class="config-section">
                          <div class="config-title"><i class="fa-solid fa-palette"></i> GIAO DIỆN QR</div>
                          <div class="form-group"><label>Tiêu đề QR:</label><input type="text" id="cfgTitle"></div>
-                         <div style="display:flex; gap:10px">
+                         <div class="form-group"><label>Link Form:</label><input type="text" id="cfgLink"></div>
+                         <div style="display:flex; gap:10px; margin-top:10px">
                              <div style="flex:1"><label>Màu Mã:</label><input type="color" id="cfgQrColor" style="height:40px; padding:2px; width:100%"></div>
                              <div style="flex:1"><label>Màu Nền:</label><input type="color" id="cfgQrBg" style="height:40px; padding:2px; width:100%"></div>
+                             <div style="flex:1"><label>Chi tiết:</label><select id="cfgQrLevel"><option value="L">Thấp</option><option value="M">Trung</option><option value="Q">Cao</option><option value="H">Tốt nhất</option></select></div>
                          </div>
                     </div>
                 </div>
@@ -414,10 +426,10 @@
     </div>
 
     <!-- Auth Modal -->
-    <div id="authModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:2000; align-items:center; justify-content:center;">
-        <div class="content" style="background:white; padding:30px; border-radius:16px; text-align:center; width:300px">
+    <div id="authModal">
+        <div class="content">
             <h3>ĐĂNG NHẬP</h3>
-            <div class="pass-group" style="margin-bottom:15px; position:relative;">
+            <div class="pass-group" style="margin-bottom:15px;">
                 <input type="password" id="loginPass" placeholder="••••••" style="width:100%; padding:10px; text-align:center; letter-spacing:5px" onkeyup="if(event.key==='Enter') doLogin()">
                 <div class="pass-controls" style="right:10px"><i class="fa-solid fa-eye" onclick="togglePass('loginPass', this.parentElement)" style="cursor:pointer"></i></div>
             </div>
@@ -432,7 +444,7 @@
     <div id="qrZoomModal"><h2 style="color:var(--text)">QUÉT MÃ ĐIỂM DANH</h2><div id="qrcodeZoom" style="transform: scale(1.5); margin: 50px;"></div><button class="btn btn-danger" onclick="closeZoom()">Đóng (ESC)</button></div>
 
     <script>
-        const DEFAULT = { api: "https://script.google.com/macros/s/AKfycbxfHTs2JITdjO2eloUj0XCAWsxkxYKPEc-_eZoJ7RQZLJWw_KNXO7rtz2yKZ6DREsQ9/exec", pass: "Admin", reset: "Admin", title: "ĐIỂM DANH CLB", time: 30, mqText: "HỆ THỐNG ĐANG MỞ ĐIỂM DANH", mqPos: "bottom", mqBg: "#ef4444", mqColor: "#ffffff", qrColor: "#000000", qrBg: "#ffffff", qrLevel: "M", darkMode: false, notifEnabled: true, notifDuration: 5, notifPos: "top-right" };
+        const DEFAULT = { api: "https://script.google.com/macros/s/AKfycbxQgOytzD2nJwoCSdTLiRaGnl567gcNKVOmHTsA_u8dJ7Y87rBBFlJc1c32uuYLtauy/exec", pass: "Admin", reset: "Admin", title: "ĐIỂM DANH CLB", time: 30, mqText: "HỆ THỐNG ĐANG MỞ ĐIỂM DANH", mqPos: "bottom", mqBg: "#ef4444", mqColor: "#ffffff", qrColor: "#000000", qrBg: "#ffffff", qrLevel: "M", darkMode: false, notifEnabled: true, notifDuration: 5, notifPos: "top-right" };
         let cfg = JSON.parse(localStorage.getItem('qr_cfg')) || DEFAULT;
         let formCfg = { title: "THÔNG TIN", fields: [{label:"Họ Tên", type:"text", required:true}, {label:"MSSV", type:"tel", required:true}, {label:"Lớp", type:"text", required:true}] };
         let allData = [], filteredData = [], logs = JSON.parse(localStorage.getItem('logs')) || [];
@@ -448,6 +460,7 @@
         window.onload = () => {
             document.getElementById('viewDate').valueAsDate = new Date();
             document.getElementById('adminNote').value = localStorage.getItem('admin_note') || "";
+            // Fix input read-only events
             document.querySelectorAll('.secure-locked').forEach(el => { el.addEventListener('mousedown', e => { if(el.readOnly) { e.preventDefault(); el.click(); } }); });
             applyUI(); startQR(); renderLogs();
             if(cfg.api) {
@@ -494,9 +507,9 @@
             const tc=document.getElementById("liveToastContainer"); tc.className=""; tc.classList.add("pos-"+cfg.notifPos);
             const p=cfg.notifPos; tc.style.top=p.includes("top")?"20px":"auto"; tc.style.bottom=p.includes("bottom")?"20px":"auto"; tc.style.left=p.includes("left")?"20px":"auto"; tc.style.right=p.includes("right")?"20px":"auto"; tc.style.flexDirection=p.includes("top")?"column-reverse":"column";
             
+            updateToolUI("toolDark", cfg.darkMode, "Tối", "Sáng", "fa-moon", "fa-sun");
             updateToolUI("toolLive", cfg.notifEnabled, "Bật Live", "Tắt Live", "fa-bell", "fa-bell-slash");
             updateToolUI("toolPause", isPaused, "Đang Tạm Dừng", "Tạm Dừng", "fa-pause", "fa-play");
-            updateToolUI("toolDark", cfg.darkMode, "Tối", "Sáng", "fa-moon", "fa-sun");
         }
 
         // --- AUTH ---
@@ -510,44 +523,29 @@
                 else {
                     document.body.classList.add('admin-open');
                     document.getElementById('adminModal').style.display='flex';
-                    // Load data
-                    document.getElementById('cfgApi').value = cfg.api; 
-                    // ... (Load other inputs is handled by saveSystemConfig's reload but for first open we need to fill)
-                    document.getElementById('cfgPass').value = cfg.pass;
-                    document.getElementById('cfgResetPass').value = cfg.reset;
-                    document.getElementById('cfgTitle').value = cfg.title;
-                    document.getElementById('cfgMqText').value = cfg.mqText;
-                    document.getElementById('cfgQrColor').value = cfg.qrColor;
-                    document.getElementById('cfgQrBg').value = cfg.qrBg;
-                    document.getElementById('cfgMqBg').value = cfg.mqBg;
-                    document.getElementById('cfgMqColor').value = cfg.mqColor;
-                    document.getElementById('cfgMqPos').value = cfg.mqPos;
-                    document.getElementById('cfgNotifDuration').value = cfg.notifDuration;
-                    document.getElementById('cfgNotifPos').value = cfg.notifPos;
-                    document.getElementById('cfgQrLevel').value = cfg.qrLevel;
+                    document.getElementById('cfgApi').value = cfg.api; document.getElementById('cfgLink').value = cfg.link;
+                    document.getElementById('cfgPass').value = cfg.pass; document.getElementById('cfgResetPass').value = cfg.reset;
+                    document.getElementById('cfgTitle').value = cfg.title; document.getElementById('cfgMqText').value = cfg.mqText;
+                    document.getElementById('cfgQrColor').value = cfg.qrColor; document.getElementById('cfgQrBg').value = cfg.qrBg;
+                    document.getElementById('cfgMqBg').value = cfg.mqBg; document.getElementById('cfgMqColor').value = cfg.mqColor;
+                    document.getElementById('cfgMqPos').value = cfg.mqPos; document.getElementById('cfgQrLevel').value = cfg.qrLevel;
+                    document.getElementById('cfgNotifDuration').value = cfg.notifDuration; document.getElementById('cfgNotifPos').value = cfg.notifPos;
                     fetchList(); addLog("Hệ thống", "Đăng nhập thành công", "success");
                 }
             } else alert("Sai mật khẩu");
         }
         function closeAdmin() { document.body.classList.remove('admin-open'); document.getElementById('adminModal').style.display='none'; }
         function togglePass(id, btn) { const x=document.getElementById(id); x.type=x.type==='password'?'text':'password'; if(btn) btn.querySelector('i').className = x.type==='password'?'fa-solid fa-eye':'fa-solid fa-eye-slash'; }
-        function unlockField(id, code) { const p=prompt("Nhập mã cấp 2:"); if(p===code) { const el=document.getElementById(id); el.readOnly=false; el.classList.add('unlocked'); el.focus(); el.onblur=()=>{el.readOnly=true; el.classList.remove('unlocked')}; showToast("Đã mở khóa"); } else alert("Sai mã"); }
+        function unlockField(id, code) { const p=prompt("Nhập mã cấp 2:"); if(p===code) { const el=document.getElementById(id); el.readOnly=false; el.classList.add('unlocked'); el.focus(); el.onblur=()=>{el.readOnly=true; el.classList.remove('unlocked')}; } else alert("Sai mã"); }
         function saveSystemConfig(silent=false) {
-            cfg.api = document.getElementById('cfgApi').value; 
-            cfg.pass = document.getElementById('cfgPass').value; 
-            cfg.reset = document.getElementById('cfgResetPass').value;
-            cfg.title = document.getElementById('cfgTitle').value; 
-            cfg.mqText = document.getElementById('cfgMqText').value;
-            cfg.qrColor = document.getElementById('cfgQrColor').value; 
-            cfg.qrBg = document.getElementById('cfgQrBg').value;
-            cfg.mqBg = document.getElementById('cfgMqBg').value; 
-            cfg.mqColor = document.getElementById('cfgMqColor').value;
-            cfg.mqPos = document.getElementById('cfgMqPos').value;
-            cfg.notifDuration = parseInt(document.getElementById('cfgNotifDuration').value);
-            cfg.notifPos = document.getElementById('cfgNotifPos').value;
-            cfg.qrLevel = document.getElementById('cfgQrLevel').value;
-            localStorage.setItem('qr_cfg', JSON.stringify(cfg));
-            localStorage.setItem('admin_reset_pass', cfg.reset);
+            cfg.api = document.getElementById('cfgApi').value; cfg.link = document.getElementById('cfgLink').value;
+            cfg.pass = document.getElementById('cfgPass').value; cfg.reset = document.getElementById('cfgResetPass').value;
+            cfg.title = document.getElementById('cfgTitle').value; cfg.mqText = document.getElementById('cfgMqText').value;
+            cfg.qrColor = document.getElementById('cfgQrColor').value; cfg.qrBg = document.getElementById('cfgQrBg').value;
+            cfg.mqBg = document.getElementById('cfgMqBg').value; cfg.mqColor = document.getElementById('cfgMqColor').value;
+            cfg.mqPos = document.getElementById('cfgMqPos').value; cfg.qrLevel = document.getElementById('cfgQrLevel').value;
+            cfg.notifDuration = parseInt(document.getElementById('cfgNotifDuration').value); cfg.notifPos = document.getElementById('cfgNotifPos').value;
+            localStorage.setItem('qr_cfg', JSON.stringify(cfg)); localStorage.setItem('admin_reset_pass', cfg.reset);
             if(!silent) { alert("Đã lưu!"); location.reload(); }
             applyUI(); updateQR();
         }
@@ -559,18 +557,17 @@
                 c.innerHTML += `
                     <div class="fb-item"><div class="fb-settings">
                         <input type="text" value="${f.label}" onchange="formCfg.fields[${i}].label=this.value" placeholder="Tên trường">
-                        <input type="text" value="${f.placeholder||''}" onchange="formCfg.fields[${i}].placeholder=this.value" placeholder="Ghi chú">
+                        <input type="text" value="${f.placeholder||''}" onchange="formCfg.fields[${i}].placeholder=this.value" placeholder="Ghi chú (Placeholder)">
                         <select onchange="formCfg.fields[${i}].type=this.value"><option value="text" ${f.type=='text'?'selected':''}>Chữ</option><option value="tel" ${f.type=='tel'?'selected':''}>Số</option></select>
                         <select onchange="formCfg.fields[${i}].format=this.value"><option value="none" ${f.format=='none'?'selected':''}>None</option><option value="uppercase" ${f.format=='uppercase'?'selected':''}>IN HOA</option><option value="capitalize" ${f.format=='capitalize'?'selected':''}>Viết Hoa</option></select>
                         <label><input type="checkbox" ${f.required?'checked':''} onchange="formCfg.fields[${i}].required=this.checked"> Bắt buộc</label>
-                        <i class="fa-solid fa-trash" onclick="removeField(${i})" style="color:red; cursor:pointer"></i>
+                        <button class="icon-btn" onclick="removeField(${i})" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button>
                     </div></div>`;
             });
             document.getElementById('fbTitle').value = formCfg.title;
         }
         function addFormField() { formCfg.fields.push({label:"Mới", type:"text", format:"none", required:false, placeholder:""}); renderFormBuilder(); }
         function removeField(i) { if(confirm("Xóa?")) { formCfg.fields.splice(i, 1); renderFormBuilder(); } }
-        function updateField(i, k, v) { formCfg.fields[i][k] = v; }
         function saveFormConfig() {
             formCfg.title = document.getElementById('fbTitle').value;
             fetch(cfg.api, { method:'POST', mode:'no-cors', body:JSON.stringify({action:"SAVE_FORM_CONFIG", config:formCfg}) })
@@ -604,7 +601,7 @@
                     }
                     if(document.body.classList.contains('admin-open')) {
                         const oldLen = allData.length; allData = r.data;
-                        if(allData.length > oldLen) applyFilter();
+                        if (allData.length > oldLen) applyFilter();
                     }
                 }
             });
@@ -613,11 +610,10 @@
             const term = document.getElementById('searchInput').value.toLowerCase();
             filteredData = allData.filter(i => JSON.stringify(i).toLowerCase().includes(term));
             
-            // Header
             const headerRow = document.getElementById("dynamicHeader");
             const filterRow = document.getElementById("filterRow");
-            let hHTML = `<th style="width:40px"><input type="checkbox" id="selectAll" onclick="toggleSelectAll()"></th><th class="bell-cell">🔔</th><th onclick="sortTable('time')">Giờ</th>`;
-            let fHTML = `<th></th><th></th><th><input class="filter-input" placeholder="Lọc..."></th>`;
+            let hHTML = `<th style="width:30px"><input type="checkbox" id="selectAll" onclick="toggleSelectAll()"></th><th class="bell-cell">🔔</th><th onclick="sortTable('time')">Giờ</th>`;
+            let fHTML = `<th></th><th></th><th><input class="filter-input" placeholder="Lọc..." onkeyup="filterCol()"></th>`;
             
             formCfg.fields.forEach(f => {
                 hHTML += `<th onclick="sortTable('${f.label}')">${f.label} <i class="fa-solid fa-sort"></i></th>`;
@@ -626,7 +622,6 @@
             hHTML += `<th style="text-align:center">Xóa</th>`; fHTML += `<th></th>`;
             headerRow.innerHTML = hHTML; filterRow.innerHTML = fHTML; filterRow.style.display="table-row";
 
-            // Body
             const tbody = document.getElementById("tableBody");
             let html = "";
             filteredData.forEach(i => {
@@ -658,13 +653,22 @@
         function addLog(title, msg, type) { const t=new Date().toLocaleTimeString(); logs.unshift({title, msg, type, t}); if(logs.length>50) logs.pop(); localStorage.setItem('logs', JSON.stringify(logs)); renderLogs(); }
         function renderLogs() { const l = document.getElementById('logList'); l.innerHTML = logs.map(x => `<li class="timeline-item ${x.type}"><div class="log-card"><div class="log-header"><span>${x.title}</span><span>${x.t}</span></div><div class="log-body">${x.msg}</div></div></li>`).join(''); }
         function clearLocalLogs() { logs=[]; localStorage.setItem('logs', '[]'); renderLogs(); }
-        function showToast(msg, type="success") { const d = document.createElement('div'); d.className = `live-toast ${type}`; d.innerHTML = `<div><b>${msg}</b></div>`; document.getElementById('liveToastContainer').prepend(d); setTimeout(()=>d.remove(), 5000); }
+        function showToast(msg, type="success") { const d = document.createElement('div'); d.className = `live-toast ${type}`; d.innerHTML = `<div><b>${msg}</b></div>`; document.getElementById('liveToastContainer').prepend(d); setTimeout(()=>d.remove(), cfg.notifDuration*1000); }
         function switchTab(id) { document.querySelectorAll(".tab-content").forEach(e=>e.style.display='none'); document.querySelectorAll(".tab-btn").forEach(e=>e.classList.remove('active')); document.getElementById(id).style.display = "flex"; event.currentTarget.classList.add('active'); }
         function toggleFullAdmin() { document.body.classList.toggle('full-width'); }
         function updateToolUI(id, act, on, off, iOn, iOff) { const el=document.getElementById(id); if(act){el.classList.add('tool-active'); el.querySelector('span').innerText=on; el.querySelector('i').className='fa-solid '+iOff;}else{el.classList.remove('tool-active'); el.querySelector('span').innerText=off; el.querySelector('i').className='fa-solid '+iOn;} }
         
         // Tools
-        function toggleLiveNotif(init) { if(!init) {cfg.notifEnabled = !config.notifEnabled; saveSystemConfig(true); configPolling();} updateToolUI('toolLive', cfg.notifEnabled, "Bật Live", "Tắt Live", "fa-bell", "fa-bell-slash"); }
+        function toggleLiveNotif(init) {
+            if(!init) {cfg.notifEnabled = !config.notifEnabled; saveSystemConfig(true);}
+            updateToolUI('toolLive', cfg.notifEnabled, "Bật Live", "Tắt Live", "fa-bell", "fa-bell-slash");
+            if(cfg.notifEnabled && cfg.api) {
+                 const now = new Date(); const d = now.getFullYear() + "-" + String(now.getMonth()+1).padStart(2,'0') + "-" + String(now.getDate()).padStart(2,'0');
+                 fetch(`${config.api}?action=GET_LIST&date=${d}`).then(r=>r.json()).then(r=>{if(r.status==="success") lastReqCount=r.totalRequests||0;});
+                 if(liveInterval) clearInterval(liveInterval);
+                 liveInterval = setInterval(pollData, 5000);
+            } else clearInterval(liveInterval);
+        }
         function togglePause() { isPaused=!isPaused; showToast(isPaused?"Tạm dừng":"Tiếp tục"); updateToolUI("toolPause", isPaused, "Đang Tạm Dừng", "Tạm dừng", "fa-pause", "fa-play"); }
         function toggleDarkMode() { cfg.darkMode=!cfg.darkMode; applyUI(); saveSystemConfig(true); }
         function toggleFullscreen() { if(!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
