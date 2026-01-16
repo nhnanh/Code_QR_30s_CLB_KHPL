@@ -13,8 +13,9 @@
         label { display: block; font-weight: bold; margin-bottom: 5px; color: #555; }
         input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
         .btn-submit { width: 100%; padding: 15px; background: #2ecc71; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .reset-options { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
-        .btn-link { background: none; border: none; color: #666; cursor: pointer; text-decoration: underline; font-size: 13px; }
+        .reset-options { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #eee; padding-top: 15px; }
+        .btn-link { background: none; border: none; color: #666; cursor: pointer; text-decoration: underline; font-size: 13px; text-align: left; }
+        .btn-link:hover { color: #2563eb; }
         .hidden { display: none !important; }
         .error-box { text-align: center; padding: 20px; color: #c0392b; background: #fadbd8; border: 2px dashed #c0392b; border-radius: 10px; }
     </style>
@@ -23,7 +24,7 @@
 
     <div class="form-card">
         <div id="errorScreen" class="hidden error-box">
-            <h3>⛔ LỖI</h3>
+            <h3>⛔ THÔNG BÁO</h3>
             <p id="errMsg"></p>
         </div>
 
@@ -40,7 +41,7 @@
 
     <script>
         // --- DÁN API CỦA BẠN VÀO ĐÂY ---
-        const API_URL = "https://script.google.com/macros/s/AKfycbwcQCqShL-py7yOiP6P5RAUZ7YEAorTb9r7uD8ldIn5uXwtTeON74LkGScY3qEZFPzP/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbwqRPoR6xq1jU06B_2XIYhj0CM7_68qQZUbN934ACS6Jc0sLxEBtXcvH1IZ9mxmSN9m/exec";
         
         const today = new Date().toLocaleDateString('vi-VN');
         let formConfig = null;
@@ -67,7 +68,7 @@
                 if (res.status === "success" && res.config) {
                     renderForm(res.config);
                 } else {
-                    // Fallback mặc định nếu chưa cấu hình
+                    // Fallback mặc định
                     renderForm({
                         title: "ĐIỂM DANH",
                         fields: [
@@ -121,20 +122,17 @@
             const btn = e.target.querySelector("button");
             btn.disabled = true; btn.innerText = "Đang gửi...";
             
-            // Gom dữ liệu từ form động
             const formData = new FormData(e.target);
             const dataObj = {};
             formData.forEach((value, key) => dataObj[key] = value);
             
-            // Map các trường quan trọng (để script backend hiểu)
-            // Giả sử 3 trường đầu tiên luôn là Tên, MSSV, Lớp
             const keys = Object.keys(dataObj);
             const payload = {
                 name: dataObj[keys[0]] || "", 
                 mssv: dataObj[keys[1]] || "", 
                 class_name: dataObj[keys[2]] || "",
                 device_info: navigator.userAgent,
-                extraData: JSON.stringify(dataObj) // Gửi toàn bộ data phòng hờ
+                extraData: JSON.stringify(dataObj)
             };
 
             fetch(API_URL, {
@@ -143,7 +141,6 @@
                 body: JSON.stringify(payload)
             }).then(() => {
                 localStorage.setItem('attended_today', today);
-                // Lưu MSSV để dùng cho tính năng Request
                 localStorage.setItem('my_mssv', payload.mssv);
                 localStorage.setItem('my_name', payload.name);
                 localStorage.setItem('my_class', payload.class_name);
@@ -161,14 +158,14 @@
             document.getElementById("errMsg").innerText = msg;
         }
 
-        // --- (1) YÊU CẦU RESET (Gửi thông báo cho Admin) ---
+        // --- 1. YÊU CẦU RESET (Gửi về Admin) ---
         function requestReset() {
             const mssv = localStorage.getItem('my_mssv');
             if(!mssv) { Swal.fire('Lỗi', 'Bạn chưa điểm danh lần nào!', 'warning'); return; }
             
             Swal.fire({
                 title: 'YÊU CẦU RESET',
-                input: 'text', inputPlaceholder: 'Nhập lý do (VD: Sai tên, mượn máy...)',
+                input: 'text', inputPlaceholder: 'Nhập lý do...',
                 showCancelButton: true, confirmButtonText: 'Gửi đi'
             }).then((res) => {
                 if(res.isConfirmed && res.value) {
@@ -182,16 +179,13 @@
                             reason: res.value 
                         })
                     }).then(() => {
-                        Swal.fire('Đã gửi', 'Yêu cầu đã được gửi đến Admin. Vui lòng đợi!', 'success');
-                        // Tự động reset luôn sau khi gửi (theo yêu cầu cũ của bạn là gửi xong thì reset)
-                        localStorage.removeItem('attended_today');
-                        setTimeout(()=>location.reload(), 2000);
+                        Swal.fire('Đã gửi', 'Yêu cầu đã được gửi đến Admin.', 'success');
                     });
                 }
             });
         }
 
-        // --- (2) NHẬP MẬT KHẨU (Tự mở khóa) ---
+        // --- 2. RESET BẰNG MẬT KHẨU ---
         function manualReset() {
             Swal.fire({
                 title: 'NHẬP MẬT KHẨU',
@@ -199,8 +193,6 @@
                 input: 'password', showCancelButton: true
             }).then((res) => {
                 if(res.isConfirmed) {
-                    // Lấy pass từ localStorage (nếu chung domain với admin)
-                    // Hoặc mặc định là "Admin"
                     const correctPass = localStorage.getItem('admin_reset_pass') || "Admin";
                     if(res.value === correctPass) {
                         localStorage.removeItem('attended_today');
@@ -214,4 +206,3 @@
     </script>
 </body>
 </html>
-
