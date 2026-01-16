@@ -133,25 +133,30 @@
         .filter-row th { background: #fff; padding: 5px; }
         .filter-input { width: 100%; padding: 5px; font-size: 12px; border: 1px solid #ddd; border-radius: 4px; }
         .bell-cell { text-align: center; width: 40px; }
-        .bell-active { color: var(--danger); animation: swing 1s infinite; cursor: pointer; }
-        @keyframes swing { 0%,100% { transform: rotate(0); } 20% { transform: rotate(15deg); } 40% { transform: rotate(-10deg); } 60% { transform: rotate(5deg); } 80% { transform: rotate(-5deg); } }
+        .bell-active { color: var(--danger); animation: bellShake 0.8s infinite; cursor: pointer; }
+        @keyframes bellShake { 0%,100% { transform: rotate(0); } 20% { transform: rotate(15deg); } 40% { transform: rotate(-10deg); } 60% { transform: rotate(5deg); } 80% { transform: rotate(-5deg); } }
 
-        /* Log Timeline */
-        .timeline { list-style: none; padding: 0 0 0 20px; border-left: 2px solid #e2e8f0; margin: 10px 0 0 10px; }
-        .timeline-item { margin-bottom: 20px; position: relative; }
-        .timeline-item::before { content: ''; position: absolute; left: -26px; top: 0; width: 10px; height: 10px; border-radius: 50%; background: var(--white); border: 2px solid var(--primary); }
-        .timeline-item.warning::before { border-color: var(--warning); background: #fffbeb; }
-        .timeline-item.danger::before { border-color: var(--danger); background: #fef2f2; }
-        .log-card { background: var(--white); padding: 12px; border-radius: 8px; border: 1px solid var(--border); }
-        .log-header { font-size: 12px; color: #64748b; display: flex; justify-content: space-between; margin-bottom: 5px; }
-        .log-body { font-weight: 600; color: var(--text); font-size: 14px; }
-        
-        /* Tools */
+        /* Log List */
+        .log-list { list-style: none; padding: 0; margin: 0; max-height: 400px; overflow-y: auto; }
+        .log-item { background: var(--white); padding: 12px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid #ccc; display: flex; justify-content: space-between; align-items: center; font-size: 13px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .log-item.info { border-left-color: var(--primary); }
+        .log-item.warning { border-left-color: var(--warning); }
+        .log-item.danger { border-left-color: var(--danger); }
+
+        /* Tools Grid */
         .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; padding-bottom: 20px;}
-        .tool-card { background: var(--white); padding: 15px 10px; border-radius: 12px; text-align: center; cursor: pointer; border: 1px solid var(--border); height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; transition: 0.2s; }
+        .tool-card { background: var(--white); padding: 15px 10px; border-radius: 12px; text-align: center; cursor: pointer; border: 1px solid var(--border); height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; transition: 0.2s;}
         .tool-card:hover { border-color: var(--primary); transform: translateY(-3px); }
+        .tool-card i { font-size: 24px; color: var(--primary); }
         .tool-active { border: 2px solid var(--success) !important; background: rgba(16,185,129,0.05) !important; }
         .tool-active i { color: var(--success) !important; }
+
+        /* Dashboard */
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: var(--white); padding: 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; align-items: center; gap: 15px; }
+        .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; min-height: 300px; }
+        .chart-box { background: var(--white); padding: 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; }
+        .chart-canvas-container { flex: 1; position: relative; min-height: 250px; }
 
         /* Common */
         .form-group { margin-bottom: 15px; }
@@ -168,13 +173,7 @@
         #lockScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; color: white; }
         #qrZoomModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 5000; align-items: center; justify-content: center; flex-direction: column; }
         #authModal .modal-content { max-width: 400px; height: auto; text-align: center; padding: 30px; }
-        
-        /* Dashboard */
-        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .stat-card { background: var(--white); padding: 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; align-items: center; gap: 15px; }
-        .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; min-height: 300px; }
-        .chart-box { background: var(--white); padding: 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; }
-        .chart-canvas-container { flex: 1; position: relative; min-height: 250px; }
+        #authModal input { font-size: 18px; text-align: center; letter-spacing: 5px; }
     </style>
 </head>
 <body>
@@ -203,7 +202,7 @@
             <div class="modal-body" style="justify-content:center; align-items:center">
                 <p style="margin-bottom:15px; color:#64748b;">Nhập mật khẩu quản trị viên</p>
                 <div class="pass-group" style="margin-bottom:15px;">
-                    <input type="password" id="authPassInput" placeholder="••••••" style="text-align:center; letter-spacing:5px; font-size:18px;" onkeyup="if(event.key==='Enter') submitLogin()">
+                    <input type="password" id="authPassInput" placeholder="••••••" onkeyup="if(event.key==='Enter') submitLogin()">
                     <div class="pass-controls" style="right: 10px;">
                         <button class="icon-btn" onclick="togglePass('authPassInput', this)"><i class="fa-solid fa-eye"></i></button>
                     </div>
@@ -254,8 +253,8 @@
                 <div id="tab-data" class="tab-content">
                     <div class="excel-toolbar">
                         <input type="date" id="viewDate" onchange="fetchList()">
-                        <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm..." onkeyup="applyFilter()" style="flex:1">
-                        <button class="btn btn-danger" id="btnBulkDelete" onclick="deleteSelected()" style="display:none;">Xóa mục chọn</button>
+                        <input type="text" id="searchInput" placeholder="🔍 Lọc nhanh..." onkeyup="applyFilter()" style="flex:1">
+                        <button class="btn btn-danger" id="btnBulkDelete" onclick="deleteSelected()" style="display:none;"><i class="fa-solid fa-trash"></i> Xóa mục chọn</button>
                         <button class="btn btn-primary" onclick="fetchList()">Tải lại</button>
                     </div>
                     <div class="excel-table-container">
@@ -284,7 +283,7 @@
                 <!-- TAB 4: LOG -->
                 <div id="tab-notif" class="tab-content">
                     <div style="text-align:right; margin-bottom:10px;"><button class="btn btn-gray" onclick="clearLocalLogs()">Xóa lịch sử</button></div>
-                    <ul id="logList" class="timeline"></ul>
+                    <ul id="logList" class="log-list"></ul>
                 </div>
 
                 <!-- TAB 5: TOOLS -->
@@ -332,7 +331,7 @@
                     
                     <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px">
                         <div class="form-group"><label>Thời gian QR:</label><input type="number" id="cfgTime"></div>
-                        <div class="form-group"><label>Pass Admin <i class="fa-solid fa-lock" style="color:var(--danger)"></i></label>
+                        <div class="form-group"><label>Pass Admin <i class="fa-solid fa-lock" style="font-size:10px; color:var(--danger)"></i></label>
                             <div class="pass-group">
                                 <input type="password" id="cfgPass" readonly class="secure-locked">
                                 <div class="pass-controls">
@@ -341,7 +340,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="form-group"><label>Pass Reset <i class="fa-solid fa-lock" style="color:var(--danger)"></i></label>
+                        <div class="form-group"><label>Pass Reset <i class="fa-solid fa-lock" style="font-size:10px; color:var(--danger)"></i></label>
                             <div class="pass-group">
                                 <input type="password" id="cfgResetPass" readonly class="secure-locked">
                                 <div class="pass-controls">
@@ -395,7 +394,7 @@
     <div id="marqueeContainer" class="marquee-container"><marquee id="marqueeText"></marquee></div>
 
     <script>
-        const DEFAULT_CONFIG = { link: "https://nhnanh.github.io/Code_QR_30s_CLB_KHPL/form.html", api: "https://script.google.com/macros/s/AKfycbyXMN5I4Dii9B0iVWt-gjUfiXP14_3ATde6lSG1Oa1KPxOZ19iUR0D0CADx90wo5a_0/exec", pass: "Admin", resetPass: "Admin", title: "ĐIỂM DANH CLB", time: 30, mqText: "HỆ THỐNG ĐANG MỞ ĐIỂM DANH", mqPos: "bottom", mqBg: "#ef4444", mqColor: "#ffffff", qrColor: "#000000", qrBg: "#ffffff", qrLevel: "M", darkMode: false, notifEnabled: true, notifDuration: 5, notifPos: "top-right" };
+        const DEFAULT_CONFIG = { link: "", api: "https://script.google.com/macros/s/AKfycbxfHTs2JITdjO2eloUj0XCAWsxkxYKPEc-_eZoJ7RQZLJWw_KNXO7rtz2yKZ6DREsQ9/exec", pass: "Admin", resetPass: "Admin", title: "ĐIỂM DANH CLB", time: 30, mqText: "HỆ THỐNG ĐANG MỞ ĐIỂM DANH", mqPos: "bottom", mqBg: "#ef4444", mqColor: "#ffffff", qrColor: "#000000", qrBg: "#ffffff", qrLevel: "M", darkMode: false, notifEnabled: true, notifDuration: 5, notifPos: "top-right" };
         let config = JSON.parse(localStorage.getItem('qr_config_max')) || DEFAULT_CONFIG;
         let formConfig = { title: "THÔNG TIN SINH VIÊN", fields: [ {id:"f1", label:"Họ tên", type:"text", format:"capitalize", required:true}, {id:"f2", label:"MSSV", type:"tel", format:"none", required:true}, {id:"f3", label:"Lớp", type:"text", format:"uppercase", required:true} ] };
         let allData = [], filteredData = [], sortState = { key: 'time', dir: 'desc' };
@@ -413,10 +412,20 @@
         window.onload = function() {
             document.getElementById('viewDate').valueAsDate = new Date();
             document.getElementById('adminNote').value = localStorage.getItem('admin_note') || "";
-            document.querySelectorAll('.secure-locked').forEach(el => { el.addEventListener('mousedown', e => { if(el.readOnly) { e.preventDefault(); el.click(); } }); });
+            // Fix input read-only events
+            document.querySelectorAll('.secure-locked').forEach(el => {
+                el.addEventListener('mousedown', e => { if(el.readOnly) { e.preventDefault(); el.click(); } });
+            });
             applyUI(); startSystem(); renderFormBuilder(); renderLogs();
             setInterval(() => document.getElementById("clock").innerText = new Date().toLocaleString("vi-VN"), 1000);
-            if(config.api) { toggleLiveNotif(true); fetch(`${config.api}?action=GET_FORM_CONFIG`).then(r=>r.json()).then(res=>{if(res.status==="success" && res.config){formConfig=res.config;renderFormBuilder()}}).catch(()=>{}); }
+            
+            // Load Form Config from Server
+            if(config.api) {
+                fetch(`${config.api}?action=GET_FORM_CONFIG`).then(r=>r.json()).then(res=>{
+                    if(res.status==="success" && res.config) { formConfig = res.config; renderFormBuilder(); }
+                }).catch(()=>renderFormBuilder());
+                config.notifEnabled = true; toggleLiveNotif(true);
+            } else renderFormBuilder();
         };
 
         function startSystem() { if (interval) clearInterval(interval); updateQR(); timer = config.time; interval = setInterval(() => { timer--; document.getElementById("countdown").innerText = timer; if(timer<=0) { timer=config.time; updateQR(); } }, 1000); }
@@ -439,13 +448,21 @@
                 closeAuthModal();
                 if(isUnlockMode) { document.getElementById("lockScreen").style.display="none"; showToast("Đã mở khóa"); }
                 else {
-                    document.body.classList.add('admin-open'); document.getElementById('adminModal').style.display='flex';
-                    document.getElementById('cfgApi').value=config.api; document.getElementById('cfgLink').value=config.link;
-                    document.getElementById('cfgPass').value=config.pass; document.getElementById('cfgResetPass').value=config.resetPass;
-                    document.getElementById('cfgTitle').value=config.title; document.getElementById('cfgMqText').value=config.mqText;
-                    document.getElementById('cfgQrColor').value=config.qrColor; document.getElementById('cfgQrBg').value=config.qrBg;
-                    document.getElementById('cfgNotifDuration').value=config.notifDuration; document.getElementById('cfgNotifPos').value=config.notifPos;
-                    fetchList(); addLog("Hệ thống", "Đăng nhập thành công", "success");
+                    document.body.classList.add('admin-open');
+                    document.getElementById('adminModal').style.display='flex';
+                    // Load Configs
+                    document.getElementById('cfgApi').value = config.api;
+                    document.getElementById('cfgLink').value = config.link;
+                    document.getElementById('cfgPass').value = config.pass;
+                    document.getElementById('cfgResetPass').value = config.resetPass;
+                    document.getElementById('cfgTitle').value = config.title;
+                    document.getElementById('cfgMqText').value = config.mqText;
+                    document.getElementById('cfgQrColor').value = config.qrColor;
+                    document.getElementById('cfgQrBg').value = config.qrBg;
+                    document.getElementById('cfgNotifDuration').value = config.notifDuration;
+                    document.getElementById('cfgNotifPos').value = config.notifPos;
+                    fetchList();
+                    addLog("Hệ thống", "Admin đăng nhập thành công", "success");
                 }
             } else alert("Sai mật khẩu");
         }
@@ -453,31 +470,30 @@
         function togglePass(id, btn) { const i=document.getElementById(id); i.type = i.type==='password'?'text':'password'; btn.querySelector('i').className = i.type==='password'?'fa-solid fa-eye':'fa-solid fa-eye-slash'; }
         function requestUnlock(id, code) { const p=prompt("Nhập mã cấp 2:"); if(p===code) { const el=document.getElementById(id); el.readOnly=false; el.classList.add('unlocked'); el.focus(); el.onblur=()=>{el.readOnly=true; el.classList.remove('unlocked')}; } else alert("Sai mã"); }
         function saveSystemConfig() {
-            config.api=document.getElementById('cfgApi').value; config.link=document.getElementById('cfgLink').value;
-            config.pass=document.getElementById('cfgPass').value; config.resetPass=document.getElementById('cfgResetPass').value;
-            config.title=document.getElementById('cfgTitle').value; config.mqText=document.getElementById('cfgMqText').value;
-            config.qrColor=document.getElementById('cfgQrColor').value; config.qrBg=document.getElementById('cfgQrBg').value;
-            config.notifDuration=document.getElementById('cfgNotifDuration').value; config.notifPos=document.getElementById('cfgNotifPos').value;
-            localStorage.setItem('qr_config_max', JSON.stringify(config)); alert("Đã lưu!"); location.reload();
+            config.api = document.getElementById('cfgApi').value;
+            config.link = document.getElementById('cfgLink').value;
+            config.pass = document.getElementById('cfgPass').value;
+            config.resetPass = document.getElementById('cfgResetPass').value;
+            config.title = document.getElementById('cfgTitle').value;
+            config.mqText = document.getElementById('cfgMqText').value;
+            config.qrColor = document.getElementById('cfgQrColor').value;
+            config.qrBg = document.getElementById('cfgQrBg').value;
+            config.notifDuration = document.getElementById('cfgNotifDuration').value;
+            config.notifPos = document.getElementById('cfgNotifPos').value;
+            localStorage.setItem('qr_config_max', JSON.stringify(config));
+            alert("Đã lưu!"); closeModal(); location.reload();
         }
-
-        // --- FORM BUILDER ---
-        function renderFormBuilder() {
-            const c = document.getElementById("fbFields"); c.innerHTML = "";
-            formConfig.fields.forEach((f, i) => {
-                const d = document.createElement("div"); d.className = "fb-item";
-                d.innerHTML = `<div class="fb-settings"><input type="text" value="${f.label}" onchange="updateField(${i},'label',this.value)"><select onchange="updateField(${i},'type',this.value)"><option value="text" ${f.type==='text'?'selected':''}>Chữ</option><option value="tel" ${f.type==='tel'?'selected':''}>Số</option></select><select onchange="updateField(${i},'format',this.value)"><option value="none" ${f.format==='none'?'selected':''}>None</option><option value="uppercase" ${f.format==='uppercase'?'selected':''}>IN HOA</option><option value="capitalize" ${f.format==='capitalize'?'selected':''}>Viết Hoa</option></select><label><input type="checkbox" ${f.required?'checked':''} onchange="updateField(${i},'required',this.checked)"> Bắt buộc</label><button class="icon-btn" onclick="removeField(${i})" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button></div>`;
-                c.appendChild(d);
-            });
-            document.getElementById("fbTitle").value = formConfig.title;
+        
+        function switchTab(id) {
+            document.querySelectorAll(".tab-content").forEach(e=>e.style.display='none');
+            document.querySelectorAll(".tab-btn").forEach(e=>e.classList.remove('active'));
+            document.getElementById(id).style.display = "block";
+            event.currentTarget.classList.add('active');
         }
-        function addFormField() { formConfig.fields.push({id:"f"+Date.now(), label:"Trường mới", type:"text", format:"none", required:false}); renderFormBuilder(); }
-        function removeField(i) { formConfig.fields.splice(i, 1); renderFormBuilder(); }
-        function updateField(i, k, v) { formConfig.fields[i][k] = v; }
-        function saveFormConfig() {
-            formConfig.title = document.getElementById("fbTitle").value;
-            fetch(config.api, { method:'POST', mode:'no-cors', body:JSON.stringify({action:"SAVE_FORM_CONFIG", config:formConfig}) })
-            .then(()=> { alert("Đã lưu Form!"); addLog("Form", "Cập nhật cấu hình Form", "success"); fetchList(); });
+        function toggleExpandAdmin() {
+            const m = document.getElementById("adminModal");
+            if(m.classList.contains("full-width")) { m.classList.remove("full-width"); document.body.classList.remove("full-width"); } 
+            else { m.classList.add("full-width"); document.body.classList.add("full-width"); }
         }
 
         // --- DATA TABLE ---
@@ -496,14 +512,14 @@
             
             const headerRow = document.getElementById("dynamicHeader");
             const filterRow = document.getElementById("filterRow");
-            let hHTML = `<th style="width:40px"><input type="checkbox" id="selectAll" onclick="toggleSelectAll()"></th><th class="bell-cell">🔔</th><th onclick="sortTable('time')">Giờ</th>`;
+            let hHTML = `<th style="width:40px; text-align:center"><input type="checkbox" id="selectAll" onclick="toggleSelectAll()"></th><th class="bell-cell">🔔</th><th onclick="sortTable('time')">Giờ</th>`;
             let fHTML = `<th></th><th></th><th><input class="filter-input" placeholder="Lọc..."></th>`;
             
             formConfig.fields.forEach(f => {
                 hHTML += `<th onclick="sortTable('${f.label}')">${f.label} <i class="fa-solid fa-sort"></i></th>`;
                 fHTML += `<th><input class="filter-input" placeholder="Lọc..." onkeyup="filterCol()"></th>`;
             });
-            hHTML += `<th>Xóa</th>`; fHTML += `<th></th>`;
+            hHTML += `<th style="text-align:center">Xóa</th>`; fHTML += `<th></th>`;
             headerRow.innerHTML = hHTML; filterRow.innerHTML = fHTML; filterRow.style.display="table-row";
 
             const tbody = document.getElementById("tableBody");
@@ -512,43 +528,93 @@
                 let bell = i.request ? `<i class="fa-solid fa-bell bell-active" title="${i.request.reason}" onclick="alert('${i.request.reason}')"></i>` : ``;
                 
                 let rowCols = "";
-                let extra = {}; try { extra = JSON.parse(i.extra || "{}"); } catch(e){}
-                
-                formConfig.fields.forEach((f, idx) => {
-                    let val = extra[f.label] || "";
-                    if (!val && idx === 0) val = i.name;
-                    if (!val && idx === 1) val = i.mssv;
-                    if (!val && idx === 2) val = i.class_name;
-                    rowCols += `<td>${val || "---"}</td>`;
-                });
+                // Mapping dữ liệu: 3 cột đầu cố định, các cột sau lấy từ extraData (nếu có update backend)
+                // Hiện tại hiển thị 3 cột đầu tiên tương ứng Tên, MSSV, Lớp
+                rowCols += `<td>${i.name || ""}</td>`;
+                rowCols += `<td>${i.mssv || ""}</td>`;
+                rowCols += `<td>${i.class_name || ""}</td>`;
+                // Nếu form có nhiều hơn 3 trường, cần backend trả về cột extraData
+                for(let k=3; k<formConfig.fields.length; k++) rowCols += `<td>...</td>`;
 
-                html += `<tr><td style="text-align:center"><input type="checkbox" class="row-checkbox" value="${i.row_index}|${i.mssv}" onclick="updateBulk()"></td><td class="bell-cell">${bell}</td><td>${(i.time||"").split(" ")[0]}</td>${rowCols}<td style="text-align:center"><button class="btn btn-danger" style="padding:4px 8px;font-size:11px" onclick="deleteRow(${i.row_index},'${i.mssv}', '${i.name}')">Xóa</button></td></tr>`;
+                html += `<tr>
+                    <td style="text-align:center"><input type="checkbox" class="row-checkbox" value="${i.row_index}|${i.mssv}" onclick="updateBulk()"></td>
+                    <td class="bell-cell">${bell}</td>
+                    <td>${i.time.split(" ")[0]}</td>
+                    ${rowCols}
+                    <td style="text-align:center"><button class="btn btn-danger" style="padding:4px 8px; font-size:11px" onclick="deleteRow(${i.row_index},'${i.mssv}', '${i.name}')">Xóa</button></td>
+                </tr>`;
             });
             tbody.innerHTML = html || '<tr><td colspan="10" style="text-align:center">Chưa có dữ liệu</td></tr>';
             document.getElementById("rowCount").innerText = filteredData.length;
             updateBulk(); renderStats();
         }
 
-        // --- UTILS & LOGS ---
-        function addLog(title, msg, type) { const t=new Date().toLocaleTimeString(); logs.unshift({title, msg, type, t}); if(logs.length>50) logs.pop(); localStorage.setItem('qr_logs', JSON.stringify(logs)); renderLogs(); }
-        function renderLogs() { const l = document.getElementById('logList'); l.innerHTML = logs.map(x => `<li class="log-item ${x.type}"><div><strong>${x.title}</strong> ${x.msg}</div><div class="log-time">${x.t}</div></li>`).join(''); }
-        function clearLocalLogs() { logs=[]; localStorage.setItem('qr_logs', '[]'); renderLogs(); }
-        function showToast(msg) { const t = document.getElementById("systemToast"); t.innerHTML = msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 3000); }
         function updateBulk() { const c=document.querySelectorAll('.row-checkbox:checked').length; const b=document.getElementById('btnBulkDelete'); if(c>0){b.style.display='inline-flex'; b.innerHTML=`Xóa (${c})`;}else b.style.display='none'; }
         function toggleSelectAll() { const m=document.getElementById('selectAll'); document.querySelectorAll('.row-checkbox').forEach(c=>c.checked=m.checked); updateBulk(); }
-        async function deleteSelected() { const s=Array.from(document.querySelectorAll('.row-checkbox:checked')); if(!confirm(`Xóa ${s.length} mục?`)) return; for(const c of s){let v=c.value.split('|'); await fetch(config.api, {method:'POST', body:JSON.stringify({action:"DELETE_ROW", row_index:v[0], mssv:v[1]})});} alert("Xong"); fetchList(); addLog("Dữ liệu", `Đã xóa ${s.length} sinh viên`, "danger"); }
+        async function deleteSelected() {
+            const s=Array.from(document.querySelectorAll('.row-checkbox:checked')); if(!confirm(`Xóa ${s.length} mục?`)) return;
+            let list=s.map(c=>{let p=c.value.split('|'); return {i:parseInt(p[0]), m:p[1]}}).sort((a,b)=>b.i-a.i);
+            for(const item of list){ await fetch(config.api, {method:'POST', body:JSON.stringify({action:"DELETE_ROW", row_index:item.i, mssv:item.m})}); }
+            alert("Xong"); fetchList(); addLog("Dữ liệu", `Đã xóa ${s.length} sinh viên`, "danger");
+        }
         function deleteRow(idx, mssv, name) { if(confirm("Xóa?")) fetch(config.api, {method:'POST', body:JSON.stringify({action:"DELETE_ROW", row_index:idx, mssv:mssv})}).then(r=>r.json()).then(r=>{if(r.status==="success") { alert("Đã xóa"); fetchList(); addLog("Dữ liệu", `Đã xóa SV: ${name}`, "danger"); }}); }
-        function switchTab(id) { document.querySelectorAll(".tab-content").forEach(e=>e.style.display='none'); document.querySelectorAll(".tab-btn").forEach(e=>e.classList.remove('active')); document.getElementById(id).style.display = "flex"; event.currentTarget.classList.add('active'); }
-        function toggleExpandAdmin() { const m = document.getElementById("adminModal"); if(m.classList.contains("full-width")) { m.classList.remove("full-width"); document.body.classList.remove("full-width"); } else { m.classList.add("full-width"); document.body.classList.add("full-width"); } }
+
+        // --- UTILS & LOGS ---
+        function addLog(title, msg, type) {
+            const t = new Date().toLocaleTimeString();
+            logs.unshift({title, msg, type, t});
+            if(logs.length>50) logs.pop();
+            localStorage.setItem('qr_logs', JSON.stringify(logs));
+            renderLogs();
+        }
+        function renderLogs() {
+            const l = document.getElementById('logList');
+            l.innerHTML = logs.map(x => `<li class="log-item ${x.type}"><div><strong>${x.title}</strong> ${x.msg}</div><div class="log-time">${x.t}</div></li>`).join('');
+        }
+        function clearLocalLogs() { logs=[]; localStorage.setItem('qr_logs', '[]'); renderLogs(); }
+        function showToast(msg, type="success") { 
+            const d = document.createElement('div'); d.className = `live-toast ${type}`; d.innerHTML = `<div><b>${msg}</b></div>`;
+            document.getElementById('liveToastContainer').prepend(d); setTimeout(()=>d.remove(), 5000);
+        }
+        function updateToolUI(id, act, on, off, iOn, iOff) { const el=document.getElementById(id); if(act){el.classList.add('tool-active'); el.querySelector('span').innerText=on; el.querySelector('i').className='fa-solid '+iOff;}else{el.classList.remove('tool-active'); el.querySelector('span').innerText=off; el.querySelector('i').className='fa-solid '+iOn;} }
+        function togglePause() { isPaused=!isPaused; showToast(isPaused?"Tạm dừng":"Tiếp tục"); updateToolUI("toolPause", isPaused, "Đang Tạm Dừng", "Tạm dừng", "fa-pause", "fa-play"); }
+        function toggleDarkMode() { config.darkMode=!config.darkMode; applyUI(); saveSystemConfig(); }
+        function toggleFullscreen() { if(!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+        function toggleBlurQR() { const b=document.getElementById("qrcode").classList.toggle("blur-effect"); updateToolUI("toolBlur", b, "Đang Che", "Che QR", "fa-eye-slash", "fa-eye"); }
+        function toggleClockUI() { const c=document.querySelector('.realtime'); const h=c.style.opacity==='0'; c.style.opacity=h?'1':'0'; updateToolUI("toolClock", !h, "Ẩn Giờ", "Hiện Giờ", "fa-clock", "fa-clock"); }
+        function downloadQR() { const i=document.querySelector("#qrcode img"); if(i){const a=document.createElement("a"); a.href=i.src; a.download="QR.png"; a.click();} }
+        function exportCSV() { if(filteredData.length===0) return alert("Trống"); let c="Time,Data\n"; filteredData.forEach(i=>c+=`${i.time},${i.extra}\n`); const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([c],{type:'text/csv'})); a.download="Data.csv"; a.click(); }
+        // Các hàm tools khác... (print, exportConfig, importConfig, checkPing, etc...)
+        function printList() { window.print(); }
+        function exportConfig() { const a=document.createElement('a'); a.href="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(config)); a.download="config.json"; a.click(); }
+        function importConfig() { const i=document.createElement('input'); i.type='file'; i.onchange=e=>{const r=new FileReader(); r.onload=ev=>{config=JSON.parse(ev.target.result); localStorage.setItem('qr_config_max',JSON.stringify(config)); location.reload();}; r.readAsText(e.target.files[0]);}; i.click(); }
+        function openFormLink() { window.open(config.link, "_blank"); }
+        function showStaticQR() { document.getElementById("qrZoomModal").style.display="flex"; const z=document.getElementById("qrcodeZoom"); z.innerHTML=""; new QRCode(z,{text:config.link,width:300,height:300}); }
+        function checkPing() { showToast(navigator.onLine?"✅ Online":"❌ Offline"); }
+        function toggleNote() { const n=document.getElementById("notePad"); n.style.display=n.style.display==="none"?"block":"none"; }
+        function saveNote() { localStorage.setItem('admin_note', document.getElementById("adminNote").value); showToast("Đã lưu"); }
+        function startTimer5() { let m=5,s=0; isPaused=true; const t=setInterval(()=>{if(s===0){if(m===0){clearInterval(t);alert("Hết giờ");isPaused=false;return;}m--;s=59;}else s--;document.getElementById("countdown").innerText=`${m}:${s<10?'0'+s:s}`;},1000); }
+        function clearSheetData() { if(!confirm("XÓA HẾT SHEET?")) return; fetch(config.api, {method:'POST', body:JSON.stringify({action:"CLEAR_DATA"})}).then(()=>alert("Đã xóa")).catch(()=>alert("Lỗi")); }
+        function sortTable(k) { if(sortState.key===k) sortState.dir=sortState.dir==='asc'?'desc':'asc'; else {sortState.key=k; sortState.dir='asc';} applyFilter(); }
         
+        function renderStats() {
+            document.getElementById('statTotal').innerText=filteredData.length; const cc={}, tc={}; filteredData.forEach(i=>{cc[i.class_name]=(cc[i.class_name]||0)+1; let h=i.time.split(":")[0]; tc[h]=(tc[h]||0)+1;});
+            document.getElementById('statClasses').innerText=Object.keys(cc).length; if(filteredData.length>0) document.getElementById('statLatest').innerText=(filteredData[0].time||"").split(" ")[0];
+            if(classChartInstance) classChartInstance.destroy();
+            classChartInstance=new Chart(document.getElementById('classChart'),{type:'doughnut',data:{labels:Object.keys(cc),datasets:[{data:Object.values(cc),backgroundColor:['#2563eb','#10b981','#f59e0b']}]}});
+            if(timeChartInstance) timeChartInstance.destroy();
+            timeChartInstance=new Chart(document.getElementById('timeChart'),{type:'bar',data:{labels:Object.keys(tc).sort(),datasets:[{label:'SL',data:Object.keys(tc).sort().map(k=>tc[k]),backgroundColor:'#2563eb'}]}});
+        }
+
+        // --- LIVE NOTIF ---
         function toggleLiveNotif(init) {
             if(!init) {config.notifEnabled = !config.notifEnabled; saveSystemConfig();}
             updateToolUI('toolLive', config.notifEnabled, "Bật Live", "Tắt Live", "fa-bell", "fa-bell-slash");
             if(config.notifEnabled && config.api) {
                  const now = new Date(); const d = now.getFullYear() + "-" + String(now.getMonth()+1).padStart(2,'0') + "-" + String(now.getDate()).padStart(2,'0');
                  fetch(`${config.api}?action=GET_LIST&date=${d}`).then(r=>r.json()).then(r=>{if(r.status==="success") lastReqCount=r.totalRequests||0;});
-                 liveInterval = setInterval(pollData, 5000);
-            } else clearInterval(liveInterval);
+                 setInterval(pollData, 5000);
+            }
         }
         function pollData() {
             const d = document.getElementById('viewDate').value;
@@ -573,32 +639,37 @@
             });
         }
         
-        function sortTable(key) { if(sortState.key===key) sortState.dir=sortState.dir==='asc'?'desc':'asc'; else {sortState.key=key; sortState.dir='asc';} applyFilter(); }
-        function renderStats() { /* Chart Logic */ }
-        function updateToolUI(id, act, on, off, iOn, iOff) { const el=document.getElementById(id); if(act){el.classList.add('tool-active'); el.querySelector('span').innerText=on; el.querySelector('i').className='fa-solid '+iOff;}else{el.classList.remove('tool-active'); el.querySelector('span').innerText=off; el.querySelector('i').className='fa-solid '+iOn;} }
-        function togglePause() { isPaused=!isPaused; showToast(isPaused?"Tạm dừng":"Tiếp tục"); updateToolUI("toolPause", isPaused, "Đang Tạm Dừng", "Tạm dừng", "fa-pause", "fa-play"); }
-        function toggleDarkMode() { config.darkMode=!config.darkMode; applyUI(); saveSystemConfig(); }
-        function toggleFullscreen() { if(!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
-        function downloadQR() { const i=document.querySelector("#qrcode img"); if(i){const a=document.createElement("a"); a.href=i.src; a.download="QR.png"; a.click();} }
-        function exportCSV() { if(filteredData.length===0) return alert("Trống"); let c="Time,Data\n"; filteredData.forEach(i=>c+=`${i.time},${i.extra}\n`); const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([c],{type:'text/csv'})); a.download="Data.csv"; a.click(); }
-        // Các hàm tools khác... (print, exportConfig, importConfig, checkPing, etc...)
-        function printList() { window.print(); }
-        function exportConfig() { const a=document.createElement('a'); a.href="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(config)); a.download="config.json"; a.click(); }
-        function importConfig() { const i=document.createElement('input'); i.type='file'; i.onchange=e=>{const r=new FileReader(); r.onload=ev=>{config=JSON.parse(ev.target.result); localStorage.setItem('qr_config_max',JSON.stringify(config)); location.reload();}; r.readAsText(e.target.files[0]);}; i.click(); }
-        function openFormLink() { window.open(config.link, "_blank"); }
-        function showStaticQR() { document.getElementById("qrZoomModal").style.display="flex"; const z=document.getElementById("qrcodeZoom"); z.innerHTML=""; new QRCode(z,{text:config.link,width:300,height:300}); }
-        function checkPing() { showToast(navigator.onLine?"✅ Online":"❌ Offline"); }
-        function toggleNote() { const n=document.getElementById("notePad"); n.style.display=n.style.display==="none"?"block":"none"; }
-        function saveNote() { localStorage.setItem('admin_note', document.getElementById("adminNote").value); showToast("Đã lưu"); }
-        function startTimer5() { let m=5,s=0; isPaused=true; const t=setInterval(()=>{if(s===0){if(m===0){clearInterval(t);alert("Hết giờ");isPaused=false;return;}m--;s=59;}else s--;document.getElementById("countdown").innerText=`${m}:${s<10?'0'+s:s}`;},1000); }
-        function clearSheetData() { if(!confirm("XÓA HẾT SHEET?")) return; fetch(config.api, {method:'POST', body:JSON.stringify({action:"CLEAR_DATA"})}).then(()=>alert("Đã xóa")).catch(()=>alert("Lỗi")); }
-        function toggleBlurQR() { const b=document.getElementById("qrcode").classList.toggle("blur-effect"); updateToolUI("toolBlur", b, "Đang Che", "Che QR", "fa-eye-slash", "fa-eye"); }
-        function toggleClockUI() { const c=document.querySelector('.realtime'); const h=c.style.opacity==='0'; c.style.opacity=h?'1':'0'; updateToolUI("toolClock", !h, "Ẩn Giờ", "Hiện Giờ", "fa-clock", "fa-clock"); }
-        function zoomQR() { document.getElementById("qrZoomModal").style.display="flex"; updateQR(); }
-        function closeZoom() { document.getElementById("qrZoomModal").style.display="none"; }
-        function lockScreen() { document.getElementById("lockScreen").style.display="flex"; closeModal(); }
-        function unlockScreen() { openLoginModal(true); }
-        function randomStudent() { if(filteredData.length>0) alert("🎉 " + (filteredData[Math.floor(Math.random()*filteredData.length)].name || "Sinh viên")); }
+        // --- FORM BUILDER ---
+        function renderFormBuilder() {
+            const c = document.getElementById("fbFields"); c.innerHTML = "";
+            formConfig.fields.forEach((f, i) => {
+                const d = document.createElement("div"); d.className = "fb-item";
+                d.innerHTML = `
+                    <div class="fb-settings">
+                        <input type="text" value="${f.label}" onchange="updateField(${i},'label',this.value)" placeholder="Tên trường">
+                        <select onchange="updateField(${i},'type',this.value)"><option value="text" ${f.type==='text'?'selected':''}>Chữ</option><option value="tel" ${f.type==='tel'?'selected':''}>Số</option></select>
+                        <select onchange="updateField(${i},'format',this.value)"><option value="none" ${f.format==='none'?'selected':''}>None</option><option value="uppercase" ${f.format==='uppercase'?'selected':''}>IN HOA</option><option value="capitalize" ${f.format==='capitalize'?'selected':''}>Viết Hoa</option></select>
+                        <label><input type="checkbox" ${f.required?'checked':''} onchange="updateField(${i},'required',this.checked)"> Bắt buộc</label>
+                        <button class="icon-btn" onclick="removeField(${i})" style="color:var(--danger)"><i class="fa-solid fa-trash"></i></button>
+                    </div>`;
+                c.appendChild(d);
+            });
+            document.getElementById("fbTitle").value = formConfig.title;
+        }
+        function addFormField() { formConfig.fields.push({id:"f"+Date.now(), label:"Trường mới", type:"text", format:"none", required:false}); renderFormBuilder(); }
+        function removeField(i) { formConfig.fields.splice(i, 1); renderFormBuilder(); }
+        function updateField(i, k, v) { formConfig.fields[i][k] = v; }
+        function saveFormConfig() {
+            formConfig.title = document.getElementById("fbTitle").value;
+            fetch(config.api, { method:'POST', mode:'no-cors', body:JSON.stringify({action:"SAVE_FORM_CONFIG", config:formConfig}) })
+            .then(()=> { alert("Đã lưu cấu hình Form lên Server!"); addLog("Form", "Cập nhật cấu hình Form", "success"); fetchList(); });
+        }
+        
+        // --- CÁC HÀM CŨ CÒN LẠI ---
+        function openLoginModal(isUnlock=false) { document.getElementById('authModal').style.display='flex'; document.getElementById('authPassInput').focus(); }
+        function closeAuthModal() { document.getElementById('authModal').style.display='none'; }
+        function closeModal() { document.body.classList.remove('admin-open'); document.getElementById('adminModal').style.display='none'; }
+        function unlockField(id, code) { const p=prompt("Nhập mã cấp 2:"); if(p===code) { const el=document.getElementById(id); el.readOnly=false; el.classList.add('unlocked'); el.focus(); el.onblur=()=>{el.readOnly=true; el.classList.remove('unlocked')}; } else alert("Sai mã"); }
     </script>
 </body>
 </html>
