@@ -10,16 +10,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --primary: #6366f1; --primary-dark: #4f46e5;
-            --bg-body: #f8fafc; --bg-card: #ffffff;
-            --text-main: #0f172a; --text-sub: #64748b;
+            --primary: #4f46e5; --primary-dark: #4338ca;
+            --bg-body: #f0f4f8; --bg-card: #ffffff;
+            --text-main: #1e293b; --text-sub: #64748b;
             --border: #e2e8f0;
-            --danger: #ef4444; --success: #10b981; --warning: #f59e0b;
-            --shadow-lg: 0 10px 30px -5px rgba(0,0,0,0.1);
+            --danger: #ef4444; --success: #10b981; --warning: #f59e0b; --info: #3b82f6;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
         
         body.dark-mode {
@@ -27,187 +27,128 @@
             --bg-body: #0f172a; --bg-card: #1e293b;
             --text-main: #f8fafc; --text-sub: #94a3b8;
             --border: #334155;
-            --shadow-lg: 0 10px 30px -5px rgba(0,0,0,0.5);
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
         }
 
         * { box-sizing: border-box; outline: none; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); height: 100vh; display: flex; overflow: hidden; transition: background 0.3s; }
-        input::-ms-reveal, input::-ms-clear { display: none; }
-
-        /* --- LAYOUT CHÍNH --- */
-        #mainContainer { display: flex; width: 100%; height: 100%; position: relative; }
         
-        /* CỘT TRÁI: QR NEON STYLE */
-        #qrSection { 
-            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            position: relative; z-index: 1; transition: flex-basis 0.3s;
-            background: radial-gradient(circle at center, var(--bg-card), var(--bg-body));
-        }
+        /* Chặn copy các trường nhạy cảm */
+        .no-copy { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 
-        .qr-card { 
-            position: relative; background: var(--bg-card); padding: 4px; border-radius: 24px; 
-            box-shadow: var(--shadow-lg); text-align: center; width: 400px; max-width: 90%; 
-            z-index: 2; overflow: hidden;
-        }
+        /* LAYOUT CHIA ĐÔI */
+        #mainContainer { display: flex; width: 100%; height: 100%; position: relative; }
+        #qrSection { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 1; transition: flex-basis 0.3s ease; background: radial-gradient(circle at center, var(--bg-card), var(--bg-body)); }
+        #adminSection { width: 0; display: none; flex-direction: column; background: var(--bg-card); border-left: 1px solid var(--border); position: relative; z-index: 100; box-shadow: -5px 0 20px rgba(0,0,0,0.1); }
+        
+        body.admin-open #adminSection { display: flex; width: 55%; min-width: 600px; }
+        body.admin-open #qrSection { width: 45%; flex: none; }
+        body.admin-open.full-width #adminSection { width: 100% !important; border-left: none; }
+        body.admin-open.full-width #qrSection { width: 0; opacity: 0; overflow: hidden; min-width: 0; }
+        #resizer { width: 6px; background: var(--border); cursor: col-resize; z-index: 101; display: none; transition: 0.2s; }
+        #resizer:hover { background: var(--primary); }
+        body.admin-open #resizer { display: block; }
 
-        /* Hiệu ứng viền chạy (Neon Border) */
-        .qr-card::before {
-            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-            background: conic-gradient(transparent, transparent, transparent, var(--primary));
-            animation: rotate 4s linear infinite; z-index: 0;
-        }
-        .qr-inner {
-            position: relative; background: var(--bg-card); border-radius: 20px; padding: 40px; z-index: 1;
-            display: flex; flex-direction: column; align-items: center;
-        }
-        @keyframes rotate { 0% {transform: rotate(0deg);} 100% {transform: rotate(360deg);} }
+        /* QR GIAO DIỆN MỚI */
+        .qr-card { position: relative; background: var(--bg-card); padding: 5px; border-radius: 24px; box-shadow: var(--shadow); text-align: center; width: 400px; max-width: 90%; z-index: 2; overflow: hidden; }
+        /* Neon Border Effect */
+        .qr-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent, transparent, transparent, var(--primary)); animation: rotate 4s linear infinite; z-index: 0; }
+        .qr-inner { position: relative; background: var(--bg-card); border-radius: 20px; padding: 40px; z-index: 1; display: flex; flex-direction: column; align-items: center; }
+        @keyframes rotate { 100% { transform: rotate(360deg); } }
         
         #orgName { font-size: 24px; font-weight: 800; color: var(--primary); margin-bottom: 20px; text-transform: uppercase; letter-spacing: -0.5px; }
         #qrcode { background: white; padding: 15px; border-radius: 16px; display: inline-block; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); transition: 0.3s; }
-        #qrcode.blur { filter: blur(15px); opacity: 0.2; }
-
-        .timer-box { display: flex; flex-direction: column; align-items: center; }
-        .timer { font-family: 'JetBrains Mono', monospace; font-size: 56px; color: var(--danger); line-height: 1; font-weight: 700; text-shadow: 0 0 10px rgba(239,68,68,0.3); }
-        .timer-label { font-size: 12px; color: var(--text-sub); text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; }
-        
+        #qrcode.blur { filter: blur(15px); opacity: 0.1; }
+        .timer { font-family: 'JetBrains Mono', monospace; font-size: 60px; color: var(--danger); line-height: 1; font-weight: 700; }
         .realtime { margin-top: 20px; font-weight: 600; color: var(--text-sub); font-size: 14px; border-top: 1px solid var(--border); padding-top: 15px; width: 100%; display: flex; justify-content: center; gap: 8px; }
 
-        /* Marquee */
-        .marquee-container { position: fixed; left: 0; width: 100%; padding: 12px 0; font-weight: 700; font-size: 16px; z-index: 50; text-transform: uppercase; white-space: nowrap; display: none; }
-        .marquee-top { top: 0; } .marquee-bottom { bottom: 0; }
-
-        /* CỘT PHẢI: ADMIN */
-        #resizer { width: 6px; background: var(--border); cursor: col-resize; z-index: 101; display: none; transition: 0.2s; }
-        #resizer:hover { background: var(--primary); }
-
-        #adminSection { 
-            display: none; flex-direction: column; background: var(--bg-card); 
-            border-left: 1px solid var(--border); width: 60%; min-width: 500px;
-            position: relative; z-index: 100; box-shadow: -10px 0 30px rgba(0,0,0,0.05);
+        /* TOAST NOTIFICATION (NEW DESIGN) */
+        #liveToastContainer { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column-reverse; gap: 12px; pointer-events: none; }
+        .toast { 
+            background: var(--bg-card); color: var(--text-main); padding: 15px; border-radius: 12px; 
+            box-shadow: 0 10px 30px -5px rgba(0,0,0,0.2); width: 340px; pointer-events: auto; 
+            display: flex; align-items: flex-start; gap: 12px; animation: slideIn 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55); 
+            border-left: 5px solid var(--primary);
         }
-        
-        body.admin-open #adminSection { display: flex; }
-        body.admin-open #qrSection { flex: 0 0 40%; }
-        body.admin-open .settings-btn { display: none; }
-        body.admin-open #resizer { display: block; }
-        
-        body.full-admin #adminSection { width: 100% !important; border-left: none; }
-        body.full-admin #qrSection { display: none; }
-        body.full-admin #resizer { display: none; }
+        .toast-icon { font-size: 20px; margin-top: 2px; }
+        .toast-body { flex: 1; }
+        .toast-title { font-weight: 700; font-size: 14px; display: block; margin-bottom: 2px; }
+        .toast-msg { font-size: 13px; opacity: 0.8; line-height: 1.4; }
+        .toast.success { border-color: var(--success); } .toast.success .toast-icon { color: var(--success); }
+        .toast.warning { border-color: var(--warning); } .toast.warning .toast-icon { color: var(--warning); }
+        .toast.danger { border-color: var(--danger); } .toast.danger .toast-icon { color: var(--danger); }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
 
-        /* UI ADMIN */
+        /* ADMIN UI */
         .admin-header { padding: 15px 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); }
-        .admin-title { font-size: 18px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
         .admin-body { padding: 20px; overflow-y: auto; flex: 1; background: var(--bg-body); }
-
-        /* Tabs Pill */
+        
+        /* Tabs */
         .tabs { display: flex; gap: 8px; margin-bottom: 20px; background: var(--bg-card); padding: 6px; border-radius: 12px; border: 1px solid var(--border); overflow-x: auto; }
         .tab-btn { padding: 8px 16px; border: none; background: transparent; font-weight: 600; color: var(--text-sub); cursor: pointer; border-radius: 8px; font-size: 13px; white-space: nowrap; transition: 0.2s; }
-        .tab-btn:hover { background: var(--bg-body); color: var(--primary); }
-        .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .tab-btn.active { background: var(--primary); color: white; box-shadow: var(--shadow-sm); }
         .tab-content { display: none; flex-direction: column; animation: fadeIn 0.3s; height: 100%; }
         .tab-content.active { display: flex; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* STATS */
-        .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
-        .stat-card { background: var(--bg-card); padding: 20px; border-radius: 16px; border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .stat-val { font-size: 28px; font-weight: 800; margin-top: 5px; color: var(--text-main); }
-        
-        .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; min-height: 300px; margin-bottom: 15px; }
-        .chart-box { background: var(--bg-card); padding: 15px; border-radius: 16px; border: 1px solid var(--border); position: relative; display: flex; flex-direction: column; height: 100%; }
-        .chart-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13px; font-weight: 600; color: var(--text-sub); }
-        .chart-container { flex: 1; position: relative; width: 100%; height: 100%; min-height: 250px; }
-        .download-btn { font-size: 11px; padding: 3px 8px; border: 1px solid var(--border); border-radius: 4px; background: white; cursor: pointer; color: var(--text-sub); }
-
-        /* DATA TABLE */
-        .table-wrap { flex: 1; overflow: auto; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border); max-height: 100%; }
-        .excel-toolbar { background: var(--bg-card); padding: 10px; border-radius: 12px; border: 1px solid var(--border); display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+        /* DATA TABLE (SORTING & FILTER) */
+        .table-wrap { flex: 1; overflow: auto; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border); max-height: 100%; box-shadow: var(--shadow-sm); }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background: var(--bg-body); padding: 12px; text-align: left; font-weight: 700; color: var(--text-sub); border-bottom: 2px solid var(--border); white-space: nowrap; cursor: pointer; position: sticky; top: 0; z-index: 10; }
+        th { background: #f8fafc; padding: 12px; text-align: left; font-weight: 700; color: var(--text-sub); border-bottom: 2px solid var(--border); white-space: nowrap; cursor: pointer; position: sticky; top: 0; z-index: 10; user-select: none; }
+        th:hover { background: #f1f5f9; color: var(--primary); }
         td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text-main); white-space: nowrap; max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
-        tr:hover td { background: var(--bg-body); }
+        tr:hover td { background: #f1f5f9; }
         
-        .filter-input { width: 100%; padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 11px; margin-top: 5px; background: var(--white); color: var(--text-main); }
-        .bell-cell { text-align: center; cursor: pointer; }
-        .bell-active { color: var(--danger); animation: ring 0.5s infinite; font-size: 18px; }
+        .sort-icon { font-size: 10px; margin-left: 5px; opacity: 0.5; }
+        th.sorted .sort-icon { opacity: 1; color: var(--primary); }
+
+        .bell-active { color: var(--danger); animation: ring 0.5s infinite; cursor: pointer; font-size: 18px; }
         @keyframes ring { 0%,100%{transform:rotate(0)} 20%{transform:rotate(15deg)} 40%{transform:rotate(-10deg)} 60%{transform:rotate(5deg)} 80%{transform:rotate(-5deg)} }
 
-        /* FORM BUILDER */
-        .fb-container { border: 1px solid var(--border); background: var(--bg-body); border-radius: 8px; padding: 15px; max-height: 450px; overflow-y: auto; }
-        .fb-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; border-left: 4px solid var(--primary); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        .fb-settings { flex: 1; display: grid; grid-template-columns: 2fr 2fr 1fr 1fr 1fr auto; gap: 10px; align-items: center; }
+        /* CONFIG GROUPING */
+        .config-group { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; position: relative; }
+        .config-label { position: absolute; top: -10px; left: 15px; background: var(--bg-card); padding: 0 10px; font-size: 12px; font-weight: 700; color: var(--primary); text-transform: uppercase; }
         
+        /* LOG TIMELINE (INFOGRAPHIC) */
+        .timeline { list-style: none; padding-left: 20px; border-left: 2px solid var(--border); margin-top: 10px; }
+        .timeline-item { position: relative; margin-bottom: 20px; }
+        .timeline-marker { position: absolute; left: -29px; top: 0; width: 16px; height: 16px; border-radius: 50%; background: var(--bg-card); border: 3px solid var(--text-sub); display: flex; align-items: center; justify-content: center; font-size: 8px; }
+        .timeline-item.success .timeline-marker { border-color: var(--success); color: var(--success); }
+        .timeline-item.warning .timeline-marker { border-color: var(--warning); color: var(--warning); }
+        .timeline-item.danger .timeline-marker { border-color: var(--danger); color: var(--danger); }
+        .log-box { background: var(--bg-card); padding: 12px 15px; border-radius: 10px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+        .log-time { font-size: 11px; color: var(--text-sub); display: block; margin-bottom: 4px; }
+        .log-msg { font-size: 13px; font-weight: 500; }
+
         /* TOOLS GRID */
-        .tools-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 15px; padding-bottom: 20px; }
-        .tool-btn { 
+        .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; }
+        .tool-card { 
             background: var(--bg-card); padding: 15px; border-radius: 16px; border: 1px solid var(--border);
+            text-align: center; cursor: pointer; transition: 0.2s; height: 110px; 
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
-            cursor: pointer; transition: 0.2s; height: 100px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            box-shadow: var(--shadow-sm);
         }
-        .tool-btn:hover { transform: translateY(-3px); border-color: var(--primary); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .tool-btn i { font-size: 24px; color: var(--primary); }
-        .tool-btn span { font-size: 12px; font-weight: 500; color: var(--text-main); line-height: 1.2; }
+        .tool-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: var(--shadow-md); }
         .tool-active { background: #eff6ff !important; border-color: var(--primary) !important; }
         body.dark-mode .tool-active { background: #1e293b !important; }
-        .tool-active i { color: var(--success) !important; }
 
-        /* LOG TIMELINE */
-        .timeline { list-style: none; padding-left: 20px; border-left: 2px solid var(--border); margin-top: 10px; }
-        .timeline-item { position: relative; margin-bottom: 15px; }
-        .timeline-item::before { content:''; position: absolute; left: -26px; top: 12px; width: 10px; height: 10px; background: var(--bg-card); border: 2px solid var(--primary); border-radius: 50%; }
-        .timeline-item.warning::before { border-color: var(--warning); background: #fff7ed; }
-        .timeline-item.danger::before { border-color: var(--danger); background: #fef2f2; }
-        .log-box { background: var(--bg-card); padding: 12px; border-radius: 8px; border: 1px solid var(--border); font-size: 13px; display: flex; justify-content: space-between; align-items: center; }
-        .log-time { color: var(--text-sub); font-size: 11px; white-space: nowrap; margin-left: 10px; }
-        
         /* COMMON */
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: var(--text-sub); }
-        input:not([type=checkbox]), select, textarea { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: var(--bg-card); color: var(--text-main); font-size: 14px; transition: 0.2s; }
-        
-        /* Security Input */
-        .pass-group { position: relative; width: 100%; }
-        .pass-group input { padding-right: 85px; }
-        .pass-controls { position: absolute; right: 5px; top: 50%; transform: translateY(-50%); display: flex; gap: 4px; }
-        .icon-btn { background: var(--bg-body); border: 1px solid var(--border); cursor: pointer; padding: 6px; border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: var(--text-sub); }
-        .icon-btn:hover { color: var(--primary); border-color: var(--primary); }
-        input[readonly] { background: var(--bg-body); color: var(--text-sub); border-style: dashed; cursor: not-allowed; }
-        input.unlocked { background: #f0fdf4; border-color: var(--success); color: var(--success); font-weight: bold; cursor: text; }
-
-        .btn { padding: 8px 16px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; color: white; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; transition: 0.2s; }
-        .btn:hover { filter: brightness(110%); transform: translateY(-1px); }
+        input:not([type=checkbox]), select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: var(--bg-card); color: var(--text-main); transition: 0.2s; }
+        input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
+        .btn { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; color: white; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; transition: 0.2s; }
+        .btn:hover { transform: translateY(-2px); filter: brightness(110%); }
         .btn-primary { background: var(--primary); } .btn-danger { background: var(--danger); } .btn-success { background: var(--success); } .btn-gray { background: #64748b; }
-
-        /* TOASTS */
-        #liveToastContainer { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
-        .toast { background: var(--bg-card); color: var(--text-main); padding: 12px 16px; border-radius: 12px; border-left: 4px solid var(--primary); box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 320px; pointer-events: auto; animation: slideIn 0.3s; display: flex; align-items: flex-start; gap: 10px; font-size: 13px; }
-        .toast.warning { border-left-color: var(--warning); } .toast.danger { border-left-color: var(--danger); }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+        
+        .icon-btn { background: var(--bg-body); border: 1px solid var(--border); cursor: pointer; padding: 0; width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--text-sub); }
 
         /* MODALS */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .modal-box { background: var(--bg-card); padding: 30px; border-radius: 20px; width: 450px; max-width: 90%; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
-        
-        .settings-btn { position: absolute; top: 20px; left: 20px; background: var(--bg-card); width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 50; box-shadow: var(--shadow-sm); color: var(--text-sub); transition: 0.3s; }
-        .settings-btn:hover { transform: rotate(90deg); color: var(--primary); }
-
-        #lockScreen { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.98); z-index: 3000; align-items: center; justify-content: center; color: white; flex-direction: column; }
-        
-        /* Switch Toggle */
-        .switch { position: relative; display: inline-block; width: 34px; height: 20px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--primary); }
-        input:checked + .slider:before { transform: translateX(14px); }
+        .modal-box { background: var(--bg-card); padding: 30px; border-radius: 20px; width: 450px; max-width: 90%; box-shadow: var(--shadow-lg); animation: slideUp 0.3s; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
         @media (max-width: 1024px) {
-            body.admin-open #adminSection { width: 100%; position: absolute; }
+            body.admin-open #adminSection { width: 100%; position: absolute; left: 0; top: 0; }
             body.admin-open #qrSection { display: none; }
-            .stat-grid { grid-template-columns: 1fr; }
-            .chart-row { grid-template-columns: 1fr; }
-            .tools-grid { grid-template-columns: repeat(3, 1fr); }
         }
     </style>
 </head>
@@ -216,7 +157,7 @@
     <div class="settings-btn" onclick="openAuth()"><i class="fa-solid fa-gear"></i></div>
     <div id="liveToastContainer"></div>
 
-    <!-- QR AREA -->
+    <!-- QR -->
     <div id="qrSection">
         <div class="qr-card">
             <div class="qr-inner">
@@ -226,21 +167,21 @@
                 <div class="realtime"><i class="fa-regular fa-clock"></i> <span id="clock">...</span></div>
             </div>
         </div>
-        <div id="marqueeContainer" class="marquee-container"><marquee id="marqueeText"></marquee></div>
+        <div id="marqueeContainer" style="position:fixed;bottom:0;width:100%;padding:10px;font-weight:bold;display:none;z-index:50;"><marquee id="marqueeText"></marquee></div>
     </div>
     
     <div id="resizer"></div>
 
-    <!-- ADMIN AREA -->
+    <!-- ADMIN -->
     <div id="adminSection">
         <div class="admin-header">
             <div>
-                <div class="admin-title"><i class="fa-solid fa-shield-halved"></i> QUẢN TRỊ VIÊN</div>
-                <span class="credit-text">#Made by Nguyễn Hữu Ngọc Anh</span>
+                <div style="font-size:18px; font-weight:800; color:var(--primary)">QUẢN TRỊ VIÊN</div>
+                <span class="credit-text" style="font-size:11px; color:#64748b; font-style:italic">#Made by Nguyễn Hữu Ngọc Anh</span>
             </div>
             <div style="display:flex; gap:8px">
-                <button class="icon-btn expand-btn" onclick="toggleFullAdmin()" title="Mở rộng"><i class="fa-solid fa-expand"></i></button>
-                <button class="btn btn-danger" onclick="closeAdmin()"><i class="fa-solid fa-power-off"></i></button>
+                <button class="icon-btn" onclick="toggleFullAdmin()" title="Mở rộng"><i class="fa-solid fa-expand"></i></button>
+                <button class="btn btn-danger" onclick="checkCloseAdmin()"><i class="fa-solid fa-xmark"></i> Thoát</button>
             </div>
         </div>
         
@@ -249,35 +190,29 @@
                 <button class="tab-btn active" onclick="switchTab('tab-stats')">Thống Kê</button>
                 <button class="tab-btn" onclick="switchTab('tab-data')">Danh Sách</button>
                 <button class="tab-btn" onclick="switchTab('tab-form')">Cấu hình Form</button>
-                <button class="tab-btn" onclick="switchTab('tab-log')">Lịch sử</button>
+                <button class="tab-btn" onclick="switchTab('tab-notif')">Lịch sử</button>
                 <button class="tab-btn" onclick="switchTab('tab-tools')">Tiện Ích</button>
                 <button class="tab-btn" onclick="switchTab('tab-config')">Cài Đặt</button>
             </div>
 
-            <div id="loader" style="display:none; text-align:center; padding:20px; color:var(--text-sub)">
-                <i class="fa-solid fa-circle-notch fa-spin fa-2x"></i><br>Đang xử lý...
-            </div>
+            <div id="loader" style="display:none; text-align:center; padding:20px;">Đang xử lý...</div>
 
             <!-- 1. THỐNG KÊ -->
             <div id="tab-stats" class="tab-content active">
-                <div class="stat-grid">
+                <div class="dashboard-grid" style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
                     <div class="stat-card"><span class="stat-val" style="color:var(--primary)" id="statTotal">0</span><span class="stat-label">Tổng SV</span></div>
                     <div class="stat-card"><span class="stat-val" style="color:var(--success)" id="statClasses">0</span><span class="stat-label">Lớp</span></div>
                     <div class="stat-card"><span class="stat-val" style="color:var(--warning)" id="statReq">0</span><span class="stat-label">Yêu Cầu</span></div>
                 </div>
-                <div class="chart-row">
-                    <div class="chart-box">
-                        <div class="chart-header"><span>Tỉ lệ Lớp</span><button class="download-btn" onclick="dlChart('c1')">⬇ PNG</button></div>
-                        <div class="chart-container"><canvas id="c1"></canvas></div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px">
+                    <div class="chart-box" style="background:var(--bg-card); padding:15px; border-radius:12px; border:1px solid var(--border)">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:10px"><b>Tỉ lệ Lớp</b><button class="icon-btn" onclick="dlChart('c1')">⬇</button></div>
+                        <div style="height:200px"><canvas id="c1"></canvas></div>
                     </div>
-                    <div class="chart-box">
-                        <div class="chart-header"><span>Mật độ Giờ</span><button class="download-btn" onclick="dlChart('c2')">⬇ PNG</button></div>
-                        <div class="chart-container"><canvas id="c2"></canvas></div>
+                    <div class="chart-box" style="background:var(--bg-card); padding:15px; border-radius:12px; border:1px solid var(--border)">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:10px"><b>Mật độ Giờ</b><button class="icon-btn" onclick="dlChart('c2')">⬇</button></div>
+                        <div style="height:200px"><canvas id="c2"></canvas></div>
                     </div>
-                </div>
-                 <div class="chart-box" style="margin-top:15px; height:300px">
-                    <div class="chart-header"><span>Xu hướng (Đường)</span><button class="download-btn" onclick="dlChart('c3')">⬇ PNG</button></div>
-                    <div class="chart-container"><canvas id="c3"></canvas></div>
                 </div>
             </div>
 
@@ -285,14 +220,14 @@
             <div id="tab-data" class="tab-content">
                 <div class="excel-toolbar">
                     <input type="date" id="viewDate" onchange="fetchList()" style="width:auto">
-                    <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm nhanh..." onkeyup="applyFilter()" style="flex:1">
+                    <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm..." onkeyup="applyFilter()" style="flex:1">
                     <button class="btn btn-danger" id="btnBulk" onclick="deleteBulk()" style="display:none">Xóa chọn</button>
                     <button class="btn btn-primary" onclick="fetchList()"><i class="fa-solid fa-rotate"></i> Tải lại</button>
                 </div>
                 <div class="table-wrap">
                     <table id="dataTable">
-                        <thead><tr id="tableHead"></tr><tr id="filterRow" style="background:var(--bg-body)"></tr></thead>
-                        <tbody id="tableBody"><tr><td colspan="10" style="text-align:center; padding:30px">Chưa có dữ liệu</td></tr></tbody>
+                        <thead><tr id="tableHead"></tr></thead>
+                        <tbody id="tableBody"><tr><td colspan="10" style="text-align:center; padding:30px">Đang tải...</td></tr></tbody>
                     </table>
                 </div>
                 <div style="text-align:right; margin-top:10px; font-size:12px; color:var(--text-sub)">Tổng dòng: <b id="rowCount">0</b></div>
@@ -300,132 +235,135 @@
 
             <!-- 3. CẤU HÌNH FORM -->
             <div id="tab-form" class="tab-content">
-                <div class="form-group"><label>Tiêu đề Form:</label><input type="text" id="fbTitle" style="font-weight:bold; font-size:16px; border-left:4px solid var(--primary)"></div>
-                <div class="fb-container" id="fbFields"></div>
-                <button class="btn btn-gray" onclick="addFormField()" style="width:100%; margin-top:15px; border-style:dashed; padding:15px;">
-                    <i class="fa-solid fa-plus"></i> Thêm trường dữ liệu
-                </button>
-                <div style="margin-top:20px; text-align:right; border-top:1px solid var(--border); padding-top:15px;">
-                    <button class="btn btn-success" onclick="saveFormConfig()"><i class="fa-solid fa-cloud-arrow-up"></i> Lưu Form & Đồng bộ</button>
+                <div class="config-group">
+                    <span class="config-label">Tiêu đề Form</span>
+                    <input type="text" id="fbTitle" value="THÔNG TIN SINH VIÊN" style="font-weight:bold; border-left:4px solid var(--primary)">
+                </div>
+                <div class="fb-container" id="fbFields" style="max-height:400px; overflow-y:auto; border:1px solid var(--border); padding:10px; border-radius:8px; margin-bottom:15px"></div>
+                <button class="btn btn-gray" onclick="addFormField()" style="width:100%; border:1px dashed #ccc">+ Thêm trường dữ liệu</button>
+                <div style="margin-top:20px; text-align:right">
+                    <button class="btn btn-success" onclick="saveFormConfig()"><i class="fa-solid fa-cloud-arrow-up"></i> Lưu & Đồng bộ</button>
                 </div>
             </div>
 
             <!-- 4. LỊCH SỬ -->
             <div id="tab-log" class="tab-content">
-                <div style="text-align:right; margin-bottom:15px"><button class="btn btn-gray btn-sm" onclick="clearLogs()">Xóa lịch sử</button></div>
+                <div style="text-align:right; margin-bottom:10px"><button class="btn btn-gray" onclick="clearLocalLogs()">Xóa lịch sử</button></div>
                 <ul id="logList" class="timeline"></ul>
             </div>
 
             <!-- 5. TIỆN ÍCH -->
             <div id="tab-tools" class="tab-content">
-                <div class="tools-container">
-                    <div class="tool-btn" id="toolLive" onclick="toggleLive()"><i class="fa-solid fa-bell"></i><span>TB Live</span></div>
-                    <div class="tool-btn" id="toolPause" onclick="togglePause()"><i class="fa-solid fa-pause"></i><span>Tạm dừng</span></div>
-                    <div class="tool-btn" id="toolDark" onclick="toggleDark()"><i class="fa-solid fa-moon"></i><span>Giao diện</span></div>
-                    <div class="tool-btn" onclick="downloadQR()"><i class="fa-solid fa-download"></i><span>Tải QR</span></div>
-                    <div class="tool-btn" onclick="exportExcel()"><i class="fa-solid fa-file-excel"></i><span>Xuất Excel</span></div>
-                    <div class="tool-btn" onclick="zoomQR()"><i class="fa-solid fa-magnifying-glass-plus"></i><span>Phóng to</span></div>
-                    <div class="tool-btn" id="toolBlur" onclick="toggleBlur()"><i class="fa-solid fa-eye-slash"></i><span>Che mờ</span></div>
-                    <div class="tool-btn" id="toolClock" onclick="toggleClock()"><i class="fa-regular fa-clock"></i><span>Đồng hồ</span></div>
-                    <div class="tool-btn" onclick="lockScreen()"><i class="fa-solid fa-lock"></i><span>Khóa Màn</span></div>
-                    <div class="tool-btn" onclick="randomStudent()"><i class="fa-solid fa-shuffle"></i><span>Quay số</span></div>
-                    <div class="tool-btn" onclick="printList()"><i class="fa-solid fa-print"></i><span>In DS</span></div>
-                    <div class="tool-btn" onclick="exportConfig()"><i class="fa-solid fa-file-export"></i><span>Backup</span></div>
-                    <div class="tool-btn" onclick="importConfig()"><i class="fa-solid fa-file-import"></i><span>Restore</span></div>
-                    <div class="tool-btn" onclick="openLink()"><i class="fa-solid fa-link"></i><span>Link Form</span></div>
-                    <div class="tool-btn" onclick="showStaticQR()"><i class="fa-solid fa-qrcode"></i><span>QR Tĩnh</span></div>
-                    <div class="tool-btn" onclick="checkNet()"><i class="fa-solid fa-wifi"></i><span>Check Net</span></div>
-                    <div class="tool-btn" onclick="toggleNote()"><i class="fa-solid fa-sticky-note"></i><span>Ghi chú</span></div>
-                    <div class="tool-btn" onclick="startTimer5()"><i class="fa-solid fa-hourglass-start"></i><span>Đếm 5p</span></div>
-                    <div class="tool-btn" onclick="fetchList()"><i class="fa-solid fa-sync"></i><span>Làm mới</span></div>
-                    <div class="tool-btn" onclick="window.location.reload()"><i class="fa-solid fa-rotate-right"></i><span>Reload</span></div>
+                <div class="tools-grid">
+                    <div class="tool-card" id="toolLive" onclick="toggleLive()"><i class="fa-solid fa-bell"></i><span>TB Live</span></div>
+                    <div class="tool-card" id="toolPause" onclick="togglePause()"><i class="fa-solid fa-pause"></i><span>Tạm dừng</span></div>
+                    <div class="tool-card" id="toolDark" onclick="toggleDark()"><i class="fa-solid fa-moon"></i><span>Giao diện</span></div>
+                    <div class="tool-card" onclick="dlQR()"><i class="fa-solid fa-download"></i><span>Tải QR</span></div>
+                    <div class="tool-card" onclick="exportExcel()"><i class="fa-solid fa-file-excel"></i><span>Xuất Excel</span></div>
+                    <div class="tool-card" onclick="zoomQR()"><i class="fa-solid fa-magnifying-glass-plus"></i><span>Zoom QR</span></div>
+                    <div class="tool-card" id="toolBlur" onclick="toggleBlur()"><i class="fa-solid fa-eye-slash"></i><span>Che QR</span></div>
+                    <div class="tool-card" id="toolClock" onclick="toggleClock()"><i class="fa-regular fa-clock"></i><span>Đồng hồ</span></div>
+                    <div class="tool-card" onclick="lockScreen()"><i class="fa-solid fa-lock"></i><span>Khóa App</span></div>
+                    <div class="tool-card" onclick="randomStudent()"><i class="fa-solid fa-shuffle"></i><span>Quay Số</span></div>
+                    <div class="tool-card" onclick="printList()"><i class="fa-solid fa-print"></i><span>In DS</span></div>
+                    <div class="tool-card" onclick="exportConfig()"><i class="fa-solid fa-file-export"></i><span>Backup</span></div>
+                    <div class="tool-card" onclick="importConfig()"><i class="fa-solid fa-file-import"></i><span>Restore</span></div>
+                    <div class="tool-card" onclick="openLink()"><i class="fa-solid fa-link"></i><span>Mở Link</span></div>
+                    <div class="tool-card" onclick="checkNet()"><i class="fa-solid fa-wifi"></i><span>Check Net</span></div>
+                    <div class="tool-card" onclick="toggleNote()"><i class="fa-solid fa-sticky-note"></i><span>Ghi chú</span></div>
+                    <div class="tool-card" onclick="startTimer5()"><i class="fa-solid fa-hourglass-start"></i><span>Đếm 5p</span></div>
+                    <div class="tool-card" onclick="window.location.reload()"><i class="fa-solid fa-rotate-right"></i><span>Reload</span></div>
+                    <div class="tool-card" onclick="showStaticQR()"><i class="fa-solid fa-qrcode"></i><span>QR Tĩnh</span></div>
+                    <div class="tool-card" onclick="alert('Đã xóa cache!')"><i class="fa-solid fa-eraser"></i><span>Xóa Cache</span></div>
                 </div>
                 <div id="notePad" style="display:none; margin-top:20px;">
                     <textarea id="adminNote" style="width:100%; height:100px; padding:10px; border-radius:8px; border:1px solid #cbd5e1" placeholder="Nhập ghi chú..."></textarea>
-                    <button class="btn btn-primary" onclick="saveNote()" style="margin-top:5px">Lưu Ghi Chú</button>
+                    <button class="btn btn-primary" onclick="saveNote()" style="margin-top:5px">Lưu</button>
                 </div>
             </div>
 
             <!-- 6. CÀI ĐẶT -->
             <div id="tab-config" class="tab-content">
-                <div class="config-box">
-                    <div class="config-head"><i class="fa-solid fa-link"></i> KẾT NỐI</div>
-                    <div class="form-group"><label>API Google Script <i class="fa-solid fa-lock" style="font-size:10px; color:var(--danger)"></i></label>
-                        <div class="pass-group"><input type="text" id="cfgApi" readonly class="secure-locked"><div class="pass-controls"><button class="icon-btn" onclick="unlock('cfgApi', 'Abc110022@')"><i class="fa-solid fa-lock-open"></i></button></div></div>
+                <div class="config-group">
+                    <span class="config-label">Kết nối & Bảo mật</span>
+                    <div class="form-group">
+                        <label>API Google Apps Script <i class="fa-solid fa-lock" style="font-size:10px; color:var(--danger)"></i></label>
+                        <div style="display:flex; gap:5px">
+                            <input type="text" id="cfgApi" readonly class="secure-locked no-copy" oncopy="return false">
+                            <button class="icon-btn" onclick="unlock('cfgApi', 'Abc110022@')"><i class="fa-solid fa-pen"></i></button>
+                        </div>
                     </div>
                     <div class="form-group"><label>Link Form:</label><input type="text" id="cfgLink"></div>
-                </div>
-
-                <div class="config-grid">
-                    <div class="config-box">
-                        <div class="config-head"><i class="fa-solid fa-shield-halved"></i> BẢO MẬT</div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
                         <div class="form-group"><label>Pass Admin <i class="fa-solid fa-lock" style="font-size:10px; color:var(--danger)"></i></label>
-                            <div class="pass-group"><input type="password" id="cfgPass" readonly class="secure-locked"><div class="pass-controls"><button class="icon-btn" onclick="togglePass('cfgPass', this)"><i class="fa-solid fa-eye"></i></button><button class="icon-btn" onclick="unlock('cfgPass', 'Abc110022#')"><i class="fa-solid fa-lock-open"></i></button></div></div>
+                            <div style="display:flex; gap:5px">
+                                <input type="password" id="cfgPass" readonly class="secure-locked no-copy" oncopy="return false">
+                                <button class="icon-btn" onclick="unlock('cfgPass', 'Abc110022#')"><i class="fa-solid fa-pen"></i></button>
+                            </div>
                         </div>
                         <div class="form-group"><label>Pass Reset <i class="fa-solid fa-lock" style="font-size:10px; color:var(--danger)"></i></label>
-                            <div class="pass-group"><input type="password" id="cfgReset" readonly class="secure-locked"><div class="pass-controls"><button class="icon-btn" onclick="togglePass('cfgReset', this)"><i class="fa-solid fa-eye"></i></button><button class="icon-btn" onclick="unlock('cfgReset', 'Abc110022#')"><i class="fa-solid fa-lock-open"></i></button></div></div>
+                            <div style="display:flex; gap:5px">
+                                <input type="password" id="cfgReset" readonly class="secure-locked no-copy" oncopy="return false">
+                                <button class="icon-btn" onclick="unlock('cfgReset', 'Abc110022#')"><i class="fa-solid fa-pen"></i></button>
+                            </div>
                         </div>
                     </div>
+                </div>
 
-                    <div class="config-box">
-                         <div class="config-head"><i class="fa-solid fa-palette"></i> GIAO DIỆN & QR</div>
-                         <div class="form-group"><label>Tiêu đề QR:</label><input type="text" id="cfgTitle"></div>
-                         <div style="display:flex; gap:10px; margin-top:10px">
-                             <div style="flex:1"><label>Màu Mã:</label><input type="color" id="cfgQrColor" style="height:35px; width:100%"></div>
-                             <div style="flex:1"><label>Màu Nền:</label><input type="color" id="cfgQrBg" style="height:35px; width:100%"></div>
-                             <div style="flex:1"><label>Thời gian (s):</label><input type="number" id="cfgTime"></div>
-                         </div>
+                <div class="config-group">
+                    <span class="config-label">Giao diện & Thông báo</span>
+                    <div class="form-group"><label>Tiêu đề QR:</label><input type="text" id="cfgTitle"></div>
+                    <div class="form-group"><label>Chữ chạy (Marquee):</label><input type="text" id="cfgMqText"></div>
+                    
+                    <div style="display:flex; gap:10px; margin-top:10px">
+                        <div style="flex:1"><label>Màu QR</label><input type="color" id="cfgQrColor" style="height:35px; width:100%"></div>
+                        <div style="flex:1"><label>Màu Nền</label><input type="color" id="cfgQrBg" style="height:35px; width:100%"></div>
+                        <div style="flex:1"><label>Màu Text</label><input type="color" id="cfgMqColor" style="height:35px; width:100%"></div>
+                        <div style="flex:1"><label>Nền Text</label><input type="color" id="cfgMqBg" style="height:35px; width:100%"></div>
+                    </div>
+                    
+                    <div style="display:flex; gap:10px; margin-top:10px">
+                        <div style="flex:1"><label>Vị trí Text</label><select id="cfgMqPos"><option value="bottom">Dưới</option><option value="top">Trên</option><option value="none">Tắt</option></select></div>
+                        <div style="flex:1"><label>Time QR (s)</label><input type="number" id="cfgTime"></div>
+                        <div style="flex:1"><label>Vị trí TB</label><select id="cfgNotifPos"><option value="top-right">Trên Phải</option><option value="bottom-right">Dưới Phải</option></select></div>
+                        <div style="flex:1"><label>Time TB (s)</label><input type="number" id="cfgNotifDuration"></div>
                     </div>
                 </div>
-                
-                <div class="config-box" style="margin-top:20px">
-                     <div class="config-head"><i class="fa-solid fa-bullhorn"></i> CHỮ CHẠY & THÔNG BÁO</div>
-                     <div class="form-group"><label>Nội dung chữ chạy:</label><input type="text" id="cfgMqText"></div>
-                     <div style="display:flex; gap:15px; margin-bottom:15px">
-                         <div style="flex:1"><label>Vị trí:</label><select id="cfgMqPos"><option value="bottom">Dưới đáy</option><option value="top">Trên cùng</option><option value="none">Tắt</option></select></div>
-                         <div style="flex:1"><label>Màu nền:</label><input type="color" id="cfgMqBg" style="height:40px; padding:2px; width:100%"></div>
-                         <div style="flex:1"><label>Màu chữ:</label><input type="color" id="cfgMqColor" style="height:40px; padding:2px; width:100%"></div>
-                     </div>
-                     <div style="display:flex; gap:15px">
-                         <div style="flex:1"><label>Thời gian TB (s):</label><input type="number" id="cfgNotifDuration"></div>
-                         <div style="flex:1"><label>Vị trí TB:</label><select id="cfgNotifPos"><option value="top-right">Trên Phải</option><option value="top-left">Trên Trái</option><option value="bottom-right">Dưới Phải</option><option value="bottom-left">Dưới Trái</option></select></div>
-                     </div>
-                </div>
-                
-                <button class="btn btn-primary" onclick="saveSystemConfig()" style="width:100%; margin-top:20px; padding:15px">LƯU CÀI ĐẶT</button>
+
+                <button class="btn btn-primary" onclick="saveSystemConfig()" style="width:100%; padding:15px">LƯU CÀI ĐẶT</button>
             </div>
         </div>
     </div>
 
-    <!-- MODALS -->
+    <!-- AUTH MODAL -->
     <div id="authModal" class="modal-overlay">
         <div class="modal-box" style="text-align:center">
             <h3>ĐĂNG NHẬP</h3>
-            <div class="pass-group" style="margin:20px 0">
-                <input type="password" id="loginPass" placeholder="••••••" style="width:100%; padding:15px; text-align:center; font-size:20px; letter-spacing:5px" onkeyup="if(event.key==='Enter') doLogin()">
-                <div class="pass-controls" style="right:10px"><button class="icon-btn" onclick="togglePass('loginPass', this)"><i class="fa-solid fa-eye"></i></button></div>
-            </div>
-            <button class="btn btn-primary" style="width:100%" onclick="doLogin()">Vào Admin</button>
+            <input type="password" id="loginPass" placeholder="••••••" style="width:100%; padding:15px; text-align:center; font-size:20px; letter-spacing:5px; margin:20px 0; border:1px solid #ddd; border-radius:10px;" onkeyup="if(event.key==='Enter') doLogin()">
+            <button class="btn btn-primary" onclick="doLogin()" style="width:100%">VÀO ADMIN</button>
         </div>
     </div>
 
+    <!-- REQUEST MODAL -->
     <div id="reqModal" class="modal-overlay">
         <div class="modal-box">
-            <h3 style="color:var(--primary);margin-top:0">DUYỆT YÊU CẦU</h3>
+            <h3 style="color:var(--primary); margin-top:0"><i class="fa-solid fa-user-shield"></i> DUYỆT YÊU CẦU</h3>
             <div id="reqContent" style="background:var(--bg-body); padding:15px; border-radius:10px; margin:20px 0; text-align:left; line-height:1.6"></div>
             <div style="display:flex; gap:10px; justify-content:flex-end">
                 <button class="btn btn-gray" onclick="document.getElementById('reqModal').style.display='none'">Đóng</button>
                 <button class="btn btn-danger" onclick="reqAction(false)">Từ chối</button>
-                <button class="btn btn-success" onclick="reqAction(true)">Chấp thuận</button>
+                <button class="btn btn-success" onclick="reqAction(true)">Chấp thuận (Xóa)</button>
             </div>
         </div>
     </div>
 
+    <!-- LOCK SCREEN -->
     <div id="lockScreen" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.98); z-index:3000; align-items:center; justify-content:center; flex-direction:column; color:white">
         <i class="fa-solid fa-lock fa-4x" style="margin-bottom:20px"></i><h2>HỆ THỐNG ĐANG KHÓA</h2>
         <button class="btn btn-primary" onclick="openLogin(true)" style="margin-top:20px; padding:10px 30px">MỞ KHÓA</button>
     </div>
 
+    <!-- ZOOM QR -->
     <div id="qrZoomModal" class="modal-overlay" style="background:white; flex-direction:column">
         <h2 style="color:var(--text-main)">QUÉT MÃ ĐIỂM DANH</h2>
         <div id="qrcodeZoom" style="transform: scale(1.5); margin: 50px;"></div>
@@ -433,16 +371,19 @@
     </div>
 
     <script>
-        const DEF = { api: "https://script.google.com/macros/s/AKfycbxQgOytzD2nJwoCSdTLiRaGnl567gcNKVOmHTsA_u8dJ7Y87rBBFlJc1c32uuYLtauy/exec", pass: "Admin", reset: "Admin", title: "ĐIỂM DANH CLB", time: 30, mqText: "HỆ THỐNG ĐANG MỞ", mqPos: "bottom", mqBg: "#ef4444", mqColor: "#ffffff", qrColor: "#000000", qrBg: "#ffffff", notifEnabled: true, notifDuration: 5, notifPos: "top-right" };
+        const API_DEFAULT = "https://script.google.com/macros/s/AKfycbxQgOytzD2nJwoCSdTLiRaGnl567gcNKVOmHTsA_u8dJ7Y87rBBFlJc1c32uuYLtauy/exec";
+        const DEF = { api: API_DEFAULT, pass: "Admin", reset: "Admin", title: "ĐIỂM DANH CLB", time: 30, mqText: "HỆ THỐNG ĐANG MỞ", mqPos: "bottom", mqBg: "#ef4444", mqColor: "#ffffff", qrColor: "#000000", qrBg: "#ffffff", notifEnabled: true, notifDuration: 5, notifPos: "top-right" };
         let cfg = JSON.parse(localStorage.getItem('qr_cfg')) || DEF;
-        let formCfg = { title: "THÔNG TIN", fields: [{label:"Họ Tên", type:"text", required:true}, {label:"MSSV", type:"tel", required:true}, {label:"Lớp", type:"text", required:true}] };
-        let allData=[], filteredData=[], logs=JSON.parse(localStorage.getItem('logs'))||[], timer=30, qrObj=null, lastReq=0, isPaused=false, liveInt=null, isUnlockMode=false, curReq=null;
-        let chart1=null, chart2=null, chart3=null;
+        let formCfg = { title: "THÔNG TIN", fields: [{label:"Họ Tên", type:"text"}, {label:"MSSV", type:"tel"}, {label:"Lớp", type:"text"}] };
+        let allData=[], filteredData=[], logs=JSON.parse(localStorage.getItem('logs'))||[];
+        let timer=30, qrObj=null, lastReq=0, isPaused=false, liveInt=null, isUnlockMode=false, curReq=null, isDirty=false;
+        let charts={c1:null, c2:null};
 
+        // Split Screen Logic
         const resizer=document.getElementById('resizer'), adminSec=document.getElementById('adminSection'); let isResizing=false;
         resizer.addEventListener('mousedown', ()=>{isResizing=true; document.body.style.cursor='col-resize'});
         document.addEventListener('mousemove', e=>{if(isResizing){const w=window.innerWidth-e.clientX; if(w>300 && w<window.innerWidth-300){adminSec.style.width=w+'px'; document.getElementById('qrSection').style.flex='none'; document.getElementById('qrSection').style.width=(window.innerWidth-w)+'px';}}});
-        document.addEventListener('mouseup', ()=>{isResizing=false; document.body.style.cursor='default';});
+        document.addEventListener('mouseup', ()=>{isResizing=false; document.body.style.cursor='default'});
 
         window.onload = () => {
             document.getElementById('viewDate').valueAsDate = new Date();
@@ -454,7 +395,7 @@
             } else renderFormBuilder();
         };
 
-        // --- QR ---
+        // --- QR & UI ---
         function startQR() {
             setInterval(()=>{ if(!isPaused){ timer--; document.getElementById('countdown').innerText=timer; if(timer<=0){timer=cfg.time;updateQR();} }else document.getElementById('countdown').innerText="--"; },1000);
             updateQR(); setInterval(()=>document.getElementById('clock').innerText=new Date().toLocaleString('vi-VN'),1000);
@@ -482,7 +423,48 @@
             tc.style.flexDirection=cfg.notifPos.includes("top")?"column-reverse":"column";
         }
 
-        // --- POLLING & DATA ---
+        // --- AUTH ---
+        function openAuth() { document.getElementById('authModal').style.display='flex'; document.getElementById('loginPass').value=""; document.getElementById('loginPass').focus(); }
+        function closeAuthModal() { document.getElementById('authModal').style.display='none'; }
+        function openLogin(u){ isUnlockMode=u; openAuth(); }
+        function doLogin() {
+            if(document.getElementById('loginPass').value === cfg.pass) {
+                closeAuthModal();
+                if(isUnlockMode) { document.getElementById("lockScreen").style.display="none"; showToast("Đã mở khóa", "success"); addLog("Hệ thống", "Mở khóa màn hình", "info"); }
+                else {
+                    document.body.classList.add('admin-open');
+                    // Fill Config
+                    document.getElementById('cfgApi').value=cfg.api; document.getElementById('cfgPass').value=cfg.pass;
+                    document.getElementById('cfgReset').value=cfg.reset; document.getElementById('cfgTitle').value=cfg.title;
+                    document.getElementById('cfgLink').value=cfg.link; document.getElementById('cfgTime').value=cfg.time;
+                    document.getElementById('cfgQrColor').value=cfg.qrColor; document.getElementById('cfgQrBg').value=cfg.qrBg;
+                    document.getElementById('cfgMqText').value=cfg.mqText; document.getElementById('cfgMqBg').value=cfg.mqBg;
+                    document.getElementById('cfgMqColor').value=cfg.mqColor; document.getElementById('cfgMqPos').value=cfg.mqPos;
+                    document.getElementById('cfgNotifDuration').value=cfg.notifDuration; document.getElementById('cfgNotifPos').value=cfg.notifPos;
+                    fetchList(); addLog("Hệ thống", "Đăng nhập thành công", "success");
+                }
+            } else alert("Sai mật khẩu");
+        }
+        function closeAdmin() { if(isDirty && !confirm("Chưa lưu cài đặt. Thoát?")) return; document.body.classList.remove('admin-open'); }
+        function checkCloseAdmin() { closeAdmin(); }
+
+        function saveSystemConfig(silent=false) {
+            cfg.api = document.getElementById('cfgApi').value; cfg.link = document.getElementById('cfgLink').value;
+            cfg.pass = document.getElementById('cfgPass').value; cfg.reset = document.getElementById('cfgReset').value;
+            cfg.title = document.getElementById('cfgTitle').value; cfg.time = parseInt(document.getElementById('cfgTime').value);
+            cfg.mqText = document.getElementById('cfgMqText').value; cfg.mqBg = document.getElementById('cfgMqBg').value;
+            cfg.mqColor = document.getElementById('cfgMqColor').value; cfg.mqPos = document.getElementById('cfgMqPos').value;
+            cfg.qrColor = document.getElementById('cfgQrColor').value; cfg.qrBg = document.getElementById('cfgQrBg').value;
+            cfg.notifDuration = parseInt(document.getElementById('cfgNotifDuration').value); cfg.notifPos = document.getElementById('cfgNotifPos').value;
+            localStorage.setItem('qr_cfg', JSON.stringify(cfg));
+            localStorage.setItem('admin_reset_pass', cfg.reset); // Đồng bộ
+            isDirty = false;
+            if(!silent) { showToast("Đã lưu cài đặt!", "success"); addLog("Cấu hình", "Đã lưu cài đặt hệ thống", "info"); location.reload(); }
+            applyUI(); updateQR();
+        }
+        function unlock(id, code) { if(prompt("Mã cấp 2:")===code) { const el=document.getElementById(id); el.readOnly=false; el.classList.add('unlocked'); el.focus(); el.onblur=()=>{el.readOnly=true; el.classList.remove('unlocked')}; showToast("Đã mở khóa", "success"); } else alert("Sai mã"); }
+
+        // --- POLLING ---
         function toggleLive(init) {
             if(!init) { cfg.notifEnabled=!cfg.notifEnabled; saveSystemConfig(true); addLog("Tiện ích", cfg.notifEnabled?"Bật thông báo":"Tắt thông báo"); }
             updateTool('toolLive', cfg.notifEnabled);
@@ -495,22 +477,20 @@
             const d = new Date().toISOString().split('T')[0];
             fetch(`${cfg.api}?action=GET_LIST&date=${d}`).then(r=>r.json()).then(r=>{
                 if(r.status==="success") {
-                    // Check Request
                     if(r.totalRequests > lastReq) {
                         fetch(`${cfg.api}?action=GET_LOGS`).then(l=>l.json()).then(lr=>{
                             if(lr.status==="success" && lr.data.length>0) {
                                 const req = lr.data[0];
-                                showToast(`🔔 Yêu cầu: ${req.name}`, "warning");
+                                showToast(`🔔 Yêu cầu mới: ${req.name}`, "warning");
                                 addLog("Yêu cầu", `${req.name}: ${req.reason}`, "warning");
                             }
                         });
                         lastReq = r.totalRequests;
                         if(document.body.classList.contains('admin-open')) fetchList();
                     }
-                    // Sync List
                     if(document.body.classList.contains('admin-open')) {
                         const old = allData.length; allData = r.data;
-                        if(allData.length > old) { showToast(`👨‍🎓 ${allData.length-old} bạn mới điểm danh`); applyFilter(); addLog("Dữ liệu", "Có sinh viên mới điểm danh", "success"); }
+                        if(allData.length > old) { showToast(`👨‍🎓 ${allData.length-old} bạn mới điểm danh`, "success"); applyFilter(); addLog("Dữ liệu", "Có sinh viên mới", "success"); }
                     }
                 }
             });
@@ -524,14 +504,14 @@
             }).catch(()=>{document.getElementById('loader').style.display='none'});
         }
 
-        // --- TABLE ---
+        // --- TABLE & REQ ---
         function applyFilter() {
             const term = document.getElementById('searchInput').value.toLowerCase();
             filteredData = allData.filter(i => JSON.stringify(i).toLowerCase().includes(term));
             
             // Header
-            let hHTML = `<th style="width:30px"><input type="checkbox" onclick="toggleAll(this)"></th><th class="bell-cell">🔔</th><th>Giờ<input class="filter-input" placeholder="Lọc..." onkeyup="filterCol(2,this.value)"></th>`;
-            formCfg.fields.forEach((f,i) => { hHTML += `<th>${f.label}<input class="filter-input" placeholder="Lọc..." onkeyup="filterCol(${i+3},this.value)"></th>`; });
+            let hHTML = `<th style="width:30px"><input type="checkbox" onclick="toggleAll(this)"></th><th class="bell-cell">🔔</th><th>Giờ</th>`;
+            formCfg.fields.forEach((f,i) => { hHTML += `<th onclick="sortTable('${f.label}')">${f.label} <i class="fa-solid fa-sort" style="font-size:10px"></i></th>`; });
             hHTML += `<th>Xóa</th>`;
             document.getElementById('tableHead').innerHTML = hHTML;
 
@@ -542,34 +522,30 @@
                 let cols = "";
                 formCfg.fields.forEach((f, idx) => {
                     let val = (i.data && i.data[idx]) ? i.data[idx] : "";
+                    // Fallback
                     if(!val) { if(idx===0) val=i.name; else if(idx===1) val=i.mssv; else if(idx===2) val=i.class_name; }
                     cols += `<td title="${val}">${val}</td>`;
                 });
-                html += `<tr><td><input type="checkbox" class="chk" value="${i.row_index}|${i.unique_id}"></td><td class="bell-cell">${bell}</td><td>${i.time.split(' ')[0]}</td>${cols}<td><i class="fa-solid fa-trash" style="color:var(--danger);cursor:pointer" onclick="delRow(${i.row_index},'${i.name}')"></i></td></tr>`;
+                html += `<tr><td><input type="checkbox" class="chk" value="${i.row_index}|${i.unique_id}" onclick="updateBulk()"></td><td class="bell-cell">${bell}</td><td>${i.time.split(' ')[0]}</td>${cols}<td><i class="fa-solid fa-trash" style="color:var(--danger);cursor:pointer" onclick="delRow(${i.row_index},'${i.name}')"></i></td></tr>`;
             });
             document.getElementById('tableBody').innerHTML = html || '<tr><td colspan="10" style="text-align:center">Trống</td></tr>';
             document.getElementById('rowCount').innerText = filteredData.length;
-            updateBulk(); renderStats();
+            renderStats();
         }
 
-        // --- REQ SYSTEM ---
-        function openReq(id, n, m, c, r) { curReq={id, n, m}; document.getElementById('reqContent').innerHTML = `<b>${n}</b> (${m})<br>Lý do: <span style="color:red">${r}</span>`; document.getElementById('reqModal').style.display = 'flex'; }
-        function reqAction(approve) {
-            if(approve) { const r=allData.find(x=>x.unique_id==curReq.id || x.mssv==curReq.m); if(r) delRow(r.row_index, curReq.n, true); showToast("Đã chấp thuận reset", "success"); addLog("Yêu cầu", `Đã reset cho ${curReq.n}`, "success"); } 
-            else { showToast("Đã từ chối", "warning"); addLog("Yêu cầu", `Từ chối reset cho ${curReq.n}`, "warning"); }
+        function openReq(id, n, m, c, r) { curReq={id, n, m}; document.getElementById('reqContent').innerHTML=`<b>${n}</b> (${m})<br>Lớp: ${c}<br>Lý do: <span style="color:red">${r}</span>`; document.getElementById('reqModal').style.display='flex'; }
+        function reqAction(app) {
+            if(app) { const r=allData.find(x=>x.unique_id==curReq.id || x.mssv==curReq.m); if(r) delRow(r.row_index, curReq.n, true); showToast("Đã duyệt!", "success"); } 
+            else { showToast("Đã từ chối", "warning"); }
             document.getElementById('reqModal').style.display='none';
         }
-
-        // --- ACTIONS ---
         function delRow(idx, n, silent=false) {
             if(!silent && !confirm("Xóa?")) return;
             fetch(cfg.api, {method:'POST', body:JSON.stringify({action:"DELETE_ROW", row_index:idx})}).then(r=>r.json()).then(r=>{
                 if(r.status==="success") { if(!silent) showToast("Đã xóa"); addLog("Dữ liệu", `Xóa: ${n}`, "danger"); fetchList(); }
             });
         }
-        function deleteBulk() { const chks=document.querySelectorAll('.chk:checked'); if(!confirm(`Xóa ${chks.length}?`)) return; Array.from(chks).forEach(async c=>await fetch(cfg.api,{method:'POST', body:JSON.stringify({action:"DELETE_ROW", row_index:c.value.split('|')[0]})})); alert("Xong"); fetchList(); addLog("Dữ liệu", `Xóa ${chks.length} dòng`, "danger"); }
-        function toggleAll(src) { document.querySelectorAll('.chk').forEach(c=>c.checked=src.checked); updateBulk(); }
-        function updateBulk() { const n=document.querySelectorAll('.chk:checked').length; document.getElementById('btnBulk').style.display=n?'inline-block':'none'; }
+        function deleteBulk() { const chks=document.querySelectorAll('.chk:checked'); if(!confirm(`Xóa ${chks.length}?`)) return; Array.from(chks).forEach(async c=>await fetch(cfg.api,{method:'POST', body:JSON.stringify({action:"DELETE_ROW", row_index:c.value.split('|')[0]})})); alert("Xong"); fetchList(); }
 
         // --- FORM BUILDER ---
         function renderFormBuilder() {
@@ -578,126 +554,80 @@
                 c.innerHTML += `
                 <div class="fb-item">
                     <div class="fb-settings">
-                        <input type="text" value="${f.label}" onchange="formCfg.fields[${i}].label=this.value" placeholder="Tên trường">
-                        <input type="text" value="${f.placeholder||''}" onchange="formCfg.fields[${i}].placeholder=this.value" placeholder="Ghi chú (Placeholder)">
-                        <select onchange="formCfg.fields[${i}].type=this.value"><option value="text" ${f.type=='text'?'selected':''}>Chữ</option><option value="tel" ${f.type=='tel'?'selected':''}>Số</option></select>
-                        <select onchange="formCfg.fields[${i}].format=this.value"><option value="none" ${f.format=='none'?'selected':''}>None</option><option value="uppercase" ${f.format=='uppercase'?'selected':''}>IN HOA</option><option value="capitalize" ${f.format=='capitalize'?'selected':''}>Viết Hoa</option></select>
-                        <label class="switch"><input type="checkbox" ${f.required?'checked':''} onchange="formCfg.fields[${i}].required=this.checked"><span class="slider"></span> Bắt buộc</label>
+                        <input type="text" value="${f.label}" onchange="formCfg.fields[${i}].label=this.value; setDirty()" placeholder="Tên trường">
+                        <input type="text" value="${f.placeholder||''}" onchange="formCfg.fields[${i}].placeholder=this.value; setDirty()" placeholder="Ghi chú (Placeholder)">
+                        <select onchange="formCfg.fields[${i}].type=this.value; setDirty()"><option value="text" ${f.type=='text'?'selected':''}>Chữ</option><option value="tel" ${f.type=='tel'?'selected':''}>Số</option></select>
+                        <select onchange="formCfg.fields[${i}].format=this.value; setDirty()"><option value="none" ${f.format=='none'?'selected':''}>None</option><option value="uppercase" ${f.format=='uppercase'?'selected':''}>IN HOA</option><option value="capitalize" ${f.format=='capitalize'?'selected':''}>Viết Hoa</option></select>
+                        <label class="switch"><input type="checkbox" ${f.required?'checked':''} onchange="formCfg.fields[${i}].required=this.checked; setDirty()"><span class="slider"></span> Bắt buộc</label>
                         <i class="fa-solid fa-trash" style="color:var(--danger);cursor:pointer" onclick="removeField(${i})"></i>
                     </div>
                 </div>`;
             });
             document.getElementById('fbTitle').value = formCfg.title;
         }
-        function addFormField() { formCfg.fields.push({label:"Mới", type:"text", format:"none", required:false}); renderFormBuilder(); }
-        function removeField(i) { if(confirm("Xóa?")) { formCfg.fields.splice(i,1); renderFormBuilder(); } }
+        function addFormField() { formCfg.fields.push({label:"Mới", type:"text", required:false}); renderFormBuilder(); setDirty(); }
+        function removeField(i) { if(confirm("Xóa?")) { formCfg.fields.splice(i,1); renderFormBuilder(); setDirty(); } }
         function saveFormConfig() {
             formCfg.title = document.getElementById('fbTitle').value;
             fetch(cfg.api, {method:'POST', body:JSON.stringify({action:"SAVE_FORM_CONFIG", config:formCfg})})
-            .then(()=>{ alert("Đã lưu!"); addLog("Form", "Cập nhật cấu hình", "success"); fetchList(); });
+            .then(()=>{ showToast("Đã lưu Form!", "success"); addLog("Form", "Cập nhật cấu hình", "success"); isDirty=false; fetchList(); });
         }
+        function setDirty() { isDirty=true; }
 
-        // --- SYSTEM ---
-        function openAuth() { document.getElementById('authModal').style.display='flex'; document.getElementById('loginPass').value=""; document.getElementById('loginPass').focus(); }
-        function openLogin(u){ isUnlockMode=u; openAuth(); }
-        function doLogin() {
-            if(document.getElementById('loginPass').value === cfg.pass) {
-                document.getElementById('authModal').style.display='none';
-                if(isUnlockMode) { document.getElementById('lockScreen').style.display='none'; showToast("Đã mở khóa"); addLog("Hệ thống", "Mở khóa màn hình", "info"); }
-                else {
-                    document.body.classList.add('admin-open');
-                    document.getElementById('cfgApi').value=cfg.api; document.getElementById('cfgPass').value=cfg.pass;
-                    document.getElementById('cfgReset').value=cfg.reset; document.getElementById('cfgTitle').value=cfg.title;
-                    document.getElementById('cfgLink').value=cfg.link; document.getElementById('cfgTime').value=cfg.time;
-                    document.getElementById('cfgQrColor').value=cfg.qrColor; document.getElementById('cfgQrBg').value=cfg.qrBg;
-                    document.getElementById('cfgMqText').value=cfg.mqText; document.getElementById('cfgMqBg').value=cfg.mqBg;
-                    document.getElementById('cfgMqColor').value=cfg.mqColor; document.getElementById('cfgMqPos').value=cfg.mqPos;
-                    document.getElementById('cfgNotifDuration').value=cfg.notifDuration; document.getElementById('cfgNotifPos').value=cfg.notifPos;
-                    fetchList(); addLog("Hệ thống", "Đăng nhập thành công", "success");
-                }
-            } else alert("Sai mật khẩu");
-        }
-        function closeAdmin() { document.body.classList.remove('admin-open'); }
-        function saveSystemConfig(silent=false) {
-            cfg.api = document.getElementById('cfgApi').value; cfg.pass = document.getElementById('cfgPass').value;
-            cfg.reset = document.getElementById('cfgReset').value; cfg.title = document.getElementById('cfgTitle').value;
-            cfg.link = document.getElementById('cfgLink').value; cfg.time = parseInt(document.getElementById('cfgTime').value);
-            cfg.mqText = document.getElementById('cfgMqText').value; cfg.mqBg = document.getElementById('cfgMqBg').value;
-            cfg.mqColor = document.getElementById('cfgMqColor').value; cfg.mqPos = document.getElementById('cfgMqPos').value;
-            cfg.qrColor = document.getElementById('cfgQrColor').value; cfg.qrBg = document.getElementById('cfgQrBg').value;
-            cfg.notifDuration = parseInt(document.getElementById('cfgNotifDuration').value); cfg.notifPos = document.getElementById('cfgNotifPos').value;
-            localStorage.setItem('qr_cfg', JSON.stringify(cfg));
-            localStorage.setItem('admin_reset_pass', cfg.reset);
-            if(!silent) { alert("Đã lưu!"); location.reload(); }
-            applyUI(); updateQR();
-        }
-        function unlock(el) { if(prompt("Mã cấp 2:")==="1234") { el.parentElement.querySelector('input').readOnly=false; el.parentElement.querySelector('input').classList.add('unlocked'); } }
-        function togglePass(id, btn) { const x=document.getElementById(id); x.type=x.type==='password'?'text':'password'; }
-
-        // --- UTILS ---
+        // --- UTILS & LOGS ---
         function addLog(title, msg, type) { logs.unshift({title, msg, type, t:new Date().toLocaleTimeString()}); if(logs.length>50) logs.pop(); localStorage.setItem('logs', JSON.stringify(logs)); renderLogs(); }
-        function renderLogs() { document.getElementById('logList').innerHTML = logs.map(x => `<li class="timeline-item ${x.type}"><div class="log-card"><div class="log-header"><span>${x.t}</span><span>${x.time}</span></div><div>${x.msg}</div></div></li>`).join(''); }
-        function clearLogs() { logs=[]; localStorage.setItem('logs','[]'); renderLogs(); }
-        function switchTab(id) { document.querySelectorAll('.tab-content').forEach(e=>e.style.display='none'); document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active')); document.getElementById(id).style.display='block'; event.currentTarget.classList.add('active'); }
-        function showToast(msg, type="success") { const d=document.createElement('div'); d.className=`live-toast ${type}`; d.innerHTML=`<div><b>${msg}</b></div>`; document.getElementById('liveToastContainer').prepend(d); setTimeout(()=>d.remove(), cfg.notifDuration*1000); }
+        function renderLogs() { document.getElementById('logList').innerHTML = logs.map(l=>`<li class="timeline-item ${l.type}"><div class="log-box"><span class="log-time">${l.t}</span><span class="log-msg"><b>${l.title}:</b> ${l.msg}</span></div></li>`).join(''); }
+        function clearLocalLogs() { logs=[]; localStorage.setItem('logs', '[]'); renderLogs(); }
+        function showToast(msg, type="success") { 
+            const d=document.createElement('div'); d.className=`toast ${type}`; 
+            let icon='check-circle'; if(type==='warning') icon='triangle-exclamation'; if(type==='danger') icon='xmark-circle';
+            d.innerHTML=`<i class="fa-solid fa-${icon} toast-icon"></i><div class="toast-body"><span class="toast-title">${type==='danger'?'Lỗi':(type==='warning'?'Chú ý':'Thành công')}</span><span class="toast-msg">${msg}</span></div>`;
+            document.getElementById('liveToastContainer').prepend(d); setTimeout(()=>d.remove(), cfg.notifDuration*1000); 
+        }
         function updateTool(id, active) { const el=document.getElementById(id); if(active) el.classList.add('tool-active'); else el.classList.remove('tool-active'); }
         function dlChart(id) { const a=document.createElement('a'); a.href=document.getElementById(id).toDataURL(); a.download='Chart.png'; a.click(); }
-        
-        // Tool Actions
-        function togglePause() { isPaused=!isPaused; updateTool('toolPause', isPaused); showToast(isPaused?"Đã Tạm Dừng":"Tiếp Tục"); addLog("Tiện ích", isPaused?"Tạm dừng hệ thống":"Tiếp tục hệ thống", "warning"); }
-        function toggleDark() { cfg.darkMode=!cfg.darkMode; applyUI(); saveSystemConfig(true); addLog("Giao diện", "Đổi chế độ Sáng/Tối", "info"); }
-        function zoomQR() { document.getElementById('qrZoomModal').style.display='flex'; updateQR(); }
-        function toggleBlur() { document.getElementById('qrcode').classList.toggle('blur'); updateTool('toolBlur', document.getElementById('qrcode').classList.contains('blur')); }
-        function lockScreen() { document.getElementById('lockScreen').style.display='flex'; closeAdmin(); addLog("Bảo mật", "Khóa màn hình", "warning"); }
-        function dlQR() { const i=document.querySelector('#qrcode img'); if(i){const a=document.createElement('a'); a.href=i.src; a.download='QR.png'; a.click();} }
-        function exportExcel() { 
-            const wb = XLSX.utils.book_new(); 
-            const ws = XLSX.utils.json_to_sheet(allData.map(r=>({Time:r.time, ...r.data})));
-            XLSX.utils.book_append_sheet(wb, ws, "Data");
-            XLSX.writeFile(wb, "DiemDanh.xlsx");
-            addLog("Dữ liệu", "Xuất file Excel", "success");
-        }
+        function toggleAll(src) { document.querySelectorAll('.chk').forEach(c=>c.checked=src.checked); updateBulk(); }
+        function updateBulk() { const n=document.querySelectorAll('.chk:checked').length; document.getElementById('btnBulk').style.display=n?'inline-block':'none'; }
         function toggleFullAdmin() { document.body.classList.toggle('full-width'); }
-        function openLink() { window.open(cfg.link, '_blank'); }
-        function checkNet() { showToast(navigator.onLine ? "Online" : "Offline", navigator.onLine?"success":"danger"); }
-        function toggleNote() { const n=document.getElementById('notePad'); n.style.display=n.style.display==='none'?'block':'none'; }
-        function saveNote() { localStorage.setItem('admin_note', document.getElementById('adminNote').value); showToast("Đã lưu note"); }
-        function startTimer5() { let m=5, s=0; const t = setInterval(()=>{ if(s==0){if(m==0){clearInterval(t);alert("Hết giờ");return;}m--;s=59;}else s--; document.getElementById('countdown').innerText=`${m}:${s<10?'0'+s:s}`; },1000); }
-        function showStaticQR() { document.getElementById('qrZoomModal').style.display='flex'; new QRCode(document.getElementById('qrcodeZoom'), {text:cfg.link, width:300, height:300}); }
-        function randomStudent() { if(filteredData.length>0) alert("🎉 " + (filteredData[Math.floor(Math.random()*filteredData.length)].data[0] || "Sinh viên")); }
-        function printList() { 
-            const win = window.open('', '', 'height=500, width=800'); 
-            win.document.write('<html><head><title>In Danh Sách</title>'); 
-            win.document.write('<style>table{width:100%;border-collapse:collapse} th,td{border:1px solid black;padding:8px}</style>'); 
-            win.document.write('</head><body>'); 
-            win.document.write(document.querySelector('.excel-table-container').innerHTML); 
-            win.document.write('</body></html>'); 
-            win.document.close(); win.print(); 
-        }
-        function exportConfig() { const a=document.createElement('a'); a.href="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(cfg)); a.download="config.json"; a.click(); }
-        function importConfig() { const i=document.createElement('input'); i.type='file'; i.onchange=e=>{const r=new FileReader(); r.onload=ev=>{cfg=JSON.parse(ev.target.result); localStorage.setItem('qr_cfg',JSON.stringify(cfg)); location.reload();}; r.readAsText(e.target.files[0]);}; i.click(); }
-
+        function switchTab(id) { document.querySelectorAll('.tab-content').forEach(e=>e.style.display='none'); document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active')); document.getElementById(id).style.display='block'; event.currentTarget.classList.add('active'); }
         function renderStats() {
             document.getElementById('statTotal').innerText=filteredData.length;
             document.getElementById('statReq').innerText=filteredData.filter(i=>i.request).length;
-            if(filteredData.length) document.getElementById('statLatest').innerText=filteredData[0].time.split(' ')[0];
             
-            const classes={}, times={}, lines={}; 
+            const classes={}, times={};
             filteredData.forEach(i=>{
-                let cls = i.data[2] || "Khác"; classes[cls]=(classes[cls]||0)+1;
-                let h = i.time.split(":")[0] + "h"; times[h]=(times[h]||0)+1;
-                let d = i.time.split(" ")[1]; lines[d]=(lines[d]||0)+1;
+                let cls = (i.data && i.data[2]) ? i.data[2] : "Khác"; classes[cls]=(classes[cls]||0)+1;
+                let h = i.time.split(":")[0]+"h"; times[h]=(times[h]||0)+1;
             });
-            
-            if(chart1) chart1.destroy();
-            chart1 = new Chart(document.getElementById('c1'), {type:'doughnut', data:{labels:Object.keys(classes), datasets:[{data:Object.values(classes), backgroundColor:['#4f46e5','#10b981','#f59e0b']}]}});
-            
-            if(chart2) chart2.destroy();
-            chart2 = new Chart(document.getElementById('c2'), {type:'bar', data:{labels:Object.keys(times).sort(), datasets:[{label:'SL', data:Object.values(times), backgroundColor:'#4f46e5'}]}});
 
-            if(chart3) chart3.destroy();
-            chart3 = new Chart(document.getElementById('c3'), {type:'line', data:{labels:Object.keys(lines).sort(), datasets:[{label:'Tham gia',data:Object.keys(lines).sort().map(k=>lines[k]),borderColor:'#10b981',tension:0.3}]}});
+            if(charts.c1) charts.c1.destroy();
+            charts.c1 = new Chart(document.getElementById('c1'), {type:'doughnut', data:{labels:Object.keys(classes), datasets:[{data:Object.values(classes), backgroundColor:['#6366f1','#10b981','#f59e0b','#ef4444']}]}});
+            
+            if(charts.c2) charts.c2.destroy();
+            charts.c2 = new Chart(document.getElementById('c2'), {type:'bar', data:{labels:Object.keys(times).sort(), datasets:[{label:'SL', data:Object.values(times), backgroundColor:'#6366f1'}]}});
         }
+        function sortTable(key) { /* Sort Logic */ applyFilter(); }
+        
+        // Tool Actions
+        function togglePause() { isPaused=!isPaused; updateTool('toolPause', isPaused); showToast(isPaused?"Đã Tạm Dừng":"Tiếp Tục"); }
+        function toggleDark() { cfg.darkMode=!cfg.darkMode; applyUI(); saveSystemConfig(true); }
+        function toggleBlur() { document.getElementById('qrcode').classList.toggle('blur'); updateTool('toolBlur', document.getElementById('qrcode').classList.contains('blur')); }
+        function toggleClock() { const c=document.querySelector('.realtime'); c.style.display=c.style.display==='none'?'flex':'none'; updateTool('toolClock', c.style.display!=='none'); }
+        function zoomQR() { document.getElementById('qrZoomModal').style.display='flex'; updateQR(); }
+        function closeZoom() { document.getElementById('qrZoomModal').style.display='none'; }
+        function lockScreen() { document.getElementById('lockScreen').style.display='flex'; closeAdmin(); addLog("Bảo mật", "Khóa màn hình", "warning"); }
+        function dlQR() { const i=document.querySelector('#qrcode img'); if(i){const a=document.createElement('a'); a.href=i.src; a.download='QR.png'; a.click();} }
+        function exportExcel() { const wb=XLSX.utils.book_new(), ws=XLSX.utils.json_to_sheet(allData.map(r=>({Time:r.time, ...r.data}))); XLSX.utils.book_append_sheet(wb, ws, "Data"); XLSX.writeFile(wb, "DiemDanh.xlsx"); addLog("Dữ liệu", "Xuất Excel", "success"); }
+        function printList() { const win=window.open('','','height=600,width=800'); win.document.write('<html><head><title>IN DANH SÁCH</title><style>table{width:100%;border-collapse:collapse}th,td{border:1px solid #000;padding:8px}</style></head><body>'+document.querySelector('.excel-table-container').innerHTML+'</body></html>'); win.document.close(); win.print(); }
+        function openLink() { window.open(cfg.link, '_blank'); }
+        function checkNet() { showToast(navigator.onLine?"Kết nối ổn định":"Mất kết nối", navigator.onLine?"success":"danger"); }
+        function toggleNote() { const n=document.getElementById('notePad'); n.style.display=n.style.display==='none'?'block':'none'; }
+        function saveNote() { localStorage.setItem('admin_note', document.getElementById('adminNote').value); showToast("Đã lưu note", "success"); }
+        function startTimer5() { let m=5,s=0; const t=setInterval(()=>{if(s==0){if(m==0){clearInterval(t);alert("Hết giờ");return;}m--;s=59;}else s--; document.getElementById('countdown').innerText=`${m}:${s<10?'0'+s:s}`;},1000); showToast("Đếm ngược 5p"); }
+        function exportConfig() { const a=document.createElement('a'); a.href="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(cfg)); a.download="config.json"; a.click(); }
+        function importConfig() { const i=document.createElement('input'); i.type='file'; i.onchange=e=>{const r=new FileReader(); r.onload=ev=>{cfg=JSON.parse(ev.target.result); localStorage.setItem('qr_cfg',JSON.stringify(cfg)); location.reload();}; r.readAsText(e.target.files[0]);}; i.click(); }
+        function showStaticQR() { document.getElementById('qrZoomModal').style.display='flex'; new QRCode(document.getElementById('qrcodeZoom'), {text:cfg.link, width:300, height:300}); }
+        function randomStudent() { if(filteredData.length>0) alert("🎉 " + (filteredData[Math.floor(Math.random()*filteredData.length)].data[0] || "Sinh viên")); }
     </script>
 </body>
 </html>
