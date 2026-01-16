@@ -14,12 +14,13 @@
     
     <style>
         :root {
-            --primary: #6366f1; --primary-dark: #4f46e5; --primary-light: #e0e7ff;
+            --primary: #6366f1; --primary-dark: #4338ca; --primary-light: #e0e7ff;
             --bg-body: #f1f5f9; --bg-card: #ffffff;
             --text-main: #0f172a; --text-sub: #64748b;
             --border: #e2e8f0;
             --danger: #ef4444; --success: #10b981; --warning: #f59e0b; --info: #0ea5e9;
             --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             --radius: 16px;
         }
         
@@ -119,6 +120,8 @@
         th:hover { color: var(--primary); background: #eef2ff; }
         td { padding: 12px 16px; border-bottom: 1px solid var(--border); color: var(--text-main); white-space: nowrap; max-width: 250px; overflow: hidden; text-overflow: ellipsis; }
         tr:hover td { background: var(--bg-hover); }
+        
+        .filter-input { width: 100%; padding: 6px 10px; font-size: 12px; border: 1px solid var(--border); border-radius: 6px; margin-top: 5px; background: var(--bg-card); color: var(--text-main); }
         .bell-active { color: var(--danger); animation: ring 0.5s infinite; cursor: pointer; font-size: 18px; }
         @keyframes ring { 0%,100%{transform:rotate(0)} 20%{transform:rotate(15deg)} 40%{transform:rotate(-10deg)} 60%{transform:rotate(5deg)} 80%{transform:rotate(-5deg)} }
         
@@ -145,6 +148,7 @@
         .pass-group { position: relative; width: 100%; } .pass-group input { padding-right: 90px; }
         .pass-controls { position: absolute; right: 5px; top: 50%; transform: translateY(-50%); display: flex; gap: 4px; }
         .icon-btn { background: var(--bg-body); border: 1px solid var(--border); cursor: pointer; padding: 6px; border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: var(--text-sub); }
+        .icon-btn:hover { color: var(--primary); border-color: var(--primary); }
         input[readonly].secure-locked { background: var(--bg-body); cursor: not-allowed; border: 1px dashed #cbd5e1; color: var(--text-sub); user-select: none; }
         input.unlocked { background: #f0fdf4; border: 1px solid var(--success); color: var(--success); font-weight: bold; cursor: text; }
 
@@ -167,8 +171,8 @@
         #lockScreen { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.98); z-index: 3000; align-items: center; justify-content: center; color: white; flex-direction: column; }
         #qrZoomModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 5000; align-items: center; justify-content: center; flex-direction: column; }
 
+        /* Form Config */
         .fb-container { border: 1px solid var(--border); background: var(--bg-body); border-radius: 12px; padding: 20px; max-height: 500px; overflow-y: auto; }
-        .fb-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 15px; align-items: center; border-left: 5px solid var(--primary); box-shadow: var(--shadow); }
         .switch { position: relative; display: inline-block; width: 34px; height: 20px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
@@ -272,12 +276,16 @@
 
             <!-- 3. CẤU HÌNH FORM -->
             <div id="tab-form" class="tab-content">
-                <div class="chart-box" style="margin-bottom:20px">
-                    <div class="form-group"><label>Tiêu đề Form:</label><input type="text" id="fbTitle" value="THÔNG TIN SINH VIÊN" style="font-weight:bold; font-size:16px; border-left:4px solid var(--primary)"></div>
+                <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:15px; margin-bottom:15px">
+                     <label style="font-size:12px; font-weight:700; color:var(--text-sub); text-transform:uppercase; margin-bottom:5px; display:block">Tiêu đề Form</label>
+                     <input type="text" id="fbTitle" style="font-size:16px; font-weight:bold; border-left:4px solid var(--primary)">
                 </div>
+                
                 <div class="fb-container" id="fbFields"></div>
-                <button class="btn btn-gray" onclick="addFormField()" style="width:100%; margin-top:15px; border:1px dashed #ccc; padding:15px">+ Thêm trường dữ liệu</button>
-                <div style="margin-top:20px; text-align:right; padding-top:15px; border-top:1px solid var(--border)">
+                
+                <button class="btn btn-gray" onclick="addFormField()" style="width:100%; margin-top:15px; border:1px dashed #cbd5e1; color:var(--text-sub); background:transparent">+ Thêm trường dữ liệu</button>
+                
+                <div style="margin-top:20px; text-align:right; border-top:1px solid var(--border); padding-top:15px;">
                     <button class="btn btn-success" onclick="saveFormConfig()"><i class="fa-solid fa-cloud-arrow-up"></i> Lưu & Đồng bộ Server</button>
                 </div>
             </div>
@@ -320,18 +328,17 @@
 
             <!-- 6. CÀI ĐẶT -->
             <div id="tab-config" class="tab-content">
-                <div class="config-group" style="margin-bottom:20px; border:1px solid var(--border); padding:20px; border-radius:16px;">
+                <!-- Group 1: Kết nối -->
+                <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:20px; margin-bottom:20px">
                     <div style="font-weight:700; color:var(--primary); margin-bottom:15px; text-transform:uppercase"><i class="fa-solid fa-link"></i> Kết nối</div>
                     <div class="form-group"><label>API Google Apps Script <i class="fa-solid fa-lock" style="font-size:10px; color:var(--danger)"></i></label>
-                        <div class="pass-group">
-                            <input type="text" id="cfgApi" readonly class="secure-locked no-copy" oncopy="return false">
-                            <div class="pass-controls"><button class="icon-btn" onclick="unlock('cfgApi', 'Abc110022@')"><i class="fa-solid fa-pen"></i></button></div>
-                        </div>
+                        <div class="pass-group"><input type="text" id="cfgApi" readonly class="secure-locked no-copy" oncopy="return false"><div class="pass-controls"><button class="icon-btn" onclick="unlock('cfgApi', 'Abc110022@')"><i class="fa-solid fa-pen"></i></button></div></div>
                     </div>
                     <div class="form-group"><label>Link Form:</label><input type="text" id="cfgLink"></div>
                 </div>
 
-                <div class="config-group" style="margin-bottom:20px; border:1px solid var(--border); padding:20px; border-radius:16px;">
+                <!-- Group 2: Bảo mật -->
+                <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:20px; margin-bottom:20px">
                     <div style="font-weight:700; color:var(--primary); margin-bottom:15px; text-transform:uppercase"><i class="fa-solid fa-shield-halved"></i> Bảo mật</div>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px">
                         <div class="form-group"><label>Pass Admin <i class="fa-solid fa-lock" style="font-size:10px; color:var(--danger)"></i></label>
@@ -343,26 +350,27 @@
                     </div>
                 </div>
                 
-                <div class="config-group" style="margin-bottom:20px; border:1px solid var(--border); padding:20px; border-radius:16px;">
+                <!-- Group 3: Giao diện -->
+                <div style="background:var(--bg-card); border:1px solid var(--border); padding:20px; border-radius:16px; margin-bottom:20px">
                     <div style="font-weight:700; color:var(--primary); margin-bottom:15px; text-transform:uppercase"><i class="fa-solid fa-palette"></i> Giao diện & Thông báo</div>
                     <div class="form-group"><label>Nội dung chữ chạy:</label><input type="text" id="cfgMqText"></div>
                     
-                    <div style="display:flex; gap:15px; margin-top:15px; flex-wrap:wrap">
-                        <div style="flex:1"><label>Màu QR</label><input type="color" id="cfgQrColor" style="height:40px; padding:2px; width:100%"></div>
-                        <div style="flex:1"><label>Màu Nền</label><input type="color" id="cfgQrBg" style="height:40px; padding:2px; width:100%"></div>
-                        <div style="flex:1"><label>Màu Text</label><input type="color" id="cfgMqColor" style="height:40px; padding:2px; width:100%"></div>
-                        <div style="flex:1"><label>Nền Text</label><input type="color" id="cfgMqBg" style="height:40px; padding:2px; width:100%"></div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:10px; margin-top:10px">
+                        <div><label>Màu QR</label><input type="color" id="cfgQrColor" style="height:35px; width:100%"></div>
+                        <div><label>Màu Nền</label><input type="color" id="cfgQrBg" style="height:35px; width:100%"></div>
+                        <div><label>Màu Text</label><input type="color" id="cfgMqColor" style="height:35px; width:100%"></div>
+                        <div><label>Nền Text</label><input type="color" id="cfgMqBg" style="height:35px; width:100%"></div>
                     </div>
                     
-                    <div style="display:flex; gap:15px; margin-top:15px; flex-wrap:wrap">
-                        <div style="flex:1"><label>Vị trí Text</label><select id="cfgMqPos"><option value="bottom">Dưới</option><option value="top">Trên</option><option value="none">Tắt</option></select></div>
-                        <div style="flex:1"><label>Time QR (s)</label><input type="number" id="cfgTime"></div>
-                        <div style="flex:1"><label>Vị trí TB</label><select id="cfgNotifPos"><option value="top-right">Trên Phải</option><option value="bottom-right">Dưới Phải</option></select></div>
-                        <div style="flex:1"><label>Time TB (s)</label><input type="number" id="cfgNotifDuration"></div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:10px; margin-top:15px">
+                        <div><label>Vị trí Text</label><select id="cfgMqPos"><option value="bottom">Dưới</option><option value="top">Trên</option><option value="none">Tắt</option></select></div>
+                        <div><label>Time QR (s)</label><input type="number" id="cfgTime"></div>
+                        <div><label>Vị trí TB</label><select id="cfgNotifPos"><option value="top-right">Trên Phải</option><option value="bottom-right">Dưới Phải</option></select></div>
+                        <div><label>Time TB (s)</label><input type="number" id="cfgNotifDuration"></div>
                     </div>
                 </div>
 
-                <button class="btn btn-primary" onclick="saveSystemConfig()" style="width:100%; margin-top:20px; padding:15px; font-size:16px">LƯU CÀI ĐẶT</button>
+                <button class="btn btn-primary" onclick="saveSystemConfig()" style="width:100%; margin-top:10px; padding:15px; font-size:16px; text-transform:uppercase">LƯU CÀI ĐẶT</button>
             </div>
         </div>
     </div>
@@ -514,18 +522,7 @@
             // Body
             let html = "";
             filteredData.forEach(i => {
-                // Find request for this user (Based on MSSV - Field Index 1)
-                // Assume 2nd field is unique ID (MSSV)
-                let uniqueID = "";
-                if(i.data && i.data.length > 1) uniqueID = i.data[1]; // Get MSSV from data array
-                
-                // Logic chuông: Kiểm tra xem trong object request có key trùng với uniqueID không
-                // Lưu ý: Backend trả về i.request nếu map đúng
-                let bell = "";
-                if (i.request) {
-                     bell = `<i class="fa-solid fa-bell bell-active" onclick="openReq('${i.unique_id}','${i.name}','${i.mssv}','${i.class_name}','${i.request.reason}')"></i>`;
-                }
-
+                let bell = i.request ? `<i class="fa-solid fa-bell bell-active" onclick="openReq('${i.unique_id}','${i.name}','${i.mssv}','${i.class_name}','${i.request.reason}')"></i>` : "";
                 let cols = "";
                 formCfg.fields.forEach((f, idx) => {
                     let val = (i.data && i.data[idx]) ? i.data[idx] : "";
@@ -542,6 +539,7 @@
         function sortTable(key) {
              sortState.dir = (sortState.key === key && sortState.dir === 'asc') ? 'desc' : 'asc';
              sortState.key = key;
+             
              filteredData.sort((a, b) => {
                  let valA = '', valB = '';
                  if (key === 'time') { valA = a.time; valB = b.time; }
@@ -596,12 +594,12 @@
                 c.innerHTML += `
                 <div class="fb-item">
                     <div class="fb-settings">
-                        <input type="text" value="${f.label}" onchange="formCfg.fields[${i}].label=this.value" placeholder="Tên trường">
-                        <input type="text" value="${f.placeholder||''}" onchange="formCfg.fields[${i}].placeholder=this.value" placeholder="Ghi chú (Placeholder)">
-                        <select onchange="formCfg.fields[${i}].type=this.value"><option value="text" ${f.type=='text'?'selected':''}>Chữ</option><option value="tel" ${f.type=='tel'?'selected':''}>Số</option></select>
-                        <select onchange="formCfg.fields[${i}].format=this.value"><option value="none" ${f.format=='none'?'selected':''}>None</option><option value="uppercase" ${f.format=='uppercase'?'selected':''}>IN HOA</option><option value="capitalize" ${f.format=='capitalize'?'selected':''}>Viết Hoa</option></select>
-                        <label class="switch"><input type="checkbox" ${f.required?'checked':''} onchange="formCfg.fields[${i}].required=this.checked"><span class="slider"></span> Bắt buộc</label>
-                        <i class="fa-solid fa-trash" style="color:var(--danger);cursor:pointer" onclick="removeField(${i})"></i>
+                        <div style="grid-column:1/3"><label style="font-size:11px;color:var(--text-sub)">Tên trường</label><input type="text" value="${f.label}" onchange="formCfg.fields[${i}].label=this.value" placeholder="Tên trường"></div>
+                        <div style="grid-column:3/5"><label style="font-size:11px;color:var(--text-sub)">Ghi chú</label><input type="text" value="${f.placeholder||''}" onchange="formCfg.fields[${i}].placeholder=this.value" placeholder="Ghi chú"></div>
+                        <div><label style="font-size:11px;color:var(--text-sub)">Loại</label><select onchange="formCfg.fields[${i}].type=this.value"><option value="text" ${f.type=='text'?'selected':''}>Chữ</option><option value="tel" ${f.type=='tel'?'selected':''}>Số</option></select></div>
+                        <div><label style="font-size:11px;color:var(--text-sub)">Định dạng</label><select onchange="formCfg.fields[${i}].format=this.value"><option value="none" ${f.format=='none'?'selected':''}>None</option><option value="uppercase" ${f.format=='uppercase'?'selected':''}>IN HOA</option><option value="capitalize" ${f.format=='capitalize'?'selected':''}>Viết Hoa</option></select></div>
+                        <div style="display:flex;align-items:center;padding-top:20px"><label class="switch"><input type="checkbox" ${f.required?'checked':''} onchange="formCfg.fields[${i}].required=this.checked"><span class="slider"></span></label></div>
+                        <div style="padding-top:15px"><button class="icon-btn" onclick="removeField(${i})" style="color:var(--danger);border-color:var(--danger)"><i class="fa-solid fa-trash"></i></button></div>
                     </div>
                 </div>`;
             });
@@ -658,7 +656,7 @@
             document.getElementById('logList').innerHTML = logs.map(x => {
                 let icon = 'info-circle';
                 if(x.type==='success') icon='check-circle'; if(x.type==='warning') icon='triangle-exclamation'; if(x.type==='danger') icon='circle-xmark';
-                return `<li class="timeline-item ${x.type}"><div class="log-card"><div class="log-header"><span><i class="fa-solid fa-${icon}"></i> ${x.title}</span><span>${x.t}</span></div><div class="log-content">${x.msg}</div></div></li>`
+                return `<li class="timeline-item ${x.type}"><div class="log-box"><span class="log-time">${x.t}</span><span class="log-msg"><i class="fa-solid fa-${icon}"></i> <b>${x.title}:</b> ${x.msg}</span></div></li>`
             }).join(''); 
         }
         function clearLocalLogs() { logs=[]; localStorage.setItem('logs', '[]'); renderLogs(); }
