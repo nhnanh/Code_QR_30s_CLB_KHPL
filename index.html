@@ -24,7 +24,7 @@
         .settings-btn { position: absolute; top: 20px; left: 20px; font-size: 28px; color: #94a3b8; cursor: pointer; padding: 10px; z-index: 100; transition: 0.3s; }
         .settings-btn:hover { color: var(--primary); transform: rotate(90deg); }
 
-        /* --- QR CARD --- */
+        /* QR CARD */
         .qr-card { 
             background: var(--white); padding: 40px; border-radius: 24px; 
             box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); text-align: center; 
@@ -46,35 +46,23 @@
         .marquee-container { position: fixed; left: 0; width: 100%; padding: 10px 0; font-weight: bold; font-size: 16px; z-index: 50; text-transform: uppercase; display: none; }
         .marquee-top { top: 0; } .marquee-bottom { bottom: 0; }
 
-        /* --- LIVE TOAST (Thông báo điểm danh) --- */
-        #liveToastContainer { 
-            position: fixed; z-index: 9999; display: flex; gap: 10px; pointer-events: none; 
-            width: 320px; padding: 20px;
-        }
-        /* Các vị trí */
-        .pos-top-right { top: 0; right: 0; flex-direction: column-reverse; }
-        .pos-top-left { top: 0; left: 0; flex-direction: column-reverse; }
-        .pos-bottom-right { bottom: 0; right: 0; flex-direction: column; }
-        .pos-bottom-left { bottom: 0; left: 0; flex-direction: column; }
-
+        /* LIVE TOAST */
+        #liveToastContainer { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column-reverse; gap: 10px; pointer-events: none; }
         .live-toast { 
             background: rgba(255, 255, 255, 0.95); border-left: 5px solid var(--success); 
             padding: 15px; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); 
-            width: 100%; animation: slideIn 0.4s ease forwards, fadeOut 0.5s forwards; 
+            width: 300px; animation: slideIn 0.4s ease forwards, fadeOutUp 0.5s 4.5s forwards; 
             backdrop-filter: blur(4px); display: flex; align-items: center; gap: 10px; opacity: 0;
-            margin-bottom: 5px; pointer-events: auto;
         }
         .live-toast.dark { background: rgba(30, 41, 59, 0.95); color: white; }
         .live-toast-icon { font-size: 20px; color: var(--success); }
-        .live-toast-content { display: flex; flex-direction: column; overflow: hidden; }
-        .live-toast-title { font-weight: bold; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .live-toast-content { display: flex; flex-direction: column; }
+        .live-toast-title { font-weight: bold; font-size: 14px; }
         .live-toast-time { font-size: 11px; opacity: 0.7; }
+        .live-toast:nth-last-child(n+2) { opacity: 0.8; transform: scale(0.98); }
+        .live-toast:nth-last-child(n+3) { opacity: 0.6; transform: scale(0.96); }
 
-        /* Animation */
-        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes fadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.9); } }
-
-        /* --- SYSTEM TOAST --- */
+        /* SYSTEM TOAST */
         #systemToast { 
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); 
             background: #333; color: white; padding: 12px 24px; border-radius: 30px; 
@@ -83,7 +71,10 @@
         }
         #systemToast.show { opacity: 1; bottom: 50px; }
 
-        /* --- MODAL CHUNG --- */
+        @keyframes slideIn { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes fadeOutUp { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-20px); } }
+
+        /* MODAL ADMIN & SPLIT SCREEN */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center; }
         .modal-content { background: var(--white); width: 95%; max-width: 1000px; border-radius: 16px; display: flex; flex-direction: column; max-height: 95vh; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); overflow: hidden; }
         .modal-header { padding: 15px 25px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
@@ -91,11 +82,11 @@
         .close-modal { font-size: 24px; cursor: pointer; color: #94a3b8; }
         .modal-body { padding: 20px; overflow-y: auto; background: var(--bg); flex: 1; display: flex; flex-direction: column; }
 
-        /* --- AUTH MODAL --- */
+        /* Auth Modal */
         #authModal .modal-content { max-width: 400px; height: auto; }
         #authModal input { font-size: 18px; text-align: center; letter-spacing: 5px; }
 
-        /* --- SPLIT SCREEN --- */
+        /* Split Screen Resizer */
         #resizer { width: 8px; background-color: var(--border); cursor: col-resize; display: none; z-index: 101; transition: background 0.2s; }
         #resizer:hover, #resizer.resizing { background-color: var(--primary); }
 
@@ -118,6 +109,7 @@
         .tab-content.active { display: flex; flex-direction: column; }
         @keyframes fadeEffect { from {opacity: 0; transform: translateY(5px);} to {opacity: 1; transform: translateY(0);} }
 
+        /* Dashboard */
         .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .stat-card { background: var(--white); padding: 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; align-items: center; gap: 15px; }
         .stat-icon { width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
@@ -127,6 +119,7 @@
         .chart-box { background: var(--white); padding: 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; }
         .chart-canvas-container { flex: 1; position: relative; min-height: 250px; }
 
+        /* Data Table */
         .excel-toolbar { background: var(--white); padding: 10px; border-radius: 8px 8px 0 0; border: 1px solid var(--border); border-bottom: none; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .excel-table-container { flex: 1; overflow: auto; border: 1px solid var(--border); background: var(--white); border-radius: 0 0 8px 8px; min-height: 300px; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -134,6 +127,7 @@
         td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text); }
         input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
 
+        /* Tools Grid */
         .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; padding-bottom: 20px;}
         .tool-card { background: var(--white); padding: 15px 10px; border-radius: 12px; text-align: center; cursor: pointer; border: 1px solid var(--border); transition: 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); height: 100px; position: relative; overflow: hidden; }
         .tool-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
@@ -148,6 +142,9 @@
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px; color: var(--text); }
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; font-family: inherit; background: var(--white); color: var(--text); }
+        /* Style cho input bị khóa */
+        input[readonly] { background-color: #f1f5f9; color: #94a3b8; cursor: not-allowed; border-style: dashed; }
+        
         .btn { padding: 10px 20px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; color: white; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; font-size: 13px; }
         .btn-primary { background: var(--primary); }
         .btn-danger { background: var(--danger); }
@@ -164,9 +161,7 @@
 
     <div class="settings-btn" onclick="openLoginModal()"><i class="fa-solid fa-sliders"></i></div>
 
-    <!-- LIVE TOAST CONTAINER -->
     <div id="liveToastContainer" class="pos-top-right"></div>
-    
     <div id="systemToast">Thông báo</div>
 
     <div class="qr-card" id="mainCard">
@@ -282,11 +277,18 @@
                         <div class="form-group"><label>Tiêu đề:</label><input type="text" id="cfgTitle"></div>
                         <div class="form-group"><label>Link Form:</label><input type="text" id="cfgLink"></div>
                     </div>
-                    <div class="form-group"><label>API Apps Script:</label><input type="text" id="cfgApi"></div>
+                    
+                    <!-- API URL (Readonly, click to unlock) -->
+                    <div class="form-group"><label>API Google Apps Script:</label><input type="text" id="cfgApi" readonly onclick="unlockField('cfgApi', 'Abc110022@')"></div>
+                    
                     <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px">
                         <div class="form-group"><label>Thời gian QR:</label><input type="number" id="cfgTime"></div>
-                        <div class="form-group"><label>Pass Admin:</label><input type="text" id="cfgPass"></div>
-                        <div class="form-group"><label>Pass Reset:</label><input type="text" id="cfgResetPass"></div>
+                        
+                        <!-- PASS ADMIN (Readonly, click to unlock) -->
+                        <div class="form-group"><label>Pass Admin:</label><input type="text" id="cfgPass" readonly onclick="unlockField('cfgPass', 'Abc110022#')"></div>
+                        
+                        <!-- PASS RESET (Readonly, click to unlock) -->
+                        <div class="form-group"><label>Pass Reset:</label><input type="text" id="cfgResetPass" readonly onclick="unlockField('cfgResetPass', 'Abc110022#')"></div>
                     </div>
                     
                     <fieldset style="border:1px solid #e2e8f0; border-radius:8px; padding:10px; margin-top:10px">
@@ -351,14 +353,22 @@
 
     <script>
         // --- CẤU HÌNH ---
+        // Đã cập nhật link API mới
         const DEFAULT_CONFIG = { 
-            link: "https://nhnanh.github.io/Code_QR_30s_CLB_KHPL/form.html", api: "", time: 30, pass: "Admin", resetPass: "Admin", title: "ĐIỂM DANH CLB", 
+            link: "https://nhnanh.github.io/Code_QR_30s_CLB_KHPL/form.html", 
+            api: "https://script.google.com/macros/s/AKfycbyk8mivqsuoi4KC57XUd3GwhRM3UZlT2Ut2AUMyE-AmfN9gsP3e305DIbMrrTXyRvkQ/exec", 
+            time: 30, pass: "Admin", resetPass: "Admin", title: "ĐIỂM DANH CLB", 
             mqText: "HỆ THỐNG ĐANG MỞ ĐIỂM DANH", mqPos: "bottom", mqBg: "#ef4444", mqColor: "#ffffff", 
             qrColor: "#000000", qrBg: "#ffffff", qrLevel: "M", darkMode: false,
             notifEnabled: true, notifDuration: 5, notifPos: "top-right"
         };
         let config = JSON.parse(localStorage.getItem('qr_config_max')) || DEFAULT_CONFIG;
         
+        // Ensure API is correct if loading from old config
+        if (!config.api || config.api === "") {
+            config.api = DEFAULT_CONFIG.api;
+        }
+
         let allData = [], filteredData = [], sortState = { key: 'time', dir: 'desc' };
         let timer = config.time, qrObj = null, interval = null, isPaused = false;
         let classChartInstance = null, timeChartInstance = null;
@@ -626,6 +636,21 @@
         function updateBulkButton() { const c=document.querySelectorAll('.row-checkbox:checked').length; const b=document.getElementById('btnBulkDelete'); if(c>0){b.style.display='inline-flex'; b.innerHTML=`<i class="fa-solid fa-trash"></i> Xóa (${c}) mục`;}else b.style.display='none'; }
         async function deleteSelected() { const s=Array.from(document.querySelectorAll('.row-checkbox:checked')); if(s.length===0) return; if(!confirm(`Xóa ${s.length} mục?`)) return; let delList=s.map(c=>{let p=c.value.split('|'); return {i:parseInt(p[0]), m:p[1]}}).sort((a,b)=>b.i-a.i); document.getElementById('loader').style.display='block'; for(const i of delList){try{await fetch(config.api, {method:'POST', body:JSON.stringify({action:"DELETE_ROW", row_index:i.i, mssv:i.m})})}catch(e){console.log(e)}} document.getElementById('loader').style.display='none'; alert("Xong"); fetchList(); }
         function renderStats() { document.getElementById('statTotal').innerText=filteredData.length; const cc={}, tc={}; filteredData.forEach(i=>{cc[i.class_name]=(cc[i.class_name]||0)+1; let h=(i.time || "").split(":")[0]+"h"; tc[h]=(tc[h]||0)+1;}); document.getElementById('statClasses').innerText=Object.keys(cc).length; if(filteredData.length>0) document.getElementById('statLatest').innerText=(filteredData[0].time || "").split(" ")[0]; const c1=document.getElementById('classChart').getContext('2d'); if(classChartInstance) classChartInstance.destroy(); classChartInstance=new Chart(c1,{type:'doughnut',data:{labels:Object.keys(cc),datasets:[{data:Object.values(cc),backgroundColor:['#2563eb','#10b981','#f59e0b','#ef4444','#8b5cf6']}]}}); const c2=document.getElementById('timeChart').getContext('2d'); if(timeChartInstance) timeChartInstance.destroy(); const st=Object.keys(tc).sort(); timeChartInstance=new Chart(c2,{type:'bar',data:{labels:st,datasets:[{label:'SL',data:st.map(t=>tc[t]),backgroundColor:'#2563eb',borderRadius:4}]}}); }
+
+        // --- BẢO MẬT CẤP 2 (MỚI) ---
+        function unlockField(id, code) {
+            const el = document.getElementById(id);
+            if (!el.readOnly) return; 
+            const input = prompt("🔒 BẢO MẬT CẤP 2\n\nNhập mã bảo mật để chỉnh sửa mục này:");
+            if (input === code) {
+                el.readOnly = false;
+                el.focus();
+                showSystemToast("Đã mở khóa chỉnh sửa!");
+                el.style.borderColor = "var(--success)";
+            } else if (input !== null) {
+                alert("Sai mã bảo mật cấp 2!");
+            }
+        }
     </script>
 </body>
 </html>
