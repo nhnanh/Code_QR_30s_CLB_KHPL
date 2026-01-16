@@ -6,192 +6,210 @@
     <title>XÁC NHẬN ĐIỂM DANH</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; position: relative; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .form-card { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
         h2 { text-align: center; color: #2c3e50; margin-bottom: 20px; }
-        .input-group { margin-bottom: 20px; }
-        label { display: block; font-weight: bold; margin-bottom: 8px; color: #555; }
-        input { width: 100%; padding: 14px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
-        #name { text-transform: capitalize; }
-        #class_name { text-transform: uppercase; }
-        .btn-submit { width: 100%; padding: 15px; background: #2ecc71; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn-submit:hover { background: #27ae60; }
-        .btn-submit:disabled { background: #95a5a6; cursor: not-allowed; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; color: #555; }
+        input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
+        .btn-submit { width: 100%; padding: 15px; background: #2ecc71; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .reset-options { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .btn-link { background: none; border: none; color: #666; cursor: pointer; text-decoration: underline; font-size: 13px; }
         .hidden { display: none !important; }
-        .error-screen { text-align: center; color: #c0392b; background: #fadbd8; padding: 20px; border-radius: 10px; border: 2px dashed #c0392b; }
-        .reset-container { position: absolute; bottom: 10px; width: 100%; text-align: center; }
-        .reset-btn { font-size: 12px; color: #999; cursor: pointer; text-decoration: none; padding: 5px; }
-        .reset-btn:hover { color: #555; text-decoration: underline; }
+        .error-box { text-align: center; padding: 20px; color: #c0392b; background: #fadbd8; border: 2px dashed #c0392b; border-radius: 10px; }
     </style>
 </head>
 <body>
+
     <div class="form-card">
-        <div id="errorScreen" class="hidden error-screen">
-            <h3 id="errTitle">⛔ LỖI</h3>
-            <p id="errMsg">Nội dung lỗi</p>
+        <div id="errorScreen" class="hidden error-box">
+            <h3>⛔ LỖI</h3>
+            <p id="errMsg"></p>
         </div>
+
         <div id="formScreen">
-            <h2>📋 ĐIỂM DANH</h2>
-            <form id="attendanceForm">
-                <div class="input-group">
-                    <label>Họ và tên:</label>
-                    <input type="text" id="name" placeholder="Nguyễn Văn A" required oninput="formatName(this)">
-                </div>
-                <div class="input-group">
-                    <label>Mã sinh viên:</label>
-                    <input type="tel" id="mssv" placeholder="Nhập số..." required pattern="[0-9]*">
-                </div>
-                <div class="input-group">
-                    <label>Lớp:</label>
-                    <input type="text" id="class_name" placeholder="K68LUAT" required oninput="this.value = this.value.toUpperCase()">
-                </div>
-                <button type="submit" class="btn-submit" id="btnSub">XÁC NHẬN ĐIỂM DANH</button>
-            </form>
+            <h2 id="formTitle">Đang tải...</h2>
+            <form id="dynamicForm"></form>
         </div>
-    </div>
-    <div class="reset-container">
-        <span class="reset-btn" onclick="smartReset()">🔄 Reset thiết bị (Điểm danh lại)</span>
+        
+        <div class="reset-options">
+            <button class="btn-link" onclick="requestReset()">① Yêu cầu Admin Reset (Gửi thông báo)</button>
+            <button class="btn-link" onclick="manualReset()">② Nhập mật khẩu để Reset ngay</button>
+        </div>
     </div>
 
     <script>
-        // --- CẤU HÌNH API ---
-        const API_URL = "https://script.google.com/macros/s/AKfycbyvd6O04qlB3sLr-jMb9Vj1aixd_9ZAcBqF-EgFCkY4oOU7dvvye7xmDNIuEUO5FJjm/exec";
+        // --- DÁN API CỦA BẠN VÀO ĐÂY ---
+        const API_URL = "https://script.google.com/macros/s/AKfycbzzsWZoGnP61ovCHAbG3xlR0TQl-wcMShJHs1JsKaME6y_ymDVE03GUt0Gz2njEGoHL/exec";
+        
         const today = new Date().toLocaleDateString('vi-VN');
+        let formConfig = null;
 
-        if (localStorage.getItem('attended_today') === today) {
-            blockUser("BẠN ĐÃ ĐIỂM DANH RỒI!", "Mỗi thiết bị chỉ được điểm danh 1 lần/ngày.");
-        } else {
-            checkQRCode();
-        }
-
-        function checkQRCode() {
-            const params = new URLSearchParams(window.location.search);
-            const qrTime = parseInt(params.get('t'));
-            const now = Date.now();
-            if (!qrTime || (now - qrTime > 45000)) {
-                blockUser("MÃ QR ĐÃ HẾT HẠN!", "Mã này đã cũ. Vui lòng quét mã mới trên màn hình.");
+        window.onload = function() {
+            if (localStorage.getItem('attended_today') === today) {
+                showError("Bạn đã điểm danh hôm nay rồi!");
+            } else {
+                checkQR();
             }
+        };
+
+        function checkQR() {
+            const p = new URLSearchParams(window.location.search);
+            const t = parseInt(p.get('t'));
+            if (!t || (Date.now() - t > 45000)) showError("Mã QR đã hết hạn! Vui lòng quét lại.");
+            else loadFormConfig();
         }
 
-        function blockUser(title, msg) {
-            document.getElementById('formScreen').classList.add('hidden');
-            const errDiv = document.getElementById('errorScreen');
-            errDiv.classList.remove('hidden');
-            document.getElementById('errTitle').innerText = title;
-            document.getElementById('errMsg').innerText = msg;
-        }
-
-        function formatName(el) {
-            let words = el.value.toLowerCase().split(' ');
-            for (let i = 0; i < words.length; i++) { words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1); }
-            el.value = words.join(' ');
-        }
-
-        document.getElementById('attendanceForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btnSub');
-            btn.innerText = "Đang gửi...";
-            btn.disabled = true;
-            const name = document.getElementById('name').value;
-            const mssv = document.getElementById('mssv').value;
-            const className = document.getElementById('class_name').value;
-            const timeInfo = new Date().toLocaleString('vi-VN');
-            
-            localStorage.setItem('my_mssv', mssv); // Lưu MSSV để dùng cho reset sau này
-
-            fetch(API_URL, {
-                method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name: name, mssv: mssv, class_name: className, device_info: navigator.userAgent })
-            }).then(() => {
-                localStorage.setItem('attended_today', today);
-                Swal.fire({
-                    icon: 'success', title: 'THÀNH CÔNG!',
-                    html: `<p>SV: <b>${name}</b></p><p>MSSV: <b>${mssv}</b></p><p>Lúc: <b>${timeInfo}</b></p>`,
-                    confirmButtonText: 'OK'
-                }).then(() => { blockUser("ĐÃ GHI NHẬN", "Cảm ơn bạn đã tham gia."); });
-            }).catch(() => {
-                Swal.fire('Lỗi', 'Lỗi mạng hoặc cấu hình!', 'error');
-                btn.disabled = false; btn.innerText = "THỬ LẠI";
-            });
-        });
-
-        // --- TÍNH NĂNG RESET THÔNG MINH ---
-        function smartReset() {
-            const mssv = localStorage.getItem('my_mssv');
-
-            // Trường hợp 1: Chưa có MSSV (chưa điểm danh lần nào) -> Hỏi Pass Admin
-            if (!mssv) {
-                askPassword("Nhập mật khẩu Admin để reset thủ công:");
-                return;
-            }
-
-            Swal.fire({ title: 'Đang kiểm tra...', didOpen: () => Swal.showLoading() });
-
-            // Gửi yêu cầu kiểm tra trạng thái
-            fetch(API_URL, {
-                method: 'POST',
-                // redirect: 'follow' quan trọng để đọc response JSON từ Apps Script
-                body: JSON.stringify({ action: "CHECK_STATUS", mssv: mssv })
-            })
-            .then(res => res.json())
-            .then(data => {
-                Swal.close();
-                if (data.exist === true) {
-                    // TRƯỜNG HỢP 2: CÓ TÊN TRONG DANH SÁCH -> NHẬP LÝ DO
-                    askReason(mssv, data.name, data.class_name);
+        function loadFormConfig() {
+            fetch(`${API_URL}?action=GET_FORM_CONFIG`)
+            .then(r => r.json())
+            .then(res => {
+                if (res.status === "success" && res.config) {
+                    renderForm(res.config);
                 } else {
-                    // TRƯỜNG HỢP 3: ĐÃ BỊ XÓA -> RESET LUÔN
-                    performReset();
-                }
-            })
-            .catch(err => {
-                Swal.close();
-                // Lỗi mạng/API -> Fallback hỏi pass
-                askPassword("Không kết nối được server. Nhập mật khẩu Admin:");
-            });
-        }
-
-        function askReason(mssv, name, className) {
-            Swal.fire({
-                title: 'YÊU CẦU ĐIỂM DANH LẠI',
-                html: `<p style="font-size:14px; color:#555">Bạn <b>${name}</b> (${mssv}) đã có tên trong danh sách.<br>Vui lòng nhập lý do để Admin phê duyệt reset.</p>`,
-                input: 'textarea',
-                inputPlaceholder: 'Nhập lý do (VD: Điền sai lớp, mượn máy bạn...)',
-                showCancelButton: true,
-                confirmButtonText: 'Gửi Yêu Cầu & Reset'
-            }).then((result) => {
-                if (result.isConfirmed && result.value) {
-                    // Gửi yêu cầu lên server
-                    fetch(API_URL, {
-                        method: 'POST', mode: 'no-cors',
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ 
-                            action: "REQUEST_RESET", 
-                            mssv: mssv, name: name || "Unknown", class_name: className || "Unknown", 
-                            reason: result.value 
-                        })
-                    }).then(() => {
-                        Swal.fire('Đã gửi!', 'Yêu cầu đã được gửi. Máy sẽ reset ngay.', 'success')
-                        .then(() => { performReset(); });
+                    // Fallback mặc định nếu chưa cấu hình
+                    renderForm({
+                        title: "ĐIỂM DANH",
+                        fields: [
+                            {id:"f1", label:"Họ tên", type:"text", format:"capitalize", required:true},
+                            {id:"f2", label:"MSSV", type:"tel", format:"none", required:true},
+                            {id:"f3", label:"Lớp", type:"text", format:"uppercase", required:true}
+                        ]
                     });
                 }
             });
         }
 
-        function askPassword(msg) {
-            const adminPass = localStorage.getItem('admin_reset_pass') || "Admin"; // Lấy pass từ bộ nhớ nếu chung domain
-            Swal.fire({
-                title: 'Mở Khóa Thiết Bị', text: msg, input: 'password', showCancelButton: true
-            }).then((result) => {
-                if (result.value === adminPass) performReset();
-                else if (result.isConfirmed) Swal.fire('Lỗi', 'Sai mật khẩu!', 'error');
+        function renderForm(cfg) {
+            formConfig = cfg;
+            document.getElementById("formTitle").innerText = cfg.title;
+            const form = document.getElementById("dynamicForm");
+            form.innerHTML = "";
+            
+            cfg.fields.forEach(f => {
+                const div = document.createElement("div");
+                div.className = "form-group";
+                let oninput = "";
+                if(f.format === 'uppercase') oninput = "this.value = this.value.toUpperCase()";
+                if(f.format === 'lowercase') oninput = "this.value = this.value.toLowerCase()";
+                if(f.format === 'capitalize') oninput = "formatCap(this)";
+                
+                div.innerHTML = `
+                    <label>${f.label}:</label>
+                    <input type="${f.type}" name="${f.label}" ${f.required?'required':''} oninput="${oninput}" placeholder="Nhập ${f.label}...">
+                `;
+                form.appendChild(div);
+            });
+            
+            const btn = document.createElement("button");
+            btn.className = "btn-submit";
+            btn.type = "submit";
+            btn.innerText = "XÁC NHẬN";
+            form.appendChild(btn);
+
+            form.onsubmit = handleSubmit;
+        }
+
+        function formatCap(el) {
+            let words = el.value.toLowerCase().split(' ');
+            for (let i = 0; i < words.length; i++) words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1);
+            el.value = words.join(' ');
+        }
+
+        function handleSubmit(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector("button");
+            btn.disabled = true; btn.innerText = "Đang gửi...";
+            
+            // Gom dữ liệu từ form động
+            const formData = new FormData(e.target);
+            const dataObj = {};
+            formData.forEach((value, key) => dataObj[key] = value);
+            
+            // Map các trường quan trọng (để script backend hiểu)
+            // Giả sử 3 trường đầu tiên luôn là Tên, MSSV, Lớp
+            const keys = Object.keys(dataObj);
+            const payload = {
+                name: dataObj[keys[0]] || "", 
+                mssv: dataObj[keys[1]] || "", 
+                class_name: dataObj[keys[2]] || "",
+                device_info: navigator.userAgent,
+                extraData: JSON.stringify(dataObj) // Gửi toàn bộ data phòng hờ
+            };
+
+            fetch(API_URL, {
+                method: "POST", mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            }).then(() => {
+                localStorage.setItem('attended_today', today);
+                // Lưu MSSV để dùng cho tính năng Request
+                localStorage.setItem('my_mssv', payload.mssv);
+                localStorage.setItem('my_name', payload.name);
+                localStorage.setItem('my_class', payload.class_name);
+                
+                Swal.fire('Thành công', 'Đã ghi nhận điểm danh!', 'success').then(()=>showError("ĐÃ ĐIỂM DANH XONG"));
+            }).catch(() => {
+                btn.disabled = false; btn.innerText = "THỬ LẠI";
+                Swal.fire('Lỗi', 'Lỗi kết nối', 'error');
             });
         }
 
-        function performReset() {
-            localStorage.removeItem('attended_today');
-            localStorage.removeItem('my_mssv');
-            location.reload();
+        function showError(msg) {
+            document.getElementById("formScreen").classList.add("hidden");
+            document.getElementById("errorScreen").classList.remove("hidden");
+            document.getElementById("errMsg").innerText = msg;
+        }
+
+        // --- (1) YÊU CẦU RESET (Gửi thông báo cho Admin) ---
+        function requestReset() {
+            const mssv = localStorage.getItem('my_mssv');
+            if(!mssv) { Swal.fire('Lỗi', 'Bạn chưa điểm danh lần nào!', 'warning'); return; }
+            
+            Swal.fire({
+                title: 'YÊU CẦU RESET',
+                input: 'text', inputPlaceholder: 'Nhập lý do (VD: Sai tên, mượn máy...)',
+                showCancelButton: true, confirmButtonText: 'Gửi đi'
+            }).then((res) => {
+                if(res.isConfirmed && res.value) {
+                    fetch(API_URL, {
+                        method: 'POST', mode: 'no-cors',
+                        body: JSON.stringify({ 
+                            action: "REQUEST_RESET", 
+                            mssv: mssv, 
+                            name: localStorage.getItem('my_name'), 
+                            class_name: localStorage.getItem('my_class'),
+                            reason: res.value 
+                        })
+                    }).then(() => {
+                        Swal.fire('Đã gửi', 'Yêu cầu đã được gửi đến Admin. Vui lòng đợi!', 'success');
+                        // Tự động reset luôn sau khi gửi (theo yêu cầu cũ của bạn là gửi xong thì reset)
+                        localStorage.removeItem('attended_today');
+                        setTimeout(()=>location.reload(), 2000);
+                    });
+                }
+            });
+        }
+
+        // --- (2) NHẬP MẬT KHẨU (Tự mở khóa) ---
+        function manualReset() {
+            Swal.fire({
+                title: 'NHẬP MẬT KHẨU',
+                text: 'Nhập mật khẩu Reset do Admin cung cấp:',
+                input: 'password', showCancelButton: true
+            }).then((res) => {
+                if(res.isConfirmed) {
+                    // Lấy pass từ localStorage (nếu chung domain với admin)
+                    // Hoặc mặc định là "Admin"
+                    const correctPass = localStorage.getItem('admin_reset_pass') || "Admin";
+                    if(res.value === correctPass) {
+                        localStorage.removeItem('attended_today');
+                        Swal.fire('Thành công', 'Đã mở khóa thiết bị!', 'success').then(()=>location.reload());
+                    } else {
+                        Swal.fire('Sai mật khẩu', '', 'error');
+                    }
+                }
+            });
         }
     </script>
 </body>
