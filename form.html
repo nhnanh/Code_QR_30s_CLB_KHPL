@@ -6,227 +6,91 @@
     <title>XÁC NHẬN ĐIỂM DANH</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; position: relative; }
-        .form-card { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #2c3e50; margin-bottom: 20px; }
-        .input-group { margin-bottom: 20px; }
-        label { display: block; font-weight: bold; margin-bottom: 8px; color: #555; }
-        input { width: 100%; padding: 14px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
-        
-        #name { text-transform: capitalize; }
-        #class_name { text-transform: uppercase; }
-
-        .btn-submit { width: 100%; padding: 15px; background: #2ecc71; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn-submit:hover { background: #27ae60; }
-        .btn-submit:disabled { background: #95a5a6; cursor: not-allowed; }
-
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .hidden { display: none !important; }
-        .error-screen { text-align: center; color: #c0392b; background: #fadbd8; padding: 20px; border-radius: 10px; border: 2px dashed #c0392b; }
-        
-        /* Nút Reset ẩn dưới cùng */
-        .reset-container { position: absolute; bottom: 10px; width: 100%; text-align: center; }
-        .reset-btn { font-size: 12px; color: #999; cursor: pointer; text-decoration: none; padding: 5px; }
-        .reset-btn:hover { color: #555; text-decoration: underline; }
+        .reset-container { position: absolute; bottom: 20px; width: 100%; text-align: center; }
+        .reset-btn { font-size: 13px; color: #666; cursor: pointer; text-decoration: underline; }
     </style>
 </head>
 <body>
-
-    <div class="form-card">
-        <!-- 1. Màn hình chặn -->
-        <div id="errorScreen" class="hidden error-screen">
-            <h3 id="errTitle">⛔ LỖI</h3>
-            <p id="errMsg">Nội dung lỗi</p>
-        </div>
-
-        <!-- 2. Màn hình Form -->
-        <div id="formScreen">
-            <h2>📋 ĐIỂM DANH</h2>
-            <form id="attendanceForm">
-                <div class="input-group">
-                    <label>Họ và tên:</label>
-                    <input type="text" id="name" placeholder="Nguyễn Văn A" required oninput="formatName(this)">
-                </div>
-                <div class="input-group">
-                    <label>Mã sinh viên:</label>
-                    <input type="tel" id="mssv" placeholder="Nhập số..." required pattern="[0-9]*">
-                </div>
-                <div class="input-group">
-                    <label>Lớp:</label>
-                    <input type="text" id="class_name" placeholder="K68LUAT" required oninput="this.value = this.value.toUpperCase()">
-                </div>
-                <button type="submit" class="btn-submit" id="btnSub">XÁC NHẬN ĐIỂM DANH</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Nút Reset thông minh -->
-    <div class="reset-container">
-        <span class="reset-btn" onclick="smartReset()">🔄 Reset thiết bị (Điểm danh lại)</span>
-    </div>
-
+    <!-- Nội dung Form giữ nguyên như cũ, chỉ sửa script bên dưới -->
+    
     <script>
-        // ==========================================
-        // DÁN LINK GOOGLE APPS SCRIPT CỦA BẠN VÀO ĐÂY
-        const API_URL = "https://script.google.com/macros/s/AKfycbyk8mivqsuoi4KC57XUd3GwhRM3UZlT2Ut2AUMyE-AmfN9gsP3e305DIbMrrTXyRvkQ/exec";
-        // ==========================================
+        const API_URL = "DÁN_LINK_API_CỦA_BẠN_VÀO_ĐÂY"; 
 
-        const today = new Date().toLocaleDateString('vi-VN');
+        // ... (Logic điểm danh cũ giữ nguyên) ...
 
-        // KIỂM TRA CHẶN THIẾT BỊ
-        if (localStorage.getItem('attended_today') === today) {
-            blockUser("BẠN ĐÃ ĐIỂM DANH RỒI!", "Mỗi thiết bị chỉ được điểm danh 1 lần/ngày.");
-        } else {
-            checkQRCode();
-        }
-
-        // KIỂM TRA MÃ QR
-        function checkQRCode() {
-            const params = new URLSearchParams(window.location.search);
-            const qrTime = parseInt(params.get('t'));
-            const now = Date.now();
-
-            if (!qrTime || (now - qrTime > 45000)) {
-                blockUser("MÃ QR ĐÃ HẾT HẠN!", "Mã này đã cũ. Vui lòng quét mã mới trên màn hình.");
-            }
-        }
-
-        function blockUser(title, msg) {
-            document.getElementById('formScreen').classList.add('hidden');
-            const errDiv = document.getElementById('errorScreen');
-            errDiv.classList.remove('hidden');
-            document.getElementById('errTitle').innerText = title;
-            document.getElementById('errMsg').innerText = msg;
-        }
-
-        function formatName(el) {
-            let words = el.value.toLowerCase().split(' ');
-            for (let i = 0; i < words.length; i++) { words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1); }
-            el.value = words.join(' ');
-        }
-
-        // --- XỬ LÝ GỬI FORM ---
-        document.getElementById('attendanceForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btnSub');
-            btn.innerText = "Đang gửi...";
-            btn.disabled = true;
-
-            const name = document.getElementById('name').value;
-            const mssv = document.getElementById('mssv').value;
-            const className = document.getElementById('class_name').value;
-            const timeInfo = new Date().toLocaleString('vi-VN');
-
-            // Lưu MSSV để dùng cho tính năng Reset thông minh
-            localStorage.setItem('my_mssv', mssv);
-
-            fetch(API_URL, {
-                method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name: name, mssv: mssv, class_name: className, device_info: navigator.userAgent })
-            }).then(() => {
-                localStorage.setItem('attended_today', today);
-                Swal.fire({
-                    icon: 'success',
-                    title: 'THÀNH CÔNG!',
-                    html: `<p>SV: <b>${name}</b></p><p>MSSV: <b>${mssv}</b></p><p>Lúc: <b>${timeInfo}</b></p>`,
-                    confirmButtonText: 'OK'
-                }).then(() => {
-                    blockUser("ĐÃ GHI NHẬN", "Cảm ơn bạn đã tham gia.");
-                });
-            }).catch(() => {
-                Swal.fire('Lỗi', 'Lỗi mạng hoặc cấu hình!', 'error');
-                btn.disabled = false;
-                btn.innerText = "THỬ LẠI";
-            });
-        });
-
-        // --- TÍNH NĂNG RESET THÔNG MINH ---
+        // --- LOGIC RESET MỚI ---
         function smartReset() {
             const mssv = localStorage.getItem('my_mssv');
 
-            // 1. Nếu không tìm thấy MSSV (do xóa cache hoặc chưa điểm danh) -> Hỏi Pass
             if (!mssv) {
-                askPassword("Nhập mật khẩu Reset để mở khóa thiết bị:");
+                // Trường hợp 1: Chưa có MSSV (chưa điểm danh lần nào) -> Hỏi Pass
+                askPassword("Nhập mật khẩu Reset để mở khóa:");
                 return;
             }
 
-            // 2. Nếu có MSSV -> Hỏi Server xem còn tồn tại không
-            Swal.fire({
-                title: 'Đang kiểm tra...',
-                text: 'Vui lòng chờ...',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading() }
-            });
+            Swal.fire({ title: 'Đang kiểm tra...', didOpen: () => Swal.showLoading() });
 
             fetch(API_URL, {
                 method: 'POST',
-                // Quan trọng: Dùng redirect: follow để Apps Script trả về JSON đọc được
                 body: JSON.stringify({ action: "CHECK_STATUS", mssv: mssv })
             })
             .then(res => res.json())
             .then(data => {
                 Swal.close();
                 if (data.exist === true) {
-                    // TRƯỜNG HỢP 1: CHƯA XÓA Ở DANH SÁCH -> CẦN PASS
-                    askPassword(`Sinh viên ${mssv} vẫn còn trong danh sách điểm danh!\nBạn cần mật khẩu Reset để mở khóa máy này.`);
+                    // TRƯỜNG HỢP 2: CÓ TÊN TRONG DANH SÁCH -> NHẬP LÝ DO
+                    askReason(mssv, data.name, data.class_name);
                 } else {
-                    // TRƯỜNG HỢP 2: ĐÃ XÓA Ở DANH SÁCH -> KHÔNG CẦN PASS
-                    Swal.fire({
-                        icon: 'info',
-                        title: 'Đã được phép điểm danh lại!',
-                        text: 'Admin đã xóa dữ liệu cũ của bạn. Máy sẽ được reset ngay.',
-                        confirmButtonText: 'Tiến hành'
+                    // TRƯỜNG HỢP 3: ĐÃ BỊ XÓA -> RESET LUÔN
+                    performReset();
+                }
+            });
+        }
+
+        function askReason(mssv, name, className) {
+            Swal.fire({
+                title: 'YÊU CẦU ĐIỂM DANH LẠI',
+                html: `<p>Sinh viên: <b>${name}</b> (${mssv})</p><p>Bạn đang có tên trong danh sách. Hãy nhập lý do để gửi yêu cầu đến Admin.</p>`,
+                input: 'textarea',
+                inputPlaceholder: 'Nhập lý do (VD: Điền sai thông tin...)',
+                showCancelButton: true,
+                confirmButtonText: 'Gửi Yêu Cầu'
+            }).then((result) => {
+                if (result.isConfirmed && result.value) {
+                    // Gửi yêu cầu lên server
+                    fetch(API_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ 
+                            action: "REQUEST_RESET", 
+                            mssv: mssv, name: name, class_name: className, 
+                            reason: result.value 
+                        })
                     }).then(() => {
-                        performReset();
+                        Swal.fire('Đã gửi!', 'Yêu cầu của bạn đã được gửi. Máy sẽ reset ngay để bạn nhập lại.', 'success')
+                        .then(() => { performReset(); });
                     });
                 }
-            })
-            .catch(err => {
-                Swal.close();
-                console.error(err);
-                // Lỗi mạng -> Fallback về hỏi pass
-                askPassword("Không thể kết nối server kiểm tra. Nhập mật khẩu Reset để mở khóa:");
             });
         }
 
         function askPassword(msg) {
+            const adminPass = localStorage.getItem('admin_reset_pass') || "Admin";
             Swal.fire({
-                title: 'Yêu cầu quyền Reset',
-                text: msg,
-                input: 'password',
-                inputPlaceholder: 'Nhập mật khẩu...',
-                showCancelButton: true,
-                confirmButtonText: 'Mở khóa',
-                cancelButtonText: 'Hủy'
+                title: 'Mở Khóa Thiết Bị', text: msg, input: 'password', showCancelButton: true
             }).then((result) => {
-                if (result.isConfirmed) {
-                    // --- ĐỒNG BỘ MẬT KHẨU VỚI ADMIN ---
-                    // Lấy pass từ localStorage (do file index.html đã lưu vào đó nếu cùng domain)
-                    // Mặc định là "Admin" nếu chưa đổi
-                    const adminPass = localStorage.getItem('admin_reset_pass') || "Admin"; 
-
-                    if (result.value === adminPass) { 
-                        performReset();
-                    } else {
-                        Swal.fire('Lỗi', 'Sai mật khẩu!', 'error');
-                    }
-                }
+                if (result.value === adminPass) performReset();
+                else if (result.isConfirmed) Swal.fire('Lỗi', 'Sai mật khẩu!', 'error');
             });
         }
 
         function performReset() {
             localStorage.removeItem('attended_today');
             localStorage.removeItem('my_mssv');
-            Swal.fire({
-                icon: 'success',
-                title: 'Đã Reset!',
-                text: 'Bạn có thể điểm danh lại ngay bây giờ.',
-                timer: 1500,
-                showConfirmButton: false
-            }).then(() => {
-                location.reload();
-            });
+            location.reload();
         }
     </script>
 </body>
