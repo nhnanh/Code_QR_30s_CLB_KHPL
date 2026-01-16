@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>XÁC NHẬN ĐIỂM DANH</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
         .form-card { background: white; padding: 30px; border-radius: 15px; width: 100%; max-width: 450px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
@@ -14,7 +15,7 @@
         input { width: 100%; padding: 12px; border: 1px solid #dfe6e9; border-radius: 8px; box-sizing: border-box; font-size: 15px; transition: border-color 0.3s; }
         .btn-submit { width: 100%; padding: 15px; background: #2ecc71; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 15px; transition: background 0.3s; }
         .reset-options { margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; display: flex; flex-direction: column; gap: 10px; }
-        .btn-reset { background: #f8f9fa; border: 1px solid #dfe6e9; color: #636e72; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; width: 100%; }
+        .btn-reset { background: #f8f9fa; border: 1px solid #dfe6e9; color: #636e72; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
         .hidden { display: none !important; }
         .error-box { text-align: center; padding: 20px; color: #c0392b; background: #fadbd8; border: 2px dashed #c0392b; border-radius: 10px; }
         .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
@@ -22,97 +23,167 @@
     </style>
 </head>
 <body>
+
     <div class="form-card">
-        <div id="errorScreen" class="hidden error-box"><h3>⛔ THÔNG BÁO</h3><p id="errMsg"></p></div>
+        <div id="errorScreen" class="hidden error-box">
+            <h3><i class="fa-solid fa-circle-exclamation"></i> THÔNG BÁO</h3>
+            <p id="errMsg" style="margin: 10px 0;">Nội dung thông báo...</p>
+        </div>
+
         <div id="formScreen">
             <h2 id="formTitle"><div class="loader" style="margin:0 auto"></div></h2>
             <form id="dynamicForm"></form>
         </div>
+        
         <div class="reset-options">
-            <button class="btn-reset" onclick="requestReset()">Yêu cầu Admin Reset</button>
-            <button class="btn-reset" onclick="manualReset()">Nhập mật khẩu Reset</button>
+            <button class="btn-reset" onclick="requestReset()"><i class="fa-solid fa-paper-plane" style="color:#e67e22"></i> Yêu cầu Admin Reset</button>
+            <button class="btn-reset" onclick="manualReset()"><i class="fa-solid fa-key" style="color:#3498db"></i> Nhập mật khẩu Reset</button>
         </div>
     </div>
+
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbxQgOytzD2nJwoCSdTLiRaGnl567gcNKVOmHTsA_u8dJ7Y87rBBFlJc1c32uuYLtauy/exec";
         const today = new Date().toLocaleDateString('vi-VN');
         let formConfig = null;
 
         window.onload = function() {
-            if(localStorage.getItem('attended_today') === today) showError("Bạn đã điểm danh hôm nay rồi!");
-            else checkQR();
+            // Check Smart Reset Status from server
+            const myID = localStorage.getItem('my_unique_id');
+            if (myID) {
+                 fetch(API_URL, {method:'POST', body:JSON.stringify({action:'CHECK_STATUS', unique_id: myID})})
+                 .then(r=>r.json()).then(res=>{
+                     if(!res.exists) { // Admin đã xóa dòng -> Auto Reset
+                         localStorage.removeItem('attended_today');
+                     }
+                     init();
+                 }).catch(()=>init());
+            } else init();
         };
+        
+        function init() {
+            if (localStorage.getItem('attended_today') === today) {
+                showError("Bạn đã điểm danh hôm nay rồi!");
+            } else {
+                checkQR();
+            }
+        }
 
         function checkQR() {
-            // Check time (Optional)
             const p = new URLSearchParams(window.location.search);
             const t = parseInt(p.get('t'));
-            if (!t || (Date.now() - t > 45000)) showError("Mã QR đã hết hạn! Vui lòng quét lại.");
-            else loadFormConfig();
+            loadFormConfig();
         }
 
         function loadFormConfig() {
-            fetch(`${API_URL}?action=GET_FORM_CONFIG`).then(r=>r.json()).then(res=>{
-                if(res.status==="success" && res.config) renderForm(res.config);
-                else renderForm({title:"ĐIỂM DANH", fields:[{label:"Họ tên",type:"text",format:"capitalize",required:true}]});
-            }).catch(()=>showError("Lỗi kết nối"));
+            fetch(`${API_URL}?action=GET_FORM_CONFIG&t=${Date.now()}`)
+            .then(r => r.json())
+            .then(res => {
+                if (res.status === "success" && res.config) {
+                    renderForm(res.config);
+                } else {
+                    renderForm({
+                        title: "ĐIỂM DANH",
+                        fields: [
+                            {label: "Họ và tên", type: "text", format: "capitalize", required: true},
+                            {label: "Mã sinh viên", type: "tel", format: "none", required: true},
+                            {label: "Lớp", type: "text", format: "uppercase", required: true}
+                        ]
+                    });
+                }
+            })
+            .catch(err => {
+                document.getElementById("formTitle").innerText = "Lỗi tải Form";
+            });
         }
 
         function renderForm(cfg) {
             formConfig = cfg;
             document.getElementById("formTitle").innerText = cfg.title;
-            const form = document.getElementById("dynamicForm"); form.innerHTML = "";
-            cfg.fields.forEach((f, i) => {
-                const div = document.createElement("div"); div.className = "form-group";
+            const form = document.getElementById("dynamicForm");
+            form.innerHTML = "";
+            
+            cfg.fields.forEach((f, index) => {
+                const div = document.createElement("div");
+                div.className = "form-group";
                 let oninput = "";
-                if(f.format==='uppercase') oninput="this.value=this.value.toUpperCase()";
-                if(f.format==='capitalize') oninput="let w=this.value.toLowerCase().split(' ');for(let i=0;i<w.length;i++)w[i]=w[i].charAt(0).toUpperCase()+w[i].slice(1);this.value=w.join(' ')";
-                div.innerHTML = `<label>${f.label}</label><input type="${f.type}" name="${f.label}" ${f.required?'required':''} oninput="${oninput}" placeholder="${f.placeholder||''}">`;
+                if(f.format === 'uppercase') oninput = `oninput="this.value = this.value.toUpperCase()"`;
+                if(f.format === 'lowercase') oninput = `oninput="this.value = this.value.toLowerCase()"`;
+                if(f.format === 'capitalize') oninput = `oninput="formatCapitalize(this)"`;
+
+                div.innerHTML = `<label>${f.label} ${f.required ? '<span style="color:red">*</span>' : ''}</label><input type="${f.type}" name="${f.label}" ${f.required ? 'required' : ''} ${oninput} placeholder="${f.placeholder || ''}">`;
                 form.appendChild(div);
             });
-            const btn = document.createElement("button"); btn.className = "btn-submit"; btn.innerText = "XÁC NHẬN";
+            
+            const btn = document.createElement("button");
+            btn.className = "btn-submit";
+            btn.type = "submit";
+            btn.innerText = "XÁC NHẬN";
             form.appendChild(btn);
             form.onsubmit = handleSubmit;
         }
 
-        function handleSubmit(e) {
-            e.preventDefault();
-            const btn = e.target.querySelector("button"); btn.disabled=true; btn.innerHTML='<div class="loader"></div>';
-            const fd = new FormData(e.target); const dataObj = {}; for(let [k,v] of fd.entries()) dataObj[k]=v.trim();
-            
-            // Map data
-            const labels = formConfig.fields.map(f=>f.label);
-            const payload = {
-                name: dataObj[labels[0]]||"", mssv: dataObj[labels[1]]||"", class_name: dataObj[labels[2]]||"",
-                device_info: navigator.userAgent, extraData: JSON.stringify(dataObj),
-                submitData: Object.values(dataObj) // Mảng giá trị tuần tự để ghi vào sheet
-            };
-
-            fetch(API_URL, {method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload)})
-            .then(()=>{
-                localStorage.setItem('attended_today', today);
-                localStorage.setItem('my_unique_id', payload.mssv || payload.name); // Lưu ID để request reset
-                localStorage.setItem('my_name', payload.name);
-                Swal.fire("Thành công", "Đã ghi nhận!", "success").then(()=>showError("✅ ĐÃ ĐIỂM DANH"));
-            })
-            .catch(()=>{ btn.disabled=false; btn.innerText="THỬ LẠI"; Swal.fire("Lỗi", "Lỗi mạng", "error"); });
+        function formatCapitalize(el) {
+            let words = el.value.toLowerCase().split(' ');
+            for (let i = 0; i < words.length; i++) { if(words[i]) words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1); }
+            el.value = words.join(' ');
         }
 
-        function showError(m) { document.getElementById("formScreen").classList.add("hidden"); document.getElementById("errorScreen").classList.remove("hidden"); document.getElementById("errMsg").innerHTML=m; }
-        
+        function handleSubmit(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector("button");
+            btn.disabled = true; btn.innerHTML = "Đang gửi...";
+            
+            const formData = new FormData(e.target);
+            const dataObj = {};
+            for (let [key, value] of formData.entries()) dataObj[key] = value.trim();
+            
+            const fieldLabels = formConfig.fields.map(f => f.label);
+            const payload = {
+                name: dataObj[fieldLabels[0]] || "", 
+                mssv: dataObj[fieldLabels[1]] || "", 
+                class_name: dataObj[fieldLabels[2]] || "",
+                device_info: navigator.userAgent,
+                extraData: JSON.stringify(dataObj),
+                submitData: Object.values(dataObj)
+            };
+
+            fetch(API_URL, {
+                method: "POST", mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            }).then(() => {
+                localStorage.setItem('attended_today', today);
+                localStorage.setItem('my_unique_id', payload.mssv || payload.name); 
+                localStorage.setItem('my_name', payload.name);
+                Swal.fire({ icon: 'success', title: 'THÀNH CÔNG!', text: 'Dữ liệu đã được ghi nhận.', confirmButtonText: 'OK' }).then(() => { showError("✅ ĐÃ ĐIỂM DANH XONG"); });
+            }).catch(err => {
+                btn.disabled = false; btn.innerText = "THỬ LẠI";
+                Swal.fire('Lỗi', 'Lỗi kết nối', 'error');
+            });
+        }
+
+        function showError(msg) {
+            document.getElementById("formScreen").classList.add("hidden");
+            document.getElementById("errorScreen").classList.remove("hidden");
+            document.getElementById("errMsg").innerHTML = msg;
+        }
+
         function requestReset() {
             const id = localStorage.getItem('my_unique_id');
-            if(!id) return Swal.fire("Lỗi", "Chưa có dữ liệu cũ", "warning");
+            if(!id) return Swal.fire('Lỗi', 'Chưa có dữ liệu cũ', 'warning');
             Swal.fire({title:"LÝ DO RESET", input:"text", showCancelButton:true}).then(r=>{
-                if(r.value) fetch(API_URL, {method:"POST", mode:"no-cors", body:JSON.stringify({action:"REQUEST_RESET", unique_id:id, name:localStorage.getItem('my_name'), reason:r.value})})
+                if(r.value) fetch(API_URL, {method:"POST", mode:"no-cors", body:JSON.stringify({action:"REQUEST_RESET", unique_id:id, name:localStorage.getItem('my_name') || "Unknown", reason:r.value})})
                 .then(()=>Swal.fire("Đã gửi", "Chờ Admin duyệt", "success"));
             });
         }
         
         function manualReset() {
             Swal.fire({title:"MẬT KHẨU RESET", input:"password", showCancelButton:true}).then(r=>{
-                if(r.value === "Admin") { localStorage.removeItem("attended_today"); location.reload(); }
-                else Swal.fire("Sai mật khẩu", "", "error");
+                if(r.isConfirmed) {
+                    const correctPass = "Admin"; 
+                    if (r.value === correctPass) { localStorage.removeItem("attended_today"); location.reload(); }
+                    else { Swal.fire("Sai mật khẩu", "", "error"); }
+                }
             });
         }
     </script>
