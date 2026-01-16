@@ -19,115 +19,137 @@
         body.dark-mode { --primary: #60a5fa; --bg: #0f172a; --text: #f1f5f9; --white: #1e293b; --border: #334155; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; transition: background 0.3s, color 0.3s; }
         
-        /* FIX LỖI EDGE HIỆN 2 MẮT PASSWORD */
+        /* FIX LỖI EDGE */
         input::-ms-reveal, input::-ms-clear { display: none; }
 
         .settings-btn { position: absolute; top: 20px; left: 20px; font-size: 28px; color: #94a3b8; cursor: pointer; padding: 10px; z-index: 100; transition: 0.3s; }
         .settings-btn:hover { color: var(--primary); transform: rotate(90deg); }
 
-        .qr-card { background: var(--white); padding: 40px; border-radius: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); text-align: center; width: 380px; position: relative; z-index: 10; border: 1px solid var(--border); transition: 0.3s; display: flex; flex-direction: column; align-items: center; }
-        #qrcode { background: var(--white); padding: 15px; border: 2px dashed #cbd5e1; border-radius: 16px; margin: 20px auto; transition: 0.3s; }
+        /* QR CARD */
+        .qr-card { 
+            background: var(--white); padding: 40px; border-radius: 24px; 
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); text-align: center; 
+            width: 380px; position: relative; z-index: 10; border: 1px solid var(--border); 
+            transition: 0.3s; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        
+        #qrcode { 
+            background: var(--white); padding: 15px; border: 2px dashed #cbd5e1; 
+            border-radius: 16px; display: inline-block; margin: 20px auto; 
+            transition: 0.3s;
+        }
+        
         .timer { font-size: 64px; font-weight: 900; color: var(--danger); line-height: 1; font-variant-numeric: tabular-nums; }
         .realtime { margin-top: 20px; font-weight: 600; color: #64748b; border-top: 1px solid var(--border); padding-top: 15px; width: 100%;}
         .blur-effect { filter: blur(15px); opacity: 0.5; pointer-events: none; }
-        
+
         /* Marquee */
         .marquee-container { position: fixed; left: 0; width: 100%; padding: 10px 0; font-weight: bold; font-size: 16px; z-index: 50; text-transform: uppercase; display: none; }
         .marquee-top { top: 0; } .marquee-bottom { bottom: 0; }
 
-        /* Notifications */
+        /* LIVE TOAST */
         #liveToastContainer { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column-reverse; gap: 10px; pointer-events: none; }
-        .live-toast { background: rgba(255,255,255,0.95); border-left: 5px solid var(--success); padding: 15px; border-radius: 8px; box-shadow: 0 10px 15px rgba(0,0,0,0.1); width: 320px; animation: slideIn 0.4s ease forwards, fadeOut 0.5s 4.5s forwards; backdrop-filter: blur(4px); display: flex; align-items: flex-start; gap: 10px; pointer-events: auto; }
+        .live-toast { 
+            background: rgba(255, 255, 255, 0.95); border-left: 5px solid var(--success); 
+            padding: 15px; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); 
+            width: 300px; animation: slideIn 0.4s ease forwards, fadeOut 0.5s 4.5s forwards; 
+            backdrop-filter: blur(4px); display: flex; align-items: center; gap: 10px; opacity: 0; pointer-events: auto;
+        }
         .live-toast.warning { border-left-color: var(--warning); }
-        .live-toast.dark { background: rgba(30,41,59,0.95); color: white; }
-        .live-toast-icon { font-size: 20px; color: var(--success); margin-top: 2px; }
+        .live-toast.dark { background: rgba(30, 41, 59, 0.95); color: white; }
+        .live-toast-icon { font-size: 20px; color: var(--success); }
         .live-toast.warning .live-toast-icon { color: var(--warning); }
-        .live-toast-content { flex: 1; }
-        .live-toast-title { font-weight: bold; font-size: 14px; display: block; }
-        .live-toast-msg { font-size: 13px; opacity: 0.9; }
+        .live-toast-content { display: flex; flex-direction: column; }
+        .live-toast-title { font-weight: bold; font-size: 14px; }
+        .live-toast-msg { font-size: 12px; opacity: 0.9; margin-top: 2px;}
+        .live-toast-time { font-size: 11px; opacity: 0.7; }
+        .live-toast:nth-last-child(n+2) { opacity: 0.8; transform: scale(0.98); }
+        .live-toast:nth-last-child(n+3) { opacity: 0.6; transform: scale(0.96); }
+
         @keyframes slideIn { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; transform: scale(0.9); } }
-        
-        /* Modal & UI */
+
+        /* SYSTEM TOAST */
+        #systemToast { 
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); 
+            background: #333; color: white; padding: 12px 24px; border-radius: 30px; 
+            font-size: 14px; z-index: 10000; opacity: 0; transition: 0.3s; 
+            box-shadow: 0 10px 15px rgba(0,0,0,0.2); pointer-events: none;
+        }
+        #systemToast.show { opacity: 1; bottom: 50px; }
+
+        /* MODAL & SPLIT SCREEN (Fix layout tràn viền) */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center; }
-        .modal-content { background: var(--white); width: 95%; max-width: 1000px; border-radius: 16px; display: flex; flex-direction: column; max-height: 95vh; box-shadow: 0 25px 50px rgba(0,0,0,0.25); overflow: hidden; transition: width 0.3s; }
-        .modal-header { padding: 15px 25px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; }
+        .modal-content { background: var(--white); width: 95%; max-width: 1000px; border-radius: 16px; display: flex; flex-direction: column; max-height: 95vh; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); overflow: hidden; }
+        .modal-header { padding: 15px 25px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         .modal-title { font-size: 18px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 10px; }
-        .credit-text { font-size: 11px; color: #64748b; font-style: italic; margin-top: 4px; display: block; font-weight: normal; }
+        .credit-text { font-size: 11px; color: #64748b; font-style: italic; display: block; }
         .close-modal { font-size: 24px; cursor: pointer; color: #94a3b8; }
         .modal-body { padding: 20px; overflow-y: auto; background: var(--bg); flex: 1; display: flex; flex-direction: column; }
-        
-        .tabs { display: flex; gap: 5px; margin-bottom: 15px; background: var(--white); padding: 5px; border-radius: 10px; border: 1px solid var(--border); width: fit-content; }
-        .tab-btn { padding: 8px 16px; border: none; background: none; font-weight: 600; color: #64748b; cursor: pointer; border-radius: 6px; transition: 0.2s; font-size: 13px; }
-        .tab-btn.active { background: var(--primary); color: white; }
-        .tab-content { display: none; flex: 1; flex-direction: column; }
-        .tab-content.active { display: flex; }
 
-        /* FORM BUILDER STYLES */
-        .fb-container { border: 1px solid var(--border); background: var(--white); border-radius: 8px; padding: 20px; max-height: 400px; overflow-y: auto; }
-        .fb-item { display: flex; gap: 10px; align-items: center; background: var(--bg); padding: 10px; border-radius: 6px; margin-bottom: 10px; border: 1px solid var(--border); flex-wrap: wrap;}
-        .fb-settings { flex: 1; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 10px; align-items: center; }
-
-        /* PASSWORD INPUT GROUP */
-        .pass-group { position: relative; display: flex; align-items: center; width: 100%; }
-        .pass-group input { padding-right: 80px; flex: 1; } 
-        .pass-controls { position: absolute; right: 5px; display: flex; gap: 5px; background: transparent; }
-        .icon-btn { background: #f1f5f9; border: 1px solid #cbd5e1; cursor: pointer; color: #64748b; padding: 6px; font-size: 14px; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; }
-        .icon-btn:hover { color: var(--primary); background: #e2e8f0; }
-        
-        input[readonly] { background-color: #f1f5f9; color: #64748b; border: 1px dashed #cbd5e1; cursor: not-allowed; }
-        input.unlocked { background-color: #f0fdfa; border: 1px solid var(--success); color: var(--success); font-weight: bold; cursor: text; }
-
-        /* SPLIT SCREEN */
-        #resizer { width: 8px; background-color: var(--border); cursor: col-resize; display: none; z-index: 101; }
-        .expand-btn { display: none; margin-left: auto; margin-right: 15px; cursor: pointer; color: var(--primary); font-size: 18px; }
+        /* SPLIT SCREEN LOGIC (PC) */
+        #resizer { width: 5px; background-color: var(--border); cursor: col-resize; display: none; z-index: 101; transition: background 0.2s; }
+        #resizer:hover { background-color: var(--primary); }
 
         @media (min-width: 1024px) {
             body.admin-open { flex-direction: row; align-items: stretch; justify-content: flex-start; }
-            body.admin-open .qr-card { flex: 1; height: 100vh; width: auto; border: none; box-shadow: none; border-radius: 0; background: var(--bg); }
-            body.admin-open #qrcode { transform: scale(1.2); }
-            body.admin-open #adminModal { display: flex !important; position: relative; width: 600px; min-width: 400px; max-width: 80%; height: 100vh; border-left: 1px solid var(--border); z-index: 100; transition: width 0.3s; }
+            body.admin-open .qr-card { 
+                flex: 1; height: 100vh; width: auto; border: none; border-radius: 0; box-shadow: none; background: var(--bg); 
+                justify-content: center; 
+            }
+            body.admin-open #qrcode { transform: scale(1.2); margin-bottom: 30px; }
+            body.admin-open #adminModal { 
+                display: flex !important; position: relative; width: 50%; min-width: 400px; height: 100vh; 
+                background: var(--white); border-left: 1px solid var(--border); backdrop-filter: none; z-index: 100; 
+            }
+            body.admin-open .modal-content { width: 100%; height: 100%; max-width: none; border-radius: 0; box-shadow: none; max-height: none; }
             body.admin-open .settings-btn { display: none; }
             body.admin-open #resizer { display: block; }
-            body.admin-open .expand-btn { display: block; }
-            /* Full width mode */
-            body.admin-open.full-width #adminModal { width: 100% !important; max-width: 100%; border-left: none; }
-            body.admin-open.full-width .qr-card { display: none; }
-            body.admin-open.full-width #resizer { display: none; }
+            body.admin-open .close-modal { display: none; } /* Ẩn nút đóng modal, dùng nút thoát riêng */
+            body.admin-open .expand-btn { display: block; cursor: pointer; font-size: 18px; color: var(--primary); }
         }
-        
-        /* Common */
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px; color: var(--text); }
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; background: var(--white); color: var(--text); }
-        .btn { padding: 10px 20px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; color: white; display: inline-flex; align-items: center; gap: 8px; }
-        .btn-primary { background: var(--primary); }
-        .btn-success { background: var(--success); }
-        .btn-danger { background: var(--danger); }
-        .btn-gray { background: #64748b; }
+        .expand-btn { display: none; }
 
-        /* Table */
+        /* TABS */
+        .tabs { display: flex; gap: 5px; margin-bottom: 15px; background: var(--white); padding: 5px; border-radius: 10px; border: 1px solid var(--border); width: fit-content; flex-wrap: wrap; }
+        .tab-btn { padding: 8px 16px; border: none; background: none; font-weight: 600; color: #64748b; cursor: pointer; border-radius: 6px; transition: 0.2s; font-size: 13px; }
+        .tab-btn:hover { background: var(--bg); }
+        .tab-btn.active { background: var(--primary); color: white; }
+        .tab-content { display: none; flex: 1; flex-direction: column; animation: fadeEffect 0.3s; }
+        .tab-content.active { display: flex; }
+        @keyframes fadeEffect { from {opacity: 0; transform: translateY(5px);} to {opacity: 1; transform: translateY(0);} }
+
+        /* PASSWORD GROUP */
+        .pass-group { position: relative; display: flex; align-items: center; width: 100%; }
+        .pass-group input { padding-right: 80px; flex: 1; }
+        .pass-controls { position: absolute; right: 5px; display: flex; gap: 5px; }
+        .icon-btn { background: #f1f5f9; border: 1px solid #cbd5e1; cursor: pointer; color: #64748b; padding: 6px; font-size: 14px; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; }
+        .icon-btn:hover { color: var(--primary); background: #e2e8f0; }
+
+        /* FORM BUILDER */
+        .fb-container { border: 1px solid var(--border); background: var(--white); border-radius: 8px; padding: 15px; max-height: 400px; overflow-y: auto; }
+        .fb-item { display: flex; gap: 10px; align-items: center; background: var(--bg); padding: 10px; border-radius: 6px; margin-bottom: 10px; border: 1px solid var(--border); flex-wrap: wrap; }
+        .fb-settings { flex: 1; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 10px; align-items: center; }
+
+        /* TABLE */
         .excel-toolbar { background: var(--white); padding: 10px; border-radius: 8px 8px 0 0; border: 1px solid var(--border); border-bottom: none; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .excel-table-container { flex: 1; overflow: auto; border: 1px solid var(--border); background: var(--white); border-radius: 0 0 8px 8px; min-height: 300px; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background: var(--bg); padding: 12px; text-align: left; font-weight: 700; color: #475569; position: sticky; top: 0; z-index: 10; border-bottom: 2px solid var(--border); cursor: pointer; }
+        th { background: var(--bg); padding: 12px; text-align: left; font-weight: 700; color: #475569; position: sticky; top: 0; z-index: 10; border-bottom: 2px solid var(--border); cursor: pointer; user-select: none; }
         td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text); }
+        tr:hover td { background-color: #f0fdfa; }
         input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
-        
-        /* Bell Icon */
         .bell-cell { text-align: center; width: 40px; }
-        .bell-icon { color: #cbd5e1; }
         .bell-active { color: var(--danger); animation: bellShake 0.8s infinite; cursor: pointer; }
         @keyframes bellShake { 0%,100% { transform: rotate(0); } 20% { transform: rotate(15deg); } 40% { transform: rotate(-10deg); } }
 
-        /* LOG LIST */
-        .log-list { list-style: none; padding: 0; margin: 0; max-height: 400px; overflow-y: auto; }
-        .log-item { background: var(--white); padding: 12px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid #ccc; display: flex; justify-content: space-between; align-items: center; font-size: 13px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        .log-item.info { border-left-color: var(--primary); }
-        .log-item.warning { border-left-color: var(--warning); }
-        .log-item.danger { border-left-color: var(--danger); }
+        /* GENERAL UI */
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: var(--white); padding: 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; align-items: center; gap: 15px; }
+        .stat-icon { width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        .stat-info h4 { margin: 0; font-size: 13px; color: #64748b; font-weight: 600; text-transform: uppercase; }
+        .stat-info p { margin: 5px 0 0 0; font-size: 24px; font-weight: 800; color: var(--text); }
         
-        /* Tools Grid */
         .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; padding-bottom: 20px;}
         .tool-card { background: var(--white); padding: 15px 10px; border-radius: 12px; text-align: center; cursor: pointer; border: 1px solid var(--border); height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; transition: 0.2s;}
         .tool-card:hover { transform: translateY(-3px); border-color: var(--primary); }
@@ -135,22 +157,31 @@
         .tool-active { border: 2px solid var(--success) !important; background: rgba(16,185,129,0.05) !important; }
         .tool-active i { color: var(--success) !important; }
 
-        /* Dashboard */
-        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .stat-card { background: var(--white); padding: 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; align-items: center; gap: 15px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px; color: var(--text); }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; font-family: inherit; background: var(--white); color: var(--text); }
+        input[readonly] { background-color: #f1f5f9; color: #64748b; border: 1px dashed #cbd5e1; cursor: not-allowed; }
+        input.unlocked { background-color: #f0fdfa; border: 1px solid var(--success); color: var(--success); font-weight: bold; cursor: text; }
 
+        .btn { padding: 10px 20px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; color: white; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; }
+        .btn-primary { background: var(--primary); }
+        .btn-success { background: var(--success); }
+        .btn-danger { background: var(--danger); }
+        .btn-gray { background: #64748b; }
         .loader { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; display: none; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         #lockScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; color: white; }
         #qrZoomModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 5000; align-items: center; justify-content: center; flex-direction: column; }
+        #authModal .modal-content { max-width: 400px; height: auto; text-align: center; padding: 30px; }
+        #authModal input { font-size: 18px; text-align: center; letter-spacing: 5px; }
     </style>
 </head>
 <body>
 
     <div class="settings-btn" onclick="openLoginModal()"><i class="fa-solid fa-sliders"></i></div>
     <div id="liveToastContainer" class="pos-top-right"></div>
-    <div id="systemToast">Thông báo</div>
+    <div id="systemToast"></div>
 
     <div class="qr-card" id="mainCard">
         <h1 id="orgName" style="color:var(--primary)">ĐIỂM DANH CLB</h1>
@@ -164,15 +195,21 @@
 
     <!-- AUTH MODAL -->
     <div id="authModal" class="modal">
-        <div class="modal-content" style="max-width:400px; height:auto; padding:30px; text-align:center;">
-            <h3 style="margin-top:0;">ĐĂNG NHẬP</h3>
-            <div class="pass-group" style="margin-bottom:15px;">
-                <input type="password" id="authPassInput" placeholder="••••••" style="text-align:center; letter-spacing:5px; font-size:18px;" onkeyup="if(event.key==='Enter') submitLogin()">
-                <div class="pass-controls" style="right: 10px;">
-                    <button class="icon-btn" onclick="togglePass('authPassInput', this)"><i class="fa-solid fa-eye"></i></button>
-                </div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title"><i class="fa-solid fa-lock"></i> ĐĂNG NHẬP</div>
+                <div class="close-modal" onclick="closeAuthModal()">&times;</div>
             </div>
-            <button class="btn btn-primary" onclick="submitLogin()" style="width:100%;">ĐĂNG NHẬP</button>
+            <div class="modal-body" style="justify-content:center; align-items:center">
+                <p style="margin-bottom:15px; color:#64748b;">Nhập mật khẩu quản trị viên</p>
+                <div class="pass-group" style="margin-bottom:15px;">
+                    <input type="password" id="authPassInput" placeholder="••••••" onkeyup="if(event.key==='Enter') submitLogin()">
+                    <div class="pass-controls" style="right: 10px;">
+                        <button class="icon-btn" onclick="togglePass('authPassInput', this)"><i class="fa-solid fa-eye"></i></button>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="submitLogin()" style="width:100%;">ĐĂNG NHẬP</button>
+            </div>
         </div>
     </div>
 
@@ -184,7 +221,7 @@
                     <div class="modal-title"><i class="fa-solid fa-shield-halved"></i> QUẢN TRỊ VIÊN</div>
                     <span class="credit-text">#Made by Nguyễn Hữu Ngọc Anh - 035 840 7717</span>
                 </div>
-                <div class="expand-btn" onclick="toggleExpandAdmin()" title="Mở rộng/Thu nhỏ"><i class="fa-solid fa-expand"></i></div>
+                <div class="expand-btn" onclick="toggleExpandAdmin()" title="Mở rộng"><i class="fa-solid fa-expand"></i></div>
                 <div class="close-modal" onclick="closeModal()" style="font-size:24px; cursor:pointer">&times;</div>
             </div>
 
@@ -213,11 +250,11 @@
                     </div>
                 </div>
 
-                <!-- TAB 2: DATA -->
+                <!-- TAB 2: DANH SÁCH -->
                 <div id="tab-data" class="tab-content">
                     <div class="excel-toolbar">
                         <input type="date" id="viewDate" onchange="fetchList()">
-                        <input type="text" id="searchInput" placeholder="🔍 Lọc nhanh..." onkeyup="applyFilter()" style="flex:1">
+                        <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm..." onkeyup="applyFilter()" style="flex:1">
                         <button class="btn btn-danger" id="btnBulkDelete" onclick="deleteSelected()" style="display:none;"><i class="fa-solid fa-trash"></i> Xóa mục chọn</button>
                         <button class="btn btn-primary" onclick="fetchList()">Tải lại</button>
                     </div>
@@ -227,23 +264,19 @@
                             <tbody id="tableBody"><tr><td colspan="7" style="text-align:center; padding:30px;">Vui lòng tải dữ liệu</td></tr></tbody>
                         </table>
                     </div>
-                    <div style="margin-top:10px; font-size:12px; color:#64748b; text-align:right">Tổng dòng hiển thị: <b id="rowCount">0</b></div>
                 </div>
 
-                <!-- TAB 3: FORM BUILDER -->
+                <!-- TAB 3: FORM BUILDER (NÂNG CẤP) -->
                 <div id="tab-form" class="tab-content">
-                    <div class="form-group">
-                        <label>Tiêu đề Form:</label>
-                        <input type="text" id="fbTitle" value="THÔNG TIN SINH VIÊN">
-                    </div>
+                    <div class="form-group"><label>Tiêu đề Form:</label><input type="text" id="fbTitle" value="THÔNG TIN SINH VIÊN"></div>
                     <div class="fb-container" id="fbFields"></div>
                     <button class="btn btn-gray" onclick="addFormField()" style="margin-top:10px; width:100%"><i class="fa-solid fa-plus"></i> Thêm trường mới</button>
                     <div style="margin-top:20px; padding-top:15px; border-top:1px solid #eee; display:flex; justify-content:space-between">
-                        <button class="btn btn-success" onclick="saveFormConfig()"><i class="fa-solid fa-cloud-arrow-up"></i> Lưu Cấu Hình Lên Server</button>
+                        <button class="btn btn-success" onclick="saveFormConfig()"><i class="fa-solid fa-cloud-arrow-up"></i> Lưu Form lên Server</button>
                     </div>
                 </div>
 
-                <!-- TAB 4: THÔNG BÁO LOG -->
+                <!-- TAB 4: LOG -->
                 <div id="tab-notif" class="tab-content">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                         <span style="font-weight:bold; color:var(--text)">Lịch sử hoạt động:</span>
@@ -252,10 +285,10 @@
                     <ul id="logList" class="log-list"></ul>
                 </div>
 
-                <!-- TAB 5: TOOLS -->
+                <!-- TAB 5: TIỆN ÍCH -->
                 <div id="tab-tools" class="tab-content">
                     <div class="tools-grid">
-                        <div class="tool-card" id="toolLive" onclick="toggleLiveNotif()"><i class="fa-solid fa-bell"></i><span>Bật Thông Báo Live</span></div>
+                        <div class="tool-card" id="toolLive" onclick="toggleLiveNotif()"><i class="fa-solid fa-bell"></i><span>Thông Báo Live</span></div>
                         <div class="tool-card" id="toolPause" onclick="togglePause()"><i class="fa-solid fa-pause"></i><span>Tạm dừng</span></div>
                         <div class="tool-card" id="toolDark" onclick="toggleDarkMode()"><i class="fa-solid fa-moon"></i><span>Chế độ Tối</span></div>
                         <div class="tool-card" id="toolFull" onclick="toggleFullscreen()"><i class="fa-solid fa-expand"></i><span>Toàn màn hình</span></div>
@@ -278,9 +311,10 @@
                         <textarea id="adminNote" style="width:100%; height:80px; padding:10px; border-radius:8px; border:1px solid #cbd5e1" placeholder="Nhập ghi chú..."></textarea>
                         <button class="btn btn-primary" onclick="saveNote()">Lưu Ghi Chú</button>
                     </div>
+                    <div class="tool-card tool-danger" style="margin-top:20px; width:100%" onclick="closeModal()">Thoát Admin</div>
                 </div>
 
-                <!-- TAB 6: CONFIG -->
+                <!-- TAB 6: CÀI ĐẶT -->
                 <div id="tab-config" class="tab-content">
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px">
                         <div class="form-group"><label>Tiêu đề:</label><input type="text" id="cfgTitle"></div>
@@ -316,23 +350,30 @@
                         </div>
                     </div>
                     
-                    <!-- Config Marquee & QR Colors... -->
                     <fieldset style="border:1px solid #e2e8f0; border-radius:8px; padding:10px; margin-top:10px">
-                        <legend style="font-size:12px; font-weight:bold; color:var(--primary)">Chữ chạy</legend>
-                        <div class="form-group"><label>Nội dung:</label><input type="text" id="cfgMqText"></div>
-                        <div style="display:flex; gap:10px">
-                            <div style="flex:1"><label>Vị trí:</label><select id="cfgMqPos"><option value="none">Tắt</option><option value="bottom">Dưới đáy</option><option value="top">Trên cùng</option></select></div>
-                            <div style="flex:1"><label>Màu nền:</label><input type="color" id="cfgMqBg" style="height:40px; padding:2px"></div>
-                            <div style="flex:1"><label>Màu chữ:</label><input type="color" id="cfgMqColor" style="height:40px; padding:2px"></div>
+                        <legend style="font-size:12px; font-weight:bold; color:var(--primary)">Cấu hình Thông báo</legend>
+                        <div class="form-group"><label>Thời gian hiện (giây):</label><input type="number" id="cfgNotifDuration" value="5"></div>
+                        <div class="form-group"><label>Vị trí:</label>
+                            <select id="cfgNotifPos">
+                                <option value="top-right">Trên Phải</option>
+                                <option value="top-left">Trên Trái</option>
+                                <option value="bottom-right">Dưới Phải</option>
+                                <option value="bottom-left">Dưới Trái</option>
+                            </select>
                         </div>
                     </fieldset>
-                    
+
                     <fieldset style="border:1px solid #e2e8f0; border-radius:8px; padding:10px; margin-top:10px">
-                        <legend style="font-size:12px; font-weight:bold; color:var(--primary)">QR Code</legend>
+                        <legend style="font-size:12px; font-weight:bold; color:var(--primary)">Giao diện QR & Chữ chạy</legend>
+                        <div class="form-group"><label>Nội dung chữ chạy:</label><input type="text" id="cfgMqText"></div>
                         <div style="display:flex; gap:10px">
-                            <div style="flex:1"><label>Màu mã:</label><input type="color" id="cfgQrColor" style="height:40px; padding:2px"></div>
-                            <div style="flex:1"><label>Màu nền:</label><input type="color" id="cfgQrBg" style="height:40px; padding:2px"></div>
-                            <div style="flex:1"><label>Chi tiết:</label><select id="cfgQrLevel"><option value="L">L</option><option value="M">M</option><option value="Q">Q</option><option value="H">H</option></select></div>
+                            <div style="flex:1"><label>Vị trí:</label><select id="cfgMqPos"><option value="none">Tắt</option><option value="bottom">Dưới đáy</option><option value="top">Trên cùng</option></select></div>
+                            <div style="flex:1"><label>Màu nền Marquee:</label><input type="color" id="cfgMqBg" style="height:40px; padding:2px"></div>
+                            <div style="flex:1"><label>Màu chữ Marquee:</label><input type="color" id="cfgMqColor" style="height:40px; padding:2px"></div>
+                        </div>
+                        <div style="display:flex; gap:10px; margin-top:10px;">
+                            <div style="flex:1"><label>Màu mã QR:</label><input type="color" id="cfgQrColor" style="height:40px; padding:2px"></div>
+                            <div style="flex:1"><label>Màu nền QR:</label><input type="color" id="cfgQrBg" style="height:40px; padding:2px"></div>
                         </div>
                     </fieldset>
                     
@@ -377,6 +418,10 @@
         window.onload = function() {
             document.getElementById('viewDate').valueAsDate = new Date();
             document.getElementById('adminNote').value = localStorage.getItem('admin_note') || "";
+            // Fix input read-only events
+            document.querySelectorAll('.secure-locked').forEach(el => {
+                el.addEventListener('mousedown', e => { if(el.readOnly) { e.preventDefault(); el.click(); } });
+            });
             applyUI(); startSystem(); renderFormBuilder(); renderLogs();
             setInterval(() => document.getElementById("clock").innerText = new Date().toLocaleString("vi-VN"), 1000);
             if(config.api) { config.notifEnabled = true; toggleLiveNotif(true); }
@@ -390,10 +435,10 @@
         function updateQR() {
             const div = document.getElementById("qrcode");
             const url = `${config.link}?t=${Date.now()}`;
-            if(!qrObj) { div.innerHTML=""; qrObj=new QRCode(div, {text:url, width:250, height:250, colorDark:config.qrColor, colorLight:config.qrBg, correctLevel:QRCode.CorrectLevel[config.qrLevel]}); }
+            if(!qrObj) { div.innerHTML=""; qrObj=new QRCode(div, {text:url, width:250, height:250, colorDark:config.qrColor, colorLight:config.qrBg}); }
             else { qrObj.clear(); qrObj.makeCode(url); }
             const zDiv = document.getElementById("qrcodeZoom");
-            if(zDiv.style.display !== 'none') { zDiv.innerHTML = ""; new QRCode(zDiv, { text: url, width: 250, height: 250, colorDark:config.qrColor, colorLight:config.qrBg, correctLevel:QRCode.CorrectLevel[config.qrLevel] }); }
+            if(zDiv.style.display !== 'none') { zDiv.innerHTML = ""; new QRCode(zDiv, { text: url, width: 250, height: 250, colorDark:config.qrColor, colorLight:config.qrBg }); }
         }
         function applyUI() {
             document.getElementById("orgName").innerText = config.title;
@@ -404,47 +449,27 @@
             updateToolUI("toolDark", config.darkMode, "Chế độ Tối", "Chế độ Sáng", "fa-moon", "fa-sun");
             updateToolUI("toolLive", config.notifEnabled, "Đang Bật Live", "Bật Thông Báo Live", "fa-bell", "fa-bell-slash");
             // Set pos for Toast
-            document.getElementById("liveToastContainer").style.cssText = ""; // Reset
-            const p = config.notifPos;
-            if(p.includes("top")) document.getElementById("liveToastContainer").style.top="20px"; else document.getElementById("liveToastContainer").style.bottom="20px";
-            if(p.includes("right")) document.getElementById("liveToastContainer").style.right="20px"; else document.getElementById("liveToastContainer").style.left="20px";
-            if(p.includes("bottom")) document.getElementById("liveToastContainer").style.flexDirection="column";
+            const tc = document.getElementById("liveToastContainer");
+            tc.className = ""; tc.classList.add("pos-" + config.notifPos);
+            tc.style.top = config.notifPos.includes("top") ? "20px" : "auto";
+            tc.style.bottom = config.notifPos.includes("bottom") ? "20px" : "auto";
+            tc.style.left = config.notifPos.includes("left") ? "20px" : "auto";
+            tc.style.right = config.notifPos.includes("right") ? "20px" : "auto";
+            tc.style.flexDirection = config.notifPos.includes("top") ? "column-reverse" : "column";
         }
 
-        // --- DATA & POLLING ---
-        function toggleLiveNotif(init = false) {
-            if (!init) { config.notifEnabled = !config.notifEnabled; saveSystemConfig(); showToast(config.notifEnabled?"Đã BẬT thông báo":"Đã TẮT thông báo"); addLogToHistory("Tiện ích", config.notifEnabled?"Bật thông báo":"Tắt thông báo"); }
-            updateToolUI("toolLive", config.notifEnabled, "Đang Bật Live", "Bật Thông Báo Live", "fa-bell", "fa-bell-slash");
-            if(config.notifEnabled && config.api) {
-                const now = new Date(); const d = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-                fetch(`${config.api}?action=GET_LIST&date=${d}`).then(r=>r.json()).then(r=>{if(r.status==="success") lastReqCount = r.totalRequests || 0;});
-                liveInterval = setInterval(pollData, 5000);
-            } else clearInterval(liveInterval);
-        }
-        function pollData() {
-            if(!config.api) return;
-            const now = new Date(); const d = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-            fetch(`${config.api}?action=GET_LIST&date=${d}`).then(r=>r.json()).then(r=>{
-                if(r.status==="success") {
-                    if (r.totalRequests > lastReqCount) { showToast("🔔 Có yêu cầu reset mới!", "warning"); lastReqCount = r.totalRequests; if(document.body.classList.contains('admin-open')) fetchList(); addLogToHistory("Yêu cầu", "Có sinh viên yêu cầu Reset", "warning"); }
-                    if(document.body.classList.contains('admin-open')) {
-                        const oldLen = allData.length; allData = r.data;
-                        if (allData.length > oldLen) applyFilter();
-                    }
-                }
-            });
-        }
-        function showToast(msg, type="success") {
-            const c = document.getElementById("liveToastContainer");
-            const d = document.createElement("div"); d.className = `live-toast ${type}`;
-            d.innerHTML = `<div class="live-toast-content"><span class="live-toast-title">${msg}</span></div>`;
-            c.prepend(d); setTimeout(()=>d.remove(), 5000);
+        function showSystemToast(msg) {
+            const t = document.getElementById("systemToast");
+            t.innerHTML = `<i class="fa-solid fa-circle-info"></i> ${msg}`;
+            t.classList.add("show");
+            setTimeout(() => t.classList.remove("show"), 3000);
         }
 
-        // --- LOGGING ---
+        // --- HỆ THỐNG LOGGING (GHI VẾT) ---
         function addLogToHistory(title, msg, type = 'info') {
              const time = new Date().toLocaleTimeString();
-             logs.unshift({ title, msg, type, time });
+             const logItem = { title, msg, type, time, id: Date.now() };
+             logs.unshift(logItem);
              if(logs.length > 50) logs.pop();
              localStorage.setItem('qr_logs', JSON.stringify(logs));
              renderLogs();
@@ -474,6 +499,7 @@
                     </div>`;
                 c.appendChild(d);
             });
+            document.getElementById("fbTitle").value = formConfig.title;
         }
         function addFormField() { formConfig.fields.push({id:"f"+Date.now(), label:"Trường mới", type:"text", format:"none", required:false}); renderFormBuilder(); }
         function removeField(i) { formConfig.fields.splice(i, 1); renderFormBuilder(); }
@@ -489,9 +515,10 @@
         function closeAuthModal() { document.getElementById("authModal").style.display="none"; }
         function closeModal() { document.body.classList.remove("admin-open"); document.getElementById("adminModal").style.display="none"; }
         function submitLogin() {
-            if(document.getElementById("authPassInput").value === config.pass) {
+            const p = document.getElementById("authPassInput").value;
+            if(p === config.pass) {
                 closeAuthModal();
-                if(isUnlockMode) { document.getElementById("lockScreen").style.display="none"; showToast("Đã mở khóa"); }
+                if(isUnlockMode) { document.getElementById("lockScreen").style.display="none"; showSystemToast("Đã mở khóa"); }
                 else {
                     document.body.classList.add("admin-open");
                     document.getElementById("adminModal").style.display="flex";
@@ -504,6 +531,8 @@
                     document.getElementById("cfgMqText").value = config.mqText;
                     document.getElementById("cfgQrColor").value = config.qrColor;
                     document.getElementById("cfgQrBg").value = config.qrBg;
+                    document.getElementById("cfgNotifDuration").value = config.notifDuration;
+                    document.getElementById("cfgNotifPos").value = config.notifPos;
                     fetchList();
                     addLogToHistory("Hệ thống", "Admin đăng nhập thành công", "success");
                 }
@@ -531,6 +560,8 @@
             config.mqText = document.getElementById("cfgMqText").value;
             config.qrColor = document.getElementById("cfgQrColor").value;
             config.qrBg = document.getElementById("cfgQrBg").value;
+            config.notifDuration = document.getElementById("cfgNotifDuration").value;
+            config.notifPos = document.getElementById("cfgNotifPos").value;
             localStorage.setItem('qr_config_max', JSON.stringify(config));
             alert("Đã lưu!"); closeModal(); location.reload();
         }
@@ -543,8 +574,8 @@
         }
         function toggleExpandAdmin() {
             const m = document.getElementById("adminModal");
-            if(m.classList.contains("full-width")) { m.classList.remove("full-width"); document.body.classList.remove("full-width"); } 
-            else { m.classList.add("full-width"); document.body.classList.add("full-width"); }
+            if(m.style.width === "100%") { m.style.width = "600px"; } 
+            else { m.style.width = "100%"; }
         }
 
         // --- DATA TABLE ---
@@ -569,7 +600,7 @@
             updateBulk(); renderStats();
         }
         function toggleSelectAll() { const m=document.getElementById('selectAll'); document.querySelectorAll('.row-checkbox').forEach(c=>c.checked=m.checked); updateBulk(); }
-        function updateBulk() { const c=document.querySelectorAll('.row-checkbox:checked').length; const b=document.getElementById('btnBulkDelete'); if(c>0){b.style.display='inline-flex'; b.innerHTML=`<i class="fa-solid fa-trash"></i> Xóa (${c})`;}else b.style.display='none'; }
+        function updateBulk() { const c=document.querySelectorAll('.row-checkbox:checked').length; const b=document.getElementById('btnBulkDelete'); if(c>0){b.style.display='inline-flex'; b.innerHTML=`<i class="fa-solid fa-trash"></i> Xóa (${c}) mục`;}else b.style.display='none'; }
         async function deleteSelected() {
             const s=Array.from(document.querySelectorAll('.row-checkbox:checked')); if(!confirm(`Xóa ${s.length} mục?`)) return;
             let list=s.map(c=>{let p=c.value.split('|'); return {i:parseInt(p[0]), m:p[1]}}).sort((a,b)=>b.i-a.i);
@@ -589,7 +620,7 @@
         
         function renderStats() {
             document.getElementById('statTotal').innerText=filteredData.length; const cc={}, tc={}; filteredData.forEach(i=>{cc[i.class_name]=(cc[i.class_name]||0)+1; let h=i.time.split(":")[0]; tc[h]=(tc[h]||0)+1;});
-            document.getElementById('statClasses').innerText=Object.keys(cc).length; if(filteredData.length>0) document.getElementById('statLatest').innerText=filteredData[0].time.split(" ")[0];
+            document.getElementById('statClasses').innerText=Object.keys(cc).length; if(filteredData.length>0) document.getElementById('statLatest').innerText=(filteredData[0].time||"").split(" ")[0];
             if(classChartInstance) classChartInstance.destroy();
             classChartInstance=new Chart(document.getElementById('classChart'),{type:'doughnut',data:{labels:Object.keys(cc),datasets:[{data:Object.values(cc),backgroundColor:['#2563eb','#10b981','#f59e0b']}]}});
             if(timeChartInstance) timeChartInstance.destroy();
@@ -602,8 +633,8 @@
             if(active) { el.classList.add("tool-active"); ic.className="fa-solid "+(icOff||icOn); sp.innerText=txtOn; }
             else { el.classList.remove("tool-active"); ic.className="fa-solid "+icOn; sp.innerText=txtOff||sp.innerText; }
         }
-        function togglePause() { isPaused=!isPaused; showToast(isPaused?"Tạm dừng":"Tiếp tục"); updateToolUI("toolPause", isPaused, "Đang Tạm Dừng", "Tạm dừng", "fa-pause", "fa-play"); }
-        function toggleDarkMode() { config.darkMode=!config.darkMode; applyUI(); saveConfig(true); }
+        function togglePause() { isPaused=!isPaused; showSystemToast(isPaused?"Tạm dừng":"Tiếp tục"); updateToolUI("toolPause", isPaused, "Đang Tạm Dừng", "Tạm dừng", "fa-pause", "fa-play"); }
+        function toggleDarkMode() { config.darkMode=!config.darkMode; applyUI(); saveSystemConfig(); }
         function toggleFullscreen() { if(!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
         function toggleBlurQR() { const b=document.getElementById("qrcode").classList.toggle("blur-effect"); updateToolUI("toolBlur", b, "Đang Che", "Che QR", "fa-eye-slash", "fa-eye"); }
         function toggleClockUI() { const c=document.querySelector('.realtime'); const h=c.style.opacity==='0'; c.style.opacity=h?'1':'0'; updateToolUI("toolClock", !h, "Ẩn Giờ", "Hiện Giờ", "fa-clock", "fa-clock"); }
@@ -619,12 +650,93 @@
         function importConfig() { const i=document.createElement('input'); i.type='file'; i.onchange=e=>{const r=new FileReader(); r.onload=ev=>{config=JSON.parse(ev.target.result); localStorage.setItem('qr_config_max',JSON.stringify(config)); location.reload();}; r.readAsText(e.target.files[0]);}; i.click(); }
         function openFormLink() { window.open(config.link, "_blank"); }
         function showStaticQR() { document.getElementById("qrZoomModal").style.display="flex"; const z=document.getElementById("qrcodeZoom"); z.innerHTML=""; new QRCode(z,{text:config.link,width:300,height:300}); }
-        function checkPing() { showToast(navigator.onLine?"✅ Online":"❌ Offline"); }
+        function checkPing() { showSystemToast(navigator.onLine?"✅ Online":"❌ Offline"); }
         function toggleNote() { const n=document.getElementById("notePad"); n.style.display=n.style.display==="none"?"block":"none"; }
-        function saveNote() { localStorage.setItem('admin_note', document.getElementById("adminNote").value); showToast("Đã lưu"); }
+        function saveNote() { localStorage.setItem('admin_note', document.getElementById("adminNote").value); showSystemToast("Đã lưu"); }
         function startTimer5() { let m=5,s=0; isPaused=true; const t=setInterval(()=>{if(s===0){if(m===0){clearInterval(t);alert("Hết giờ");isPaused=false;return;}m--;s=59;}else s--;document.getElementById("countdown").innerText=`${m}:${s<10?'0'+s:s}`;},1000); }
         function clearSheetData() { if(!confirm("XÓA HẾT SHEET?")) return; fetch(config.api, {method:'POST', body:JSON.stringify({action:"CLEAR_DATA"})}).then(()=>alert("Đã xóa")).catch(()=>alert("Lỗi")); }
         function sortTable(k) { if(sortState.key===k) sortState.dir=sortState.dir==='asc'?'desc':'asc'; else {sortState.key=k; sortState.dir='asc';} applyFilter(); }
+        
+        // --- LIVE NOTIFICATION ---
+        function toggleLiveNotif(init = false) {
+            if (!init) { config.notifEnabled = !config.notifEnabled; saveSystemConfig(); showToast(config.notifEnabled?"Đã BẬT thông báo":"Đã TẮT thông báo"); addLogToHistory("Tiện ích", config.notifEnabled?"Bật thông báo":"Tắt thông báo"); }
+            updateToolUI("toolLive", config.notifEnabled, "Đang Bật Live", "Bật Thông Báo Live", "fa-bell", "fa-bell-slash");
+            if(config.notifEnabled && config.api) {
+                const now = new Date();
+                const d = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+                fetch(`${config.api}?action=GET_LIST&date=${d}`).then(r=>r.json()).then(r=>{if(r.status==="success") lastReqCount = r.totalRequests || 0;});
+                liveInterval = setInterval(pollData, 5000);
+            } else clearInterval(liveInterval);
+        }
+        function pollData() {
+            if(!config.api) return;
+            const now = new Date();
+            const d = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+            fetch(`${config.api}?action=GET_LIST&date=${d}`).then(r=>r.json()).then(r=>{
+                if(r.status==="success") {
+                    if (r.totalRequests > lastReqCount) {
+                         fetch(`${config.api}?action=GET_LOGS`).then(res=>res.json()).then(resLogs=>{
+                             if(resLogs.status==="success" && resLogs.data.length > 0) {
+                                 const req = resLogs.data[0];
+                                 showToast(`🔔 Yêu cầu từ ${req.name}: ${req.reason}`, "warning");
+                                 addLogToHistory("Yêu cầu", `Yêu cầu reset từ ${req.name}`, "warning");
+                             }
+                        });
+                        lastReqCount = r.totalRequests;
+                        if(document.body.classList.contains('admin-open')) fetchList();
+                    }
+                    if(document.body.classList.contains('admin-open')) {
+                        const oldLen = allData.length; allData = r.data;
+                        if (allData.length > oldLen) applyFilter();
+                    }
+                }
+            });
+        }
+        function showToast(msg, type="success") {
+            const c = document.getElementById("liveToastContainer");
+            const d = document.createElement("div"); d.className = `live-toast ${type}`;
+            d.innerHTML = `<div class="live-toast-content"><span class="live-toast-title">${msg}</span></div>`;
+            c.prepend(d); setTimeout(()=>d.remove(), config.notifDuration*1000 || 5000);
+        }
+
+        // --- HỆ THỐNG LOGGING (GHI VẾT) ---
+        function addLogToHistory(title, msg, type = 'info') {
+             const time = new Date().toLocaleTimeString();
+             logs.unshift({ title, msg, type, time });
+             if(logs.length > 50) logs.pop();
+             localStorage.setItem('qr_logs', JSON.stringify(logs));
+             renderLogs();
+        }
+        function renderLogs() {
+             const list = document.getElementById("logList");
+             if(!list) return;
+             if(logs.length === 0) { list.innerHTML = '<li style="text-align:center; color:#999; padding:10px;">Chưa có hoạt động nào</li>'; return; }
+             let html = "";
+             logs.forEach(l => { html += `<li class="log-item ${l.type}"><div><strong>${l.title}</strong> ${l.msg}</div><div class="log-time">${l.time}</div></li>`; });
+             list.innerHTML = html;
+        }
+        function clearLocalLogs() { logs = []; localStorage.setItem('qr_logs', JSON.stringify(logs)); renderLogs(); }
+
+        // --- BẢO MẬT CẤP 2 (AUTO-LOCK) ---
+        function unlockField(id, code) {
+            const el = document.getElementById(id);
+            if (!el.readOnly) return; 
+            const input = prompt("🔒 BẢO MẬT CẤP 2\n\nNhập mã bảo mật để chỉnh sửa mục này:");
+            if (input === code) {
+                el.readOnly = false;
+                el.classList.add("secure-unlocked");
+                el.classList.remove("secure-locked");
+                el.focus();
+                showSystemToast("🔓 Đã mở khóa! (Ấn ra ngoài để khóa lại)");
+                el.addEventListener('blur', function() {
+                    el.readOnly = true;
+                    el.classList.remove("secure-unlocked");
+                    el.classList.add("secure-locked");
+                }, { once: true }); 
+            } else if (input !== null) {
+                alert("❌ Sai mã bảo mật cấp 2!");
+            }
+        }
     </script>
 </body>
 </html>
