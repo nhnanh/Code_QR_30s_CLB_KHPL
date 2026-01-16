@@ -48,13 +48,11 @@
         .live-toast-content { display: flex; flex-direction: column; }
         .live-toast-title { font-weight: bold; font-size: 14px; }
         .live-toast-time { font-size: 11px; opacity: 0.7; }
-
-        /* Hiệu ứng mờ dần cho các toast cũ */
         .live-toast:nth-last-child(n+2) { opacity: 0.8; transform: scale(0.98); }
         .live-toast:nth-last-child(n+3) { opacity: 0.6; transform: scale(0.96); }
         .live-toast:nth-last-child(n+4) { opacity: 0.4; transform: scale(0.94); }
 
-        /* SYSTEM TOAST (Thông báo hệ thống) */
+        /* SYSTEM TOAST */
         #systemToast { 
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); 
             background: #333; color: white; padding: 12px 24px; border-radius: 30px; 
@@ -66,13 +64,55 @@
         @keyframes slideIn { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes fadeOutUp { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-20px); } }
 
-        /* MODAL */
+        /* MODAL ADMIN & SPLIT SCREEN LOGIC */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center; }
         .modal-content { background: var(--white); width: 95%; max-width: 1000px; border-radius: 16px; display: flex; flex-direction: column; max-height: 95vh; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); overflow: hidden; }
         .modal-header { padding: 15px 25px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         .modal-title { font-size: 18px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 10px; }
         .close-modal { font-size: 24px; cursor: pointer; color: #94a3b8; }
         .modal-body { padding: 20px; overflow-y: auto; background: var(--bg); flex: 1; display: flex; flex-direction: column; }
+
+        /* --- SPLIT SCREEN FOR DESKTOP --- */
+        @media (min-width: 1024px) {
+            body.admin-open {
+                flex-direction: row; /* Chia đôi màn hình */
+                align-items: stretch;
+                justify-content: flex-start;
+            }
+            body.admin-open .qr-card {
+                flex: 1; /* QR chiếm 1 phần */
+                height: 100vh;
+                width: auto;
+                border-radius: 0;
+                border: none;
+                box-shadow: none;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+            body.admin-open #adminModal {
+                display: flex !important; /* Luôn hiện khi ở chế độ admin */
+                position: relative;
+                width: 50%; /* Admin chiếm 50% */
+                min-width: 600px;
+                height: 100vh;
+                background: var(--white);
+                border-left: 1px solid var(--border);
+                backdrop-filter: none;
+                z-index: 100;
+            }
+            body.admin-open .modal-content {
+                width: 100%;
+                height: 100%;
+                max-width: none;
+                border-radius: 0;
+                box-shadow: none;
+                max-height: none;
+            }
+            body.admin-open .settings-btn {
+                display: none; /* Ẩn nút setting khi đang mở admin */
+            }
+        }
 
         /* Tabs */
         .tabs { display: flex; gap: 5px; margin-bottom: 15px; background: var(--white); padding: 5px; border-radius: 10px; border: 1px solid var(--border); width: fit-content; }
@@ -222,7 +262,6 @@
                 <!-- TAB 3: TIỆN ÍCH -->
                 <div id="tab-tools" class="tab-content">
                     <div class="tools-grid">
-                        <!-- 21 TIỆN ÍCH -->
                         <div class="tool-card" id="toolLive" onclick="toggleLiveNotif()"><i class="fa-solid fa-bell"></i><span>Bật Thông Báo Live</span></div>
                         <div class="tool-card" id="toolPause" onclick="togglePause()"><i class="fa-solid fa-pause"></i><span>Tạm dừng</span></div>
                         <div class="tool-card" id="toolDark" onclick="toggleDarkMode()"><i class="fa-solid fa-moon"></i><span>Chế độ Tối</span></div>
@@ -246,8 +285,6 @@
                         <div class="tool-card" onclick="toggleNote()"><i class="fa-solid fa-sticky-note"></i><span>Ghi chú</span></div>
                         <div class="tool-card tool-warning" onclick="startTimer5()"><i class="fa-solid fa-hourglass-start"></i><span>Đếm 5p</span></div>
                         <div class="tool-card" onclick="fetchList()"><i class="fa-solid fa-sync"></i><span>Làm mới DL</span></div>
-                        
-                        <div class="tool-card tool-danger" onclick="clearSheetData()"><i class="fa-solid fa-trash-can"></i><span>Xóa sạch Sheet</span></div>
                     </div>
                     <div id="notePad" style="display:none; margin-top:15px;">
                         <textarea id="adminNote" style="width:100%; height:80px; padding:10px; border-radius:8px; border:1px solid #cbd5e1" placeholder="Nhập ghi chú..."></textarea>
@@ -301,7 +338,7 @@
         let timer = config.time, qrObj = null, interval = null, isPaused = false;
         let classChartInstance = null, timeChartInstance = null;
         
-        // --- VARS THÔNG BÁO LIVE ---
+        // --- LIVE NOTIFICATION VARS ---
         let isLiveNotif = false, liveInterval = null, lastRowCount = 0;
 
         window.onload = function() {
@@ -377,7 +414,8 @@
             showSystemToast(isLiveNotif ? "Đã BẬT thông báo điểm danh" : "Đã TẮT thông báo điểm danh");
             if(isLiveNotif) {
                 if(config.api) {
-                    const d = new Date().toISOString().split('T')[0];
+                    const now = new Date();
+                    const d = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
                     fetch(`${config.api}?action=GET_LIST&date=${d}`).then(r=>r.json()).then(r=>{if(r.status==="success") lastRowCount = r.data.length;});
                     liveInterval = setInterval(pollNewData, 5000);
                 } else { alert("Chưa có API!"); isLiveNotif = false; }
@@ -386,7 +424,8 @@
 
         function pollNewData() {
             if(!config.api) return;
-            const d = new Date().toISOString().split('T')[0];
+            const now = new Date();
+            const d = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
             fetch(`${config.api}?action=GET_LIST&date=${d}`).then(r=>r.json()).then(r=>{
                 if(r.status==="success") {
                     const data = r.data, newCount = data.length;
@@ -402,7 +441,7 @@
             const c = document.getElementById("liveToastContainer");
             const t = document.createElement("div");
             t.className = "live-toast " + (config.darkMode ? "dark" : "");
-            t.innerHTML = `<div class="live-toast-icon"><i class="fa-solid fa-check-circle"></i></div><div class="live-toast-content"><span class="live-toast-title">${name} (${mssv})</span><span class="live-toast-time">vừa điểm danh thành công</span></div>`;
+            t.innerHTML = `<div class="live-toast-icon"><i class="fa-solid fa-check-circle"></i></div><div class="live-toast-content"><span class="live-toast-title">${name || 'Sinh viên'} (${mssv || '---'})</span><span class="live-toast-time">vừa điểm danh thành công</span></div>`;
             c.appendChild(t);
             if (c.children.length > 5) c.removeChild(c.firstChild);
             setTimeout(() => { if(t.parentNode) t.parentNode.removeChild(t); }, 5000);
@@ -426,20 +465,21 @@
         function saveNote() { localStorage.setItem('admin_note', document.getElementById("adminNote").value); showSystemToast("Đã lưu ghi chú"); }
         function startTimer5() { let m = 5, s = 0; isPaused = true; const tInt = setInterval(() => { if(s===0){if(m===0){clearInterval(tInt); alert("Hết giờ!"); isPaused=false; return;} m--; s=59;} else s--; document.getElementById("countdown").innerText = `${m}:${s<10?'0'+s:s}`; }, 1000); showSystemToast("Bắt đầu đếm ngược 5 phút"); }
         function deleteRow(idx, mssv) { if(!confirm("Xóa?")) return; fetch(config.api, { method: 'POST', body: JSON.stringify({ action: "DELETE_ROW", row_index: idx, mssv: mssv }) }).then(r=>r.json()).then(r=>{if(r.status==="success"){alert("Đã xóa"); fetchList();}else alert("Lỗi")}); }
-    
+        function clearSheetData() { if(!confirm("XÓA HẾT SHEET?")) return; fetch(config.api, { method: 'POST', body: JSON.stringify({ action: "CLEAR_DATA" }) }).then(()=>alert("Đã xóa")).catch(()=>alert("Lỗi")); }
+
         // --- ADMIN MODAL & DATA ---
-        function checkLogin() { const p = prompt("Pass Admin:"); if(p===config.pass) { document.getElementById("adminModal").style.display="flex"; document.getElementById("cfgLink").value=config.link; document.getElementById("cfgApi").value=config.api; document.getElementById("cfgTime").value=config.time; document.getElementById("cfgPass").value=config.pass; document.getElementById("cfgResetPass").value=config.resetPass; document.getElementById("cfgMqText").value=config.mqText; document.getElementById("cfgMqPos").value=config.mqPos; document.getElementById("cfgMqBg").value=config.mqBg; document.getElementById("cfgMqColor").value=config.mqColor; document.getElementById("cfgQrColor").value=config.qrColor; document.getElementById("cfgQrBg").value=config.qrBg; document.getElementById("cfgQrLevel").value=config.qrLevel; fetchList(); } else if(p!==null) alert("Sai pass"); }
-        function closeModal() { document.getElementById("adminModal").style.display="none"; }
+        function checkLogin() { const p = prompt("Pass Admin:"); if(p===config.pass) { document.body.classList.add("admin-open"); document.getElementById("adminModal").style.display="flex"; document.getElementById("cfgLink").value=config.link; document.getElementById("cfgApi").value=config.api; document.getElementById("cfgTime").value=config.time; document.getElementById("cfgPass").value=config.pass; document.getElementById("cfgResetPass").value=config.resetPass; document.getElementById("cfgMqText").value=config.mqText; document.getElementById("cfgMqPos").value=config.mqPos; document.getElementById("cfgMqBg").value=config.mqBg; document.getElementById("cfgMqColor").value=config.mqColor; document.getElementById("cfgQrColor").value=config.qrColor; document.getElementById("cfgQrBg").value=config.qrBg; document.getElementById("cfgQrLevel").value=config.qrLevel; fetchList(); } else if(p!==null) alert("Sai pass"); }
+        function closeModal() { document.body.classList.remove("admin-open"); document.getElementById("adminModal").style.display="none"; }
         function saveConfig() { config.title=document.getElementById("cfgTitle").value; config.link=document.getElementById("cfgLink").value; config.api=document.getElementById("cfgApi").value; config.time=parseInt(document.getElementById("cfgTime").value); config.pass=document.getElementById("cfgPass").value; config.resetPass=document.getElementById("cfgResetPass").value; config.mqText=document.getElementById("cfgMqText").value; config.mqPos=document.getElementById("cfgMqPos").value; config.mqBg=document.getElementById("cfgMqBg").value; config.mqColor=document.getElementById("cfgMqColor").value; config.qrColor=document.getElementById("cfgQrColor").value; config.qrBg=document.getElementById("cfgQrBg").value; config.qrLevel=document.getElementById("cfgQrLevel").value; localStorage.setItem('qr_config_max', JSON.stringify(config)); localStorage.setItem('admin_reset_pass', config.resetPass); alert("Đã lưu!"); closeModal(); qrObj=null; document.getElementById("qrcode").innerHTML=""; applyUI(); startSystem(); }
         function switchTab(id) { document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active')); document.getElementById(id).classList.add('active'); event.currentTarget.classList.add('active'); }
-        function fetchList() { if(!config.api) return; const d=document.getElementById('viewDate').value; document.getElementById('loader').style.display="block"; fetch(`${config.api}?action=GET_LIST&date=${d}`).then(r=>r.json()).then(r=>{ document.getElementById('loader').style.display="none"; if(r.status==="success"){ allData=r.data; applyFilter(); } }).catch(()=>{document.getElementById('loader').style.display="none";}); }
-        function applyFilter() { const t=document.getElementById("searchInput").value.toLowerCase(); filteredData=allData.filter(i=>i.name.toLowerCase().includes(t)||i.mssv.toString().includes(t)||i.class_name.toLowerCase().includes(t)); const k=sortState.key, d=sortState.dir; filteredData.sort((a,b)=>{let va=a[k].toLowerCase(),vb=b[k].toLowerCase(); return(va<vb?-1:1)*(d==='asc'?1:-1)}); renderTable(); renderStats(); }
+        function fetchList() { if(!config.api) return; const d=document.getElementById('viewDate').value; document.getElementById('loader').style.display="block"; fetch(`${config.api}?action=GET_LIST&date=${d}`).then(r=>r.json()).then(r=>{ document.getElementById('loader').style.display="none"; if(r.status==="success"){ allData=r.data || []; applyFilter(); } }).catch(()=>{document.getElementById('loader').style.display="none";}); }
+        function applyFilter() { const t=document.getElementById("searchInput").value.toLowerCase(); filteredData=allData.filter(i=> (i.name || '').toLowerCase().includes(t)||(i.mssv || '').toString().includes(t)||(i.class_name || '').toLowerCase().includes(t)); const k=sortState.key, d=sortState.dir; filteredData.sort((a,b)=>{let va=(a[k] || '').toLowerCase(),vb=(b[k] || '').toLowerCase(); return(va<vb?-1:1)*(d==='asc'?1:-1)}); renderTable(); renderStats(); }
         function sortTable(k) { if(sortState.key===k) sortState.dir=sortState.dir==='asc'?'desc':'asc'; else {sortState.key=k; sortState.dir='asc';} applyFilter(); }
-        function renderTable() { const b=document.getElementById('tableBody'); document.getElementById('rowCount').innerText=filteredData.length; if(filteredData.length===0){b.innerHTML=`<tr><td colspan="6" style="text-align:center; padding:30px;">Trống</td></tr>`; document.getElementById('btnBulkDelete').style.display="none"; return;} let h=""; filteredData.forEach(i=>{ h+=`<tr><td style="text-align:center"><input type="checkbox" class="row-checkbox" value="${i.row_index}|${i.mssv}" onclick="updateBulkButton()"></td><td>${i.time.split(" ")[0]}</td><td><b>${i.name}</b></td><td>${i.mssv}</td><td>${i.class_name}</td><td style="text-align:center"><i class="fa-solid fa-trash" style="color:var(--danger); cursor:pointer" onclick="deleteRow(${i.row_index},'${i.mssv}')"></i></td></tr>`; }); b.innerHTML=h; updateBulkButton(); }
+        function renderTable() { const b=document.getElementById('tableBody'); document.getElementById('rowCount').innerText=filteredData.length; if(filteredData.length===0){b.innerHTML=`<tr><td colspan="6" style="text-align:center; padding:30px;">Trống</td></tr>`; document.getElementById('btnBulkDelete').style.display="none"; return;} let h=""; filteredData.forEach(i=>{ h+=`<tr><td style="text-align:center"><input type="checkbox" class="row-checkbox" value="${i.row_index}|${i.mssv}" onclick="updateBulkButton()"></td><td>${(i.time || "").split(" ")[0]}</td><td><b>${i.name || "---"}</b></td><td>${i.mssv || "---"}</td><td>${i.class_name || "---"}</td><td style="text-align:center"><i class="fa-solid fa-trash" style="color:var(--danger); cursor:pointer" onclick="deleteRow(${i.row_index},'${i.mssv}')"></i></td></tr>`; }); b.innerHTML=h; updateBulkButton(); }
         function toggleSelectAll() { const m=document.getElementById('selectAll'); document.querySelectorAll('.row-checkbox').forEach(c=>c.checked=m.checked); updateBulkButton(); }
         function updateBulkButton() { const c=document.querySelectorAll('.row-checkbox:checked').length; const b=document.getElementById('btnBulkDelete'); if(c>0){b.style.display='inline-flex'; b.innerHTML=`<i class="fa-solid fa-trash"></i> Xóa (${c}) mục`;}else b.style.display='none'; }
         async function deleteSelected() { const s=Array.from(document.querySelectorAll('.row-checkbox:checked')); if(s.length===0) return; if(!confirm(`Xóa ${s.length} mục?`)) return; let delList=s.map(c=>{let p=c.value.split('|'); return {i:parseInt(p[0]), m:p[1]}}).sort((a,b)=>b.i-a.i); document.getElementById('loader').style.display='block'; for(const i of delList){try{await fetch(config.api, {method:'POST', body:JSON.stringify({action:"DELETE_ROW", row_index:i.i, mssv:i.m})})}catch(e){console.log(e)}} document.getElementById('loader').style.display='none'; alert("Xong"); fetchList(); }
-        function renderStats() { document.getElementById('statTotal').innerText=filteredData.length; const cc={}, tc={}; filteredData.forEach(i=>{cc[i.class_name]=(cc[i.class_name]||0)+1; let h=i.time.split(":")[0]+"h"; tc[h]=(tc[h]||0)+1;}); document.getElementById('statClasses').innerText=Object.keys(cc).length; if(filteredData.length>0) document.getElementById('statLatest').innerText=filteredData[0].time.split(" ")[0]; const c1=document.getElementById('classChart').getContext('2d'); if(classChartInstance) classChartInstance.destroy(); classChartInstance=new Chart(c1,{type:'doughnut',data:{labels:Object.keys(cc),datasets:[{data:Object.values(cc),backgroundColor:['#2563eb','#10b981','#f59e0b','#ef4444','#8b5cf6']}]}}); const c2=document.getElementById('timeChart').getContext('2d'); if(timeChartInstance) timeChartInstance.destroy(); const st=Object.keys(tc).sort(); timeChartInstance=new Chart(c2,{type:'bar',data:{labels:st,datasets:[{label:'SL',data:st.map(t=>tc[t]),backgroundColor:'#2563eb',borderRadius:4}]}}); }
+        function renderStats() { document.getElementById('statTotal').innerText=filteredData.length; const cc={}, tc={}; filteredData.forEach(i=>{cc[i.class_name]=(cc[i.class_name]||0)+1; let h=(i.time || "").split(":")[0]+"h"; tc[h]=(tc[h]||0)+1;}); document.getElementById('statClasses').innerText=Object.keys(cc).length; if(filteredData.length>0) document.getElementById('statLatest').innerText=(filteredData[0].time || "").split(" ")[0]; const c1=document.getElementById('classChart').getContext('2d'); if(classChartInstance) classChartInstance.destroy(); classChartInstance=new Chart(c1,{type:'doughnut',data:{labels:Object.keys(cc),datasets:[{data:Object.values(cc),backgroundColor:['#2563eb','#10b981','#f59e0b','#ef4444','#8b5cf6']}]}}); const c2=document.getElementById('timeChart').getContext('2d'); if(timeChartInstance) timeChartInstance.destroy(); const st=Object.keys(tc).sort(); timeChartInstance=new Chart(c2,{type:'bar',data:{labels:st,datasets:[{label:'SL',data:st.map(t=>tc[t]),backgroundColor:'#2563eb',borderRadius:4}]}}); }
     </script>
 </body>
 </html>
