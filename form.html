@@ -13,12 +13,9 @@
         label { display: block; font-weight: bold; margin-bottom: 5px; color: #555; }
         input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
         .btn-submit { width: 100%; padding: 15px; background: #2ecc71; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        
-        .reset-options { margin-top: 25px; border-top: 1px solid #eee; padding-top: 15px; display: flex; flex-direction: column; gap: 10px; }
-        .btn-reset { padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; border: 1px solid #ccc; background: white; color: #555; text-align: left; transition: 0.2s; }
-        .btn-reset:hover { background: #f8fafc; border-color: #2563eb; color: #2563eb; }
-        .btn-reset i { margin-right: 8px; }
-
+        .reset-options { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #eee; padding-top: 15px; }
+        .btn-link { background: none; border: none; color: #666; cursor: pointer; text-decoration: underline; font-size: 13px; text-align: left; }
+        .btn-link:hover { color: #2563eb; }
         .hidden { display: none !important; }
         .error-box { text-align: center; padding: 20px; color: #c0392b; background: #fadbd8; border: 2px dashed #c0392b; border-radius: 10px; }
     </style>
@@ -38,14 +35,14 @@
         </div>
         
         <div class="reset-options">
-            <button class="btn-reset" onclick="requestReset()"><i class="fa-solid fa-paper-plane"></i> Yêu cầu Admin Reset (Gửi thông báo)</button>
-            <button class="btn-reset" onclick="manualReset()"><i class="fa-solid fa-key"></i> Nhập mật khẩu để Reset ngay</button>
+            <button class="btn-link" onclick="requestReset()">① Yêu cầu Admin Reset (Gửi thông báo)</button>
+            <button class="btn-link" onclick="manualReset()">② Nhập mật khẩu để Reset ngay</button>
         </div>
     </div>
 
     <script>
         // --- DÁN API CỦA BẠN VÀO ĐÂY ---
-        const API_URL = "https://script.google.com/macros/s/AKfycbwl6Cj1DjaFNdnbaIAvfUsPC6svddgyZ0_olDBXH0D2SHc8TgDubClXnli4J-cvmr-q/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbxVLYjNJVzv5GbDSpTVs9Aoij5LRcWW7SleWEo0mOfNdlD9j5cDBESP78e3vHsaHRa4/exec";
         
         const today = new Date().toLocaleDateString('vi-VN');
         let formConfig = null;
@@ -61,9 +58,8 @@
         function checkQR() {
             const p = new URLSearchParams(window.location.search);
             const t = parseInt(p.get('t'));
-            // if (!t || (Date.now() - t > 45000)) showError("Mã QR đã hết hạn! Vui lòng quét lại.");
-            // else loadFormConfig();
-            loadFormConfig(); // Tạm tắt check time để test
+            if (!t || (Date.now() - t > 45000)) showError("Mã QR đã hết hạn! Vui lòng quét lại.");
+            else loadFormConfig();
         }
 
         function loadFormConfig() {
@@ -73,7 +69,6 @@
                 if (res.status === "success" && res.config) {
                     renderForm(res.config);
                 } else {
-                    // Fallback mặc định
                     renderForm({
                         title: "ĐIỂM DANH",
                         fields: [
@@ -163,7 +158,6 @@
             document.getElementById("errMsg").innerText = msg;
         }
 
-        // --- 1. YÊU CẦU RESET (Gửi về Admin) ---
         function requestReset() {
             const mssv = localStorage.getItem('my_mssv');
             if(!mssv) { Swal.fire('Lỗi', 'Bạn chưa điểm danh lần nào!', 'warning'); return; }
@@ -190,7 +184,6 @@
             });
         }
 
-        // --- 2. RESET BẰNG MẬT KHẨU ---
         function manualReset() {
             Swal.fire({
                 title: 'NHẬP MẬT KHẨU',
@@ -198,7 +191,6 @@
                 input: 'password', showCancelButton: true
             }).then((res) => {
                 if(res.isConfirmed) {
-                    // Mặc định pass là "Admin" nếu không có config
                     const correctPass = "Admin"; 
                     if(res.value === correctPass) {
                         localStorage.removeItem('attended_today');
