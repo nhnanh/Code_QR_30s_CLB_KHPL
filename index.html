@@ -643,18 +643,29 @@
         async function deleteSelected() { const s=Array.from(document.querySelectorAll('.row-checkbox:checked')); if(s.length===0) return; if(!confirm(`Xóa ${s.length} mục?`)) return; let delList=s.map(c=>{let p=c.value.split('|'); return {i:parseInt(p[0]), m:p[1]}}).sort((a,b)=>b.i-a.i); document.getElementById('loader').style.display='block'; for(const i of delList){try{await fetch(config.api, {method:'POST', body:JSON.stringify({action:"DELETE_ROW", row_index:i.i, mssv:i.m})})}catch(e){console.log(e)}} document.getElementById('loader').style.display='none'; alert("Xong"); fetchList(); }
         function renderStats() { document.getElementById('statTotal').innerText=filteredData.length; const cc={}, tc={}; filteredData.forEach(i=>{cc[i.class_name]=(cc[i.class_name]||0)+1; let h=(i.time || "").split(":")[0]+"h"; tc[h]=(tc[h]||0)+1;}); document.getElementById('statClasses').innerText=Object.keys(cc).length; if(filteredData.length>0) document.getElementById('statLatest').innerText=(filteredData[0].time || "").split(" ")[0]; const c1=document.getElementById('classChart').getContext('2d'); if(classChartInstance) classChartInstance.destroy(); classChartInstance=new Chart(c1,{type:'doughnut',data:{labels:Object.keys(cc),datasets:[{data:Object.values(cc),backgroundColor:['#2563eb','#10b981','#f59e0b','#ef4444','#8b5cf6']}]}}); const c2=document.getElementById('timeChart').getContext('2d'); if(timeChartInstance) timeChartInstance.destroy(); const st=Object.keys(tc).sort(); timeChartInstance=new Chart(c2,{type:'bar',data:{labels:st,datasets:[{label:'SL',data:st.map(t=>tc[t]),backgroundColor:'#2563eb',borderRadius:4}]}}); }
 
-        // --- BẢO MẬT CẤP 2 (MỚI) ---
+        // --- BẢO MẬT CẤP 2 (MỚI - AUTO LOCK) ---
         function unlockField(id, code) {
             const el = document.getElementById(id);
             if (!el.readOnly) return; 
+            
             const input = prompt("🔒 BẢO MẬT CẤP 2\n\nNhập mã bảo mật để chỉnh sửa mục này:");
             if (input === code) {
                 el.readOnly = false;
                 el.focus();
-                showSystemToast("Đã mở khóa chỉnh sửa!");
+                showSystemToast("🔓 Đã mở khóa! (Ấn ra ngoài để khóa lại)");
                 el.style.borderColor = "var(--success)";
+                el.style.boxShadow = "0 0 0 3px rgba(16, 185, 129, 0.2)"; // Thêm hiệu ứng focus xanh
+
+                // Tự động khóa khi mất focus (blur)
+                el.addEventListener('blur', function() {
+                    el.readOnly = true;
+                    el.style.borderColor = ""; // Reset về mặc định css
+                    el.style.boxShadow = ""; 
+                    // showSystemToast("🔒 Đã tự động khóa bảo mật");
+                }, { once: true }); // Chỉ chạy 1 lần cho mỗi lần mở khóa
+
             } else if (input !== null) {
-                alert("Sai mã bảo mật cấp 2!");
+                alert("❌ Sai mã bảo mật cấp 2!");
             }
         }
     </script>
