@@ -178,7 +178,6 @@
 <body>
 
     <div class="settings-btn" onclick="openLoginModal()"><i class="fa-solid fa-sliders"></i></div>
-
     <div id="liveToastContainer" class="pos-top-right"></div>
     <div id="systemToast">Thông báo</div>
 
@@ -202,7 +201,7 @@
             </div>
             <div class="modal-body" style="align-items:center; text-align:center;">
                 <p style="margin-bottom:15px; color:#64748b;">Nhập mật khẩu quản trị viên</p>
-                <input type="password" id="authPassInput" placeholder="••••••" onkeyup="if(event.key==='Enter') submitLogin()">
+                <input type="password" id="authPassInput" placeholder="••••••" style="text-align:center; letter-spacing:5px; font-size:18px;" onkeyup="if(event.key==='Enter') submitLogin()">
                 <button class="btn btn-primary" onclick="submitLogin()" style="width:100%; margin-top:15px; justify-content:center;">ĐĂNG NHẬP</button>
             </div>
         </div>
@@ -222,7 +221,8 @@
             <div class="modal-body">
                 <div class="tabs">
                     <button class="tab-btn active" onclick="switchTab('tab-stats')"><i class="fa-solid fa-chart-pie"></i> Thống Kê</button>
-                    <button class="tab-btn" onclick="switchTab('tab-data')"><i class="fa-solid fa-table"></i> Dữ Liệu</button>
+                    <button class="tab-btn" onclick="switchTab('tab-data')"><i class="fa-solid fa-table"></i> Danh Sách</button>
+                    <button class="tab-btn" onclick="switchTab('tab-notif')"><i class="fa-solid fa-bell"></i> Lịch sử TB</button>
                     <button class="tab-btn" onclick="switchTab('tab-tools')"><i class="fa-solid fa-toolbox"></i> Tiện Ích</button>
                     <button class="tab-btn" onclick="switchTab('tab-config')"><i class="fa-solid fa-gear"></i> Cấu Hình</button>
                 </div>
@@ -242,21 +242,34 @@
                     </div>
                 </div>
 
-                <!-- TAB DATA -->
+                <!-- TAB DATA (Có cột chuông) -->
                 <div id="tab-data" class="tab-content">
-                    <div class="excel-toolbar">
-                        <div style="flex:1"><input type="date" id="viewDate" onchange="fetchList()"></div>
-                        <div style="flex:2"><input type="text" id="searchInput" placeholder="🔍 Lọc nhanh..." onkeyup="applyFilter()"></div>
-                        <button class="btn btn-danger" id="btnBulkDelete" onclick="deleteSelected()" style="display:none;"><i class="fa-solid fa-trash"></i> Xóa mục chọn</button>
-                        <button class="btn btn-primary" onclick="fetchList()"><i class="fa-solid fa-rotate"></i> Tải lại</button>
+                    <div class="excel-toolbar" style="margin-bottom:10px; display:flex; gap:10px;">
+                        <input type="date" id="viewDate" onchange="fetchList()">
+                        <input type="text" id="searchInput" placeholder="🔍 Lọc..." onkeyup="applyFilter()" style="flex:1">
+                        <button class="btn btn-primary" onclick="fetchList()">Tải lại</button>
                     </div>
                     <div class="excel-table-container">
                         <table id="dataTable">
-                            <thead><tr><th style="width:40px; text-align:center"><input type="checkbox" id="selectAll" onclick="toggleSelectAll()"></th><th onclick="sortTable('time')">Giờ <i class="fa-solid fa-sort"></i></th><th onclick="sortTable('name')">Họ và Tên <i class="fa-solid fa-sort"></i></th><th onclick="sortTable('mssv')">MSSV <i class="fa-solid fa-sort"></i></th><th onclick="sortTable('class_name')">Lớp <i class="fa-solid fa-sort"></i></th><th style="text-align:center">Thao tác</th></tr></thead>
-                            <tbody id="tableBody"><tr><td colspan="6" style="text-align:center; padding:30px; color:#999">Vui lòng chọn ngày để xem dữ liệu</td></tr></tbody>
+                            <thead><tr>
+                                <th class="bell-cell"><i class="fa-regular fa-bell"></i></th>
+                                <th onclick="sortTable('time')">Giờ</th>
+                                <th onclick="sortTable('name')">Họ Tên</th>
+                                <th onclick="sortTable('mssv')">MSSV</th>
+                                <th onclick="sortTable('class_name')">Lớp</th>
+                                <th style="text-align:center">Xóa</th>
+                            </tr></thead>
+                            <tbody id="tableBody"><tr><td colspan="6" style="text-align:center; padding:30px;">Vui lòng tải dữ liệu</td></tr></tbody>
                         </table>
                     </div>
-                    <div style="margin-top:10px; font-size:12px; color:#64748b; text-align:right">Tổng dòng hiển thị: <b id="rowCount">0</b></div>
+                </div>
+
+                <!-- TAB NOTIFICATION LOG -->
+                <div id="tab-notif" class="tab-content">
+                    <button class="btn btn-primary" style="margin-bottom:15px; width:100%" onclick="fetchLogs()">🔄 Cập nhật Lịch sử Yêu cầu</button>
+                    <ul id="logList" class="log-list">
+                        <li style="text-align:center; color:#999">Chưa có dữ liệu</li>
+                    </ul>
                 </div>
 
                 <!-- TAB TOOLS -->
@@ -292,7 +305,7 @@
                     </div>
                 </div>
 
-                <!-- TAB CONFIG -->
+                <!-- TAB CONFIG (ĐÃ BỔ SUNG KHÓA CẤP 2) -->
                 <div id="tab-config" class="tab-content">
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px">
                         <div class="form-group"><label>Tiêu đề:</label><input type="text" id="cfgTitle"></div>
@@ -444,15 +457,15 @@
             document.getElementById('viewDate').valueAsDate = new Date();
             document.getElementById('adminNote').value = localStorage.getItem('admin_note') || "";
             
-            // Prevent selection on secure inputs explicitly
+            // Prevent selection on secure inputs
             const secureInputs = document.querySelectorAll('.secure-locked');
             secureInputs.forEach(el => {
                 el.addEventListener('selectstart', e => e.preventDefault());
                 el.addEventListener('mousedown', e => {
-                    // Cho phép click để kích hoạt unlock, nhưng chặn bôi đen
+                    // Click to unlock
                     if(el.readOnly) {
                         e.preventDefault();
-                        el.click(); // Trigger click event manually if prevented
+                        el.click(); 
                     }
                 });
             });
@@ -475,15 +488,15 @@
                     if (timer <= 0) { timer = config.time; updateQR(); }
                 } else { document.getElementById("countdown").innerText = "--"; }
             }, 1000);
+            setInterval(() => document.getElementById("clock").innerText = new Date().toLocaleString("vi-VN"), 1000);
         }
 
         function updateQR() {
             const qrDiv = document.getElementById("qrcode");
-            const token = Date.now(); const finalLink = `${config.link}?t=${token}`;
-            if (qrObj === null) { qrDiv.innerHTML = ""; qrObj = new QRCode(qrDiv, { text: finalLink, width: 250, height: 250, colorDark : config.qrColor, colorLight: config.qrBg, correctLevel: QRCode.CorrectLevel[config.qrLevel] }); }
+            const token = Date.now(); 
+            const finalLink = `${config.link}?t=${token}`;
+            if (!qrObj) { qrDiv.innerHTML = ""; qrObj = new QRCode(qrDiv, { text: finalLink, width: 250, height: 250, colorDark : "#2563eb" }); }
             else { qrObj.clear(); qrObj.makeCode(finalLink); }
-            const zDiv = document.getElementById("qrcodeZoom");
-            if(zDiv.style.display !== 'none') { zDiv.innerHTML = ""; new QRCode(zDiv, { text: finalLink, width: 250, height: 250, colorDark : config.qrColor, colorLight: config.qrBg, correctLevel: QRCode.CorrectLevel[config.qrLevel] }); }
         }
 
         function applyUI() {
@@ -607,20 +620,11 @@
                 } else {
                     document.body.classList.add("admin-open");
                     document.getElementById("adminModal").style.display="flex";
-                    // Load data to form
-                    document.getElementById("cfgTitle").value=config.title;
-                    document.getElementById("cfgLink").value=config.link;
-                    document.getElementById("cfgApi").value=config.api;
-                    document.getElementById("cfgTime").value=config.time;
-                    document.getElementById("cfgPass").value=config.pass;
-                    document.getElementById("cfgResetPass").value=config.resetPass;
-                    document.getElementById("cfgMqText").value=config.mqText;
-                    document.getElementById("cfgMqPos").value=config.mqPos;
-                    document.getElementById("cfgMqBg").value=config.mqBg;
-                    document.getElementById("cfgMqColor").value=config.mqColor;
-                    document.getElementById("cfgQrColor").value=config.qrColor;
-                    document.getElementById("cfgQrBg").value=config.qrBg;
-                    document.getElementById("cfgQrLevel").value=config.qrLevel;
+                    // Load config to form
+                    document.getElementById("cfgApi").value = config.api;
+                    document.getElementById("cfgLink").value = config.link;
+                    document.getElementById("cfgPass").value = config.pass;
+                    document.getElementById("cfgResetPass").value = config.resetPass;
                     
                     // New Configs
                     document.getElementById("cfgNotifDuration").value=config.notifDuration;
@@ -645,7 +649,9 @@
         function toggleNote() { const n = document.getElementById("notePad"); n.style.display = n.style.display === "none" ? "block" : "none"; }
         function saveNote() { localStorage.setItem('admin_note', document.getElementById("adminNote").value); showSystemToast("Đã lưu ghi chú"); }
         function startTimer5() { let m = 5, s = 0; isPaused = true; const tInt = setInterval(() => { if(s===0){if(m===0){clearInterval(tInt); alert("Hết giờ!"); isPaused=false; return;} m--; s=59;} else s--; document.getElementById("countdown").innerText = `${m}:${s<10?'0'+s:s}`; }, 1000); showSystemToast("Bắt đầu đếm ngược 5 phút"); }
-        function deleteRow(idx, mssv) { if(!confirm("Xóa?")) return; fetch(config.api, { method: 'POST', body: JSON.stringify({ action: "DELETE_ROW", row_index: idx, mssv: mssv }) }).then(r=>r.json()).then(r=>{if(r.status==="success"){alert("Đã xóa"); fetchList();}else alert("Lỗi")}); }
+        function deleteRow(idx, mssv) { if(!confirm("Xóa?")) return; fetch(config.api, { method: 'POST', body: JSON.stringify({ action: "DELETE_ROW", row_index: idx, mssv: mssv }) }).then(r=>r.json()).then(r=>{ 
+            if(r.status==="success") { alert("Đã xóa!"); fetchList(); } 
+        }); }
 
         // --- ADMIN MODAL & DATA ---
         function closeModal() { document.body.classList.remove("admin-open"); document.getElementById("adminModal").style.display="none"; }
