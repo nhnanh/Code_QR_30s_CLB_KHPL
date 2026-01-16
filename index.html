@@ -13,396 +13,391 @@
     
     <style>
         :root {
-            --primary: #2563eb; --bg: #f8fafc; --text: #1e293b; --danger: #ef4444;
+            --primary: #6366f1; /* Indigo giống Google Form */
+            --bg: #f0f4f8; --text: #1e293b; --danger: #ef4444;
             --success: #10b981; --warning: #f59e0b; --white: #ffffff; --border: #e2e8f0;
         }
-        body.dark-mode { --primary: #60a5fa; --bg: #0f172a; --text: #f1f5f9; --white: #1e293b; --border: #334155; }
+        body.dark-mode { --primary: #818cf8; --bg: #0f172a; --text: #f1f5f9; --white: #1e293b; --border: #334155; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; overflow: hidden; transition: background 0.3s, color 0.3s; }
         input::-ms-reveal, input::-ms-clear { display: none; }
 
         /* LAYOUT */
         #mainContainer { display: flex; width: 100%; height: 100%; position: relative; }
-
-        /* VÙNG QR */
         #qrSection { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 1; transition: width 0.3s ease; }
-        .qr-card { 
-            background: var(--white); padding: 40px; border-radius: 24px; 
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); text-align: center; 
-            width: 380px; max-width: 90%; border: 1px solid var(--border); 
-            transition: 0.3s; display: flex; flex-direction: column; align-items: center; 
-        }
+        #adminSection { width: 0; display: none; flex-direction: column; background: var(--white); border-left: 1px solid var(--border); overflow: hidden; position: relative; z-index: 100; box-shadow: -5px 0 15px rgba(0,0,0,0.1); width: 50%; min-width: 500px; }
+        
+        body.admin-open #adminSection { display: flex; }
+        body.admin-open #qrSection { width: 50%; flex: none; }
+        body.admin-open.full-width #adminSection { width: 100% !important; border-left: none; }
+        body.admin-open.full-width #qrSection { width: 0; padding: 0; opacity: 0; overflow: hidden; min-width: 0; }
+
+        /* QR CARD */
+        .qr-card { background: var(--white); padding: 40px; border-radius: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); text-align: center; width: 380px; max-width: 90%; border: 1px solid var(--border); transition: 0.3s; }
         #qrcode { background: var(--white); padding: 15px; border: 2px dashed #cbd5e1; border-radius: 16px; margin: 20px auto; transition: 0.3s; }
         .timer { font-size: 64px; font-weight: 900; color: var(--danger); line-height: 1; font-variant-numeric: tabular-nums; }
-        .realtime { margin-top: 20px; font-weight: 600; color: #64748b; border-top: 1px solid var(--border); padding-top: 15px; width: 100%;}
         
         /* Marquee */
         .marquee-container { position: fixed; left: 0; width: 100%; padding: 10px 0; font-weight: bold; font-size: 16px; z-index: 40; text-transform: uppercase; display: none; }
         .marquee-top { top: 0; } .marquee-bottom { bottom: 0; }
 
-        /* VÙNG ADMIN */
-        #adminSection { 
-            display: none; flex-direction: column; background: var(--white); 
-            border-left: 1px solid var(--border); overflow: hidden; 
-            position: relative; z-index: 100; box-shadow: -5px 0 15px rgba(0,0,0,0.1); 
-            width: 50%; min-width: 500px;
-        }
-
-        /* Split Screen Active */
-        body.admin-open #adminSection { display: flex; }
-        body.admin-open #qrSection { width: 50%; flex: none; }
-        body.admin-open .settings-btn { display: none; }
-
-        /* Fullscreen Admin */
-        body.admin-open.full-width #adminSection { width: 100% !important; border-left: none; }
-        body.admin-open.full-width #qrSection { width: 0; padding: 0; opacity: 0; overflow: hidden; min-width: 0; }
-
         /* UI ELEMENTS */
         .settings-btn { position: absolute; top: 20px; left: 20px; font-size: 28px; color: #94a3b8; cursor: pointer; padding: 10px; z-index: 200; transition: 0.3s; }
         .settings-btn:hover { color: var(--primary); transform: rotate(90deg); }
-
         .admin-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--white); }
         .admin-body { padding: 20px; overflow-y: auto; flex: 1; background: var(--bg); }
         
-        /* Tabs */
+        /* TABS */
         .tabs { display: flex; gap: 5px; margin-bottom: 15px; background: var(--white); padding: 5px; border-radius: 10px; border: 1px solid var(--border); overflow-x: auto; }
         .tab-btn { padding: 8px 12px; border: none; background: none; font-weight: 600; color: #64748b; cursor: pointer; border-radius: 6px; white-space: nowrap; font-size: 13px; }
-        .tab-btn:hover { background: var(--bg); }
         .tab-btn.active { background: var(--primary); color: white; }
         .tab-content { display: none; flex-direction: column; animation: fadeIn 0.3s; }
         .tab-content.active { display: flex; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Dashboard Charts */
-        .dashboard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
-        .stat-card { background: var(--white); padding: 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .chart-box { background: var(--white); padding: 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; min-height: 300px; }
-        .chart-title { font-weight: bold; margin-bottom: 10px; font-size: 14px; color: #64748b; }
+        /* FORM BUILDER (GOOGLE FORMS STYLE) */
+        .fb-container { border: 1px solid var(--border); background: var(--bg); border-radius: 8px; padding: 10px; max-height: 500px; overflow-y: auto; }
+        .fb-item { 
+            background: var(--white); border-radius: 8px; margin-bottom: 15px; 
+            border: 1px solid var(--border); border-left: 5px solid var(--primary);
+            padding: 15px; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .fb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .fb-handle { cursor: grab; color: #cbd5e1; }
+        .fb-body { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; }
+        .fb-footer { margin-top: 10px; padding-top: 10px; border-top: 1px solid #f1f5f9; display: flex; justify-content: flex-end; align-items: center; gap: 15px; }
+        
+        /* Switch Toggle */
+        .switch { position: relative; display: inline-block; width: 34px; height: 20px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(14px); }
 
-        /* Table */
+        /* TABLE & FILTER */
         .excel-toolbar { background: var(--white); padding: 10px; border-radius: 8px 8px 0 0; border: 1px solid var(--border); border-bottom: none; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .excel-table-container { flex: 1; overflow: auto; border: 1px solid var(--border); background: var(--white); border-radius: 0 0 8px 8px; min-height: 300px; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background: var(--bg); padding: 12px; text-align: left; font-weight: 700; color: #475569; position: sticky; top: 0; z-index: 10; border-bottom: 2px solid var(--border); cursor: pointer; }
-        td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text); }
-        tr:hover td { background-color: #f0fdfa; }
-        
-        /* Tools */
+        th { background: #f1f5f9; padding: 10px; text-align: left; font-weight: 700; color: #475569; position: sticky; top: 0; z-index: 10; border-bottom: 2px solid var(--border); cursor: pointer; white-space: nowrap; }
+        td { padding: 8px 10px; border-bottom: 1px solid var(--border); color: var(--text); white-space: nowrap; }
+        tr:hover td { background-color: #f8fafc; }
+        .filter-row th { padding: 5px; background: #fff; }
+        .filter-input { width: 100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; }
+
+        /* CHART BOX */
+        .chart-box { background: var(--white); padding: 20px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; position: relative; }
+        .chart-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
+        .download-chart-btn { background: none; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; color: #64748b; }
+
+        /* INFOGRAPHIC LOGS */
+        .timeline { list-style: none; padding: 0 0 0 20px; border-left: 2px solid #e2e8f0; margin: 10px 0 0 10px; }
+        .timeline-item { margin-bottom: 20px; position: relative; }
+        .timeline-item::before { content: ''; position: absolute; left: -26px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: var(--white); border: 2px solid var(--primary); }
+        .timeline-item.warning::before { border-color: var(--warning); background: #fffbeb; }
+        .timeline-item.danger::before { border-color: var(--danger); background: #fef2f2; }
+        .log-card { background: var(--white); padding: 12px; border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .log-time { font-size: 11px; color: #94a3b8; display: block; margin-bottom: 4px; }
+        .log-content { font-size: 13px; font-weight: 600; color: var(--text); }
+
+        /* TOOLS GRID */
         .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; }
-        .tool-card { background: var(--white); padding: 15px; border-radius: 12px; text-align: center; cursor: pointer; border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100px; gap: 5px; transition: 0.2s; }
-        .tool-card:hover { border-color: var(--primary); transform: translateY(-3px); }
+        .tool-card { background: var(--white); padding: 15px; border-radius: 12px; text-align: center; cursor: pointer; border: 1px solid var(--border); height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .tool-card:hover { transform: translateY(-3px); border-color: var(--primary); }
         .tool-active { border: 2px solid var(--success) !important; background: rgba(16,185,129,0.05) !important; }
-
-        /* Form Elements */
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px; color: var(--text); }
-        input, select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; background: var(--white); color: var(--text); }
-        .btn { padding: 10px 20px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; color: white; }
-        .btn-primary { background: var(--primary); } .btn-danger { background: var(--danger); } .btn-gray { background: #64748b; } .btn-success { background: var(--success); }
-
-        /* Resizer */
-        #resizer { width: 6px; background: var(--border); cursor: col-resize; display: none; z-index: 101; }
+        .tool-active i { color: var(--success) !important; }
+        
+        /* COMMON */
+        input:not([type="checkbox"]), select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; background: var(--white); color: var(--text); }
+        .btn { padding: 10px 20px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; color: white; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary { background: var(--primary); } .btn-danger { background: var(--danger); } .btn-success { background: var(--success); } .btn-gray { background: #64748b; }
+        .pass-group { position: relative; } .pass-controls { position: absolute; right: 5px; top: 50%; transform: translateY(-50%); display: flex; gap: 5px; }
+        .icon-btn { background: #f1f5f9; border: 1px solid #cbd5e1; cursor: pointer; padding: 6px; border-radius: 4px; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; }
+        
+        #resizer { width: 8px; background-color: var(--border); cursor: col-resize; display: none; z-index: 101; }
         body.admin-open #resizer { display: block; }
         
-        /* Notifications */
+        /* TOASTS */
         #liveToastContainer { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column-reverse; gap: 10px; pointer-events: none; }
         .live-toast { background: white; border-left: 5px solid var(--success); padding: 15px; border-radius: 8px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); width: 320px; animation: slideIn 0.3s ease; pointer-events: auto; }
+        .live-toast.warning { border-left-color: var(--warning); }
         @keyframes slideIn { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+        
+        #systemToast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 12px 24px; border-radius: 30px; font-size: 14px; z-index: 10000; opacity: 0; transition: 0.3s; pointer-events: none; }
+        #systemToast.show { opacity: 1; bottom: 50px; }
 
-        /* Modals */
+        /* MODALS */
         #authModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        #qrZoomModal { display: none; position: fixed; inset: 0; background: white; z-index: 5000; align-items: center; justify-content: center; flex-direction: column; }
-        
-        /* Pass Group */
-        .pass-group { position: relative; }
-        .pass-controls { position: absolute; right: 5px; top: 50%; transform: translateY(-50%); display: flex; gap: 5px; }
-        .icon-btn { background: #f1f5f9; border: 1px solid #cbd5e1; cursor: pointer; padding: 6px; border-radius: 4px; display: flex; align-items: center; justify-content: center; }
-
-        @media (max-width: 1024px) {
-            body.admin-open #adminSection { width: 100%; position: absolute; }
-            body.admin-open #qrSection { display: none; }
-            body.admin-open #resizer { display: none; }
-        }
-        
-        /* Input Locked */
-        input.secure-locked { background-color: #f1f5f9; color: #94a3b8; cursor: not-allowed; border-style: dashed; }
-        input.unlocked { background-color: #f0fdfa; border-color: var(--success); color: var(--success); }
+        #lockScreen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; color: white; }
+        #qrZoomModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 5000; align-items: center; justify-content: center; flex-direction: column; }
     </style>
 </head>
 <body>
 
-    <!-- Nút Setting -->
     <div class="settings-btn" onclick="openAuth()"><i class="fa-solid fa-sliders"></i></div>
-    <div id="liveToastContainer"></div>
+    <div id="liveToastContainer" class="pos-top-right"></div>
+    <div id="systemToast"></div>
 
-    <div id="mainContainer">
-        <!-- VÙNG QR -->
-        <div id="qrSection">
-            <div class="qr-card" id="mainCard">
-                <h1 id="orgName" style="color:var(--primary)">ĐIỂM DANH CLB</h1>
-                <div id="qrcode"></div>
-                <div class="timer" id="countdown">--</div>
-                <div class="realtime"><i class="fa-regular fa-clock"></i> <span id="clock">Loading...</span></div>
-            </div>
-            <div id="marqueeContainer" class="marquee-container"><marquee id="marqueeText"></marquee></div>
+    <!-- QR SECTION -->
+    <div id="qrSection">
+        <div class="qr-card" id="mainCard">
+            <h1 id="orgName" style="color:var(--primary)">ĐIỂM DANH CLB</h1>
+            <div id="qrcode"></div>
+            <div class="timer" id="countdown">--</div>
+            <div class="realtime"><i class="fa-regular fa-clock"></i> <span id="clock">Loading...</span></div>
         </div>
+        <div id="marqueeContainer" class="marquee-container"><marquee id="marqueeText"></marquee></div>
+    </div>
 
-        <!-- THANH KÉO -->
-        <div id="resizer"></div>
+    <!-- RESIZER -->
+    <div id="resizer"></div>
 
-        <!-- VÙNG ADMIN -->
-        <div id="adminSection">
-            <div class="admin-header">
-                <div>
-                    <div style="font-size:18px; font-weight:700; color:var(--primary)">QUẢN TRỊ VIÊN</div>
-                    <span style="font-size:11px; color:#64748b">#Made by Nguyễn Hữu Ngọc Anh - 035 840 7717</span>
+    <!-- ADMIN SECTION -->
+    <div id="adminSection">
+        <div class="admin-header">
+            <div>
+                <div style="font-size:18px; font-weight:700; color:var(--primary)">QUẢN TRỊ VIÊN</div>
+                <span class="credit-text">#Made by Nguyễn Hữu Ngọc Anh</span>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="icon-btn expand-btn" onclick="toggleFullAdmin()" title="Mở rộng"><i class="fa-solid fa-expand"></i></button>
+                <button class="btn btn-danger" onclick="closeAdmin()">Thoát</button>
+            </div>
+        </div>
+        
+        <div class="admin-body">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('tab-stats')">Thống Kê</button>
+                <button class="tab-btn" onclick="switchTab('tab-data')">Danh Sách</button>
+                <button class="tab-btn" onclick="switchTab('tab-form')">Cấu hình Form</button>
+                <button class="tab-btn" onclick="switchTab('tab-log')">Lịch sử</button>
+                <button class="tab-btn" onclick="switchTab('tab-tools')">Tiện Ích</button>
+                <button class="tab-btn" onclick="switchTab('tab-config')">Cài Đặt</button>
+            </div>
+
+            <!-- 1. THỐNG KÊ -->
+            <div id="tab-stats" class="tab-content active">
+                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
+                    <div class="tool-card" style="height:auto"><h4>Tổng SV</h4><p id="statTotal" style="font-size:24px; font-weight:bold; color:var(--primary)">0</p></div>
+                    <div class="tool-card" style="height:auto"><h4>Lớp</h4><p id="statClasses" style="font-size:24px; font-weight:bold; color:var(--success)">0</p></div>
+                    <div class="tool-card" style="height:auto"><h4>Yêu Cầu</h4><p id="statReq" style="font-size:24px; font-weight:bold; color:var(--warning)">0</p></div>
                 </div>
-                <div style="display: flex; gap: 10px;">
-                    <button class="icon-btn" onclick="toggleFullAdmin()" title="Mở rộng"><i class="fa-solid fa-expand"></i></button>
-                    <button class="btn btn-danger" onclick="closeAdmin()">Thoát</button>
+                <div class="charts-row" style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="chart-box">
+                        <div class="chart-header"><span>Tỉ lệ Lớp</span><button class="download-chart-btn" onclick="downloadChart('classChart')">⬇ PNG</button></div>
+                        <div style="height:250px"><canvas id="classChart"></canvas></div>
+                    </div>
+                    <div class="chart-box">
+                        <div class="chart-header"><span>Mật độ Giờ</span><button class="download-chart-btn" onclick="downloadChart('timeChart')">⬇ PNG</button></div>
+                        <div style="height:250px"><canvas id="timeChart"></canvas></div>
+                    </div>
+                </div>
+                <div class="chart-box" style="margin-top:15px">
+                    <div class="chart-header"><span>Xu hướng (Đường)</span><button class="download-chart-btn" onclick="downloadChart('lineChart')">⬇ PNG</button></div>
+                    <div style="height:200px"><canvas id="lineChart"></canvas></div>
                 </div>
             </div>
-            
-            <div class="admin-body">
-                <div class="tabs">
-                    <button class="tab-btn active" onclick="switchTab('tab-stats')">Thống Kê</button>
-                    <button class="tab-btn" onclick="switchTab('tab-data')">Danh Sách</button>
-                    <button class="tab-btn" onclick="switchTab('tab-form')">Cấu hình Form</button>
-                    <button class="tab-btn" onclick="switchTab('tab-log')">Lịch sử</button>
-                    <button class="tab-btn" onclick="switchTab('tab-tools')">Tiện Ích</button>
-                    <button class="tab-btn" onclick="switchTab('tab-config')">Cài Đặt</button>
-                </div>
 
-                <div id="loader" style="display:none; text-align:center; padding:20px;">Loading...</div>
-
-                <!-- Tab 1: Thống kê & Biểu đồ -->
-                <div id="tab-stats" class="tab-content active">
-                    <div class="dashboard-grid">
-                        <div class="stat-card"><h4>Tổng SV</h4><p id="statTotal" style="font-size:24px; font-weight:bold; color:var(--primary); margin:0">0</p></div>
-                        <div class="stat-card"><h4>Số Lớp</h4><p id="statClasses" style="font-size:24px; font-weight:bold; color:var(--success); margin:0">0</p></div>
-                        <div class="stat-card"><h4>Mới nhất</h4><p id="statLatest" style="font-size:18px; font-weight:bold; margin:0">--:--</p></div>
-                    </div>
-                    <div class="charts-row">
-                        <div class="chart-box"><div class="chart-title">Tỉ lệ Lớp</div><div style="height:250px"><canvas id="classChart"></canvas></div></div>
-                        <div class="chart-box"><div class="chart-title">Mật độ Giờ</div><div style="height:250px"><canvas id="timeChart"></canvas></div></div>
-                    </div>
-                    <div class="chart-box" style="margin-top:15px"><div class="chart-title">Xu hướng (Đường)</div><div style="height:200px"><canvas id="lineChart"></canvas></div></div>
+            <!-- 2. DANH SÁCH -->
+            <div id="tab-data" class="tab-content">
+                <div class="excel-toolbar">
+                    <input type="date" id="viewDate" onchange="fetchList()" style="width:auto">
+                    <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm..." onkeyup="applyFilter()" style="flex:1">
+                    <button class="btn btn-danger" id="btnBulkDelete" onclick="deleteSelected()" style="display:none;">Xóa mục chọn</button>
+                    <button class="btn btn-primary" onclick="fetchList()">Tải lại</button>
                 </div>
-
-                <!-- Tab 2: Danh sách -->
-                <div id="tab-data" class="tab-content">
-                    <div class="excel-toolbar">
-                        <input type="date" id="viewDate" onchange="fetchList()" style="width:auto">
-                        <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm..." onkeyup="applyFilter()" style="flex:1">
-                        <button class="btn btn-primary" onclick="fetchList()">Tải lại</button>
-                    </div>
-                    <div class="excel-table-container">
-                        <table id="dataTable">
-                            <thead><tr id="tableHeader"></tr></thead>
-                            <tbody id="tableBody"><tr><td colspan="10" style="text-align:center; padding:30px">Vui lòng tải dữ liệu...</td></tr></tbody>
-                        </table>
-                    </div>
-                    <div style="text-align:right; font-size:12px; margin-top:5px; color:#666">Tổng dòng: <b id="rowCount">0</b></div>
+                <div class="excel-table-container">
+                    <table id="dataTable">
+                        <thead>
+                            <tr id="dynamicHeader"></tr>
+                            <tr class="filter-row" id="filterRow" style="display:none; background:#eee"></tr>
+                        </thead>
+                        <tbody id="tableBody"><tr><td colspan="10" style="text-align:center; padding:30px">Đang tải dữ liệu...</td></tr></tbody>
+                    </table>
                 </div>
+                <div style="text-align:right; font-size:12px; margin-top:5px; color:#666">Tổng dòng: <b id="rowCount">0</b></div>
+            </div>
 
-                <!-- Tab 3: Cấu hình Form -->
-                <div id="tab-form" class="tab-content">
-                    <div class="form-group"><label>Tiêu đề Form:</label><input type="text" id="fbTitle" value="THÔNG TIN SINH VIÊN"></div>
-                    <div class="fb-container" id="fbFields" style="border:1px solid #eee; padding:15px; border-radius:8px; max-height:400px; overflow-y:auto"></div>
-                    <button class="btn btn-gray" onclick="addFormField()" style="width:100%; margin-top:10px">+ Thêm trường</button>
-                    <div style="margin-top:20px; text-align:right">
-                        <button class="btn btn-success" onclick="saveFormConfig()"><i class="fa-solid fa-cloud-arrow-up"></i> Lưu Form lên Server</button>
-                    </div>
+            <!-- 3. CẤU HÌNH FORM (Google Forms Style) -->
+            <div id="tab-form" class="tab-content">
+                <div class="form-group"><label>Tiêu đề Form:</label><input type="text" id="fbTitle" value="THÔNG TIN SINH VIÊN" style="font-size:18px; font-weight:bold; border-left:5px solid var(--primary)"></div>
+                <div class="fb-container" id="fbFields"></div>
+                <button class="btn btn-gray" onclick="addFormField()" style="width:100%; margin-top:10px; border-style:dashed">+ Thêm trường dữ liệu</button>
+                <div style="margin-top:20px; text-align:right; border-top:1px solid #eee; padding-top:15px;">
+                    <button class="btn btn-success" onclick="saveFormConfig()"><i class="fa-solid fa-cloud-arrow-up"></i> Lưu & Đồng bộ Server</button>
                 </div>
+            </div>
 
-                <!-- Tab 4: Log -->
-                <div id="tab-log" class="tab-content">
-                    <div style="text-align:right; margin-bottom:10px;"><button class="btn btn-gray" onclick="clearLocalLogs()">Xóa lịch sử</button></div>
-                    <ul id="logList" style="list-style:none; padding:0; margin:0"></ul>
-                </div>
+            <!-- 4. LỊCH SỬ LOG (Infographic) -->
+            <div id="tab-log" class="tab-content">
+                <div style="text-align:right; margin-bottom:10px;"><button class="btn btn-gray" onclick="clearLocalLogs()">Xóa lịch sử</button></div>
+                <ul id="logList" class="timeline"></ul>
+            </div>
 
-                <!-- Tab 5: Tiện Ích -->
-                <div id="tab-tools" class="tab-content">
-                    <div class="tools-grid">
-                        <div class="tool-card" id="toolLive" onclick="toggleLiveNotif()"><i class="fa-solid fa-bell"></i><span>TB Live</span></div>
-                        <div class="tool-card" id="toolPause" onclick="togglePause()"><i class="fa-solid fa-pause"></i><span>Tạm dừng</span></div>
-                        <div class="tool-card" id="toolDark" onclick="toggleDarkMode()"><i class="fa-solid fa-moon"></i><span>Giao diện</span></div>
-                        <div class="tool-card" onclick="downloadQR()"><i class="fa-solid fa-download"></i><span>Tải QR</span></div>
-                        <div class="tool-card" onclick="exportCSV()"><i class="fa-solid fa-file-csv"></i><span>Xuất Excel</span></div>
-                        <div class="tool-card" onclick="zoomQR()"><i class="fa-solid fa-magnifying-glass-plus"></i><span>Phóng to</span></div>
-                        <div class="tool-card" id="toolBlur" onclick="toggleBlurQR()"><i class="fa-solid fa-eye-slash"></i><span>Che mờ</span></div>
-                        <div class="tool-card" id="toolClock" onclick="toggleClockUI()"><i class="fa-regular fa-clock"></i><span>Đồng hồ</span></div>
-                        <div class="tool-card" onclick="randomStudent()"><i class="fa-solid fa-shuffle"></i><span>Quay số</span></div>
-                    </div>
+            <!-- 5. TIỆN ÍCH (20 Tools) -->
+            <div id="tab-tools" class="tab-content">
+                <div class="tools-grid">
+                    <div class="tool-card" id="toolLive" onclick="toggleLiveNotif()"><i class="fa-solid fa-bell"></i><span>TB Live</span></div>
+                    <div class="tool-card" id="toolPause" onclick="togglePause()"><i class="fa-solid fa-pause"></i><span>Tạm dừng</span></div>
+                    <div class="tool-card" id="toolDark" onclick="toggleDarkMode()"><i class="fa-solid fa-moon"></i><span>Giao diện</span></div>
+                    <div class="tool-card" onclick="downloadQR()"><i class="fa-solid fa-download"></i><span>Tải QR</span></div>
+                    <div class="tool-card" onclick="exportCSV()"><i class="fa-solid fa-file-csv"></i><span>Xuất Excel</span></div>
+                    <div class="tool-card" onclick="zoomQR()"><i class="fa-solid fa-magnifying-glass-plus"></i><span>Phóng to</span></div>
+                    <div class="tool-card" id="toolBlur" onclick="toggleBlurQR()"><i class="fa-solid fa-eye-slash"></i><span>Che mờ</span></div>
+                    <div class="tool-card" id="toolClock" onclick="toggleClockUI()"><i class="fa-regular fa-clock"></i><span>Đồng hồ</span></div>
+                    <div class="tool-card tool-warning" onclick="lockScreen()"><i class="fa-solid fa-lock"></i><span>Khóa Màn</span></div>
+                    <div class="tool-card" onclick="randomStudent()"><i class="fa-solid fa-shuffle"></i><span>Quay số</span></div>
+                    <div class="tool-card" onclick="printList()"><i class="fa-solid fa-print"></i><span>In DS</span></div>
+                    <div class="tool-card" onclick="exportConfig()"><i class="fa-solid fa-file-export"></i><span>Sao lưu</span></div>
+                    <div class="tool-card" onclick="importConfig()"><i class="fa-solid fa-file-import"></i><span>Khôi phục</span></div>
+                    <div class="tool-card" onclick="openFormLink()"><i class="fa-solid fa-external-link-alt"></i><span>Link Form</span></div>
+                    <div class="tool-card" onclick="showStaticQR()"><i class="fa-solid fa-qrcode"></i><span>QR Tĩnh</span></div>
+                    <div class="tool-card" onclick="checkPing()"><i class="fa-solid fa-wifi"></i><span>Check Mạng</span></div>
+                    <div class="tool-card" onclick="toggleNote()"><i class="fa-solid fa-sticky-note"></i><span>Ghi chú</span></div>
+                    <div class="tool-card" onclick="startTimer5()"><i class="fa-solid fa-hourglass-start"></i><span>Đếm 5p</span></div>
+                    <div class="tool-card" onclick="fetchList()"><i class="fa-solid fa-sync"></i><span>Làm mới</span></div>
+                    <div class="tool-card" onclick="window.location.reload()"><i class="fa-solid fa-rotate-right"></i><span>Reload App</span></div>
                 </div>
+                <div id="notePad" style="display:none; margin-top:15px;">
+                    <textarea id="adminNote" style="width:100%; height:80px; padding:10px; border-radius:8px; border:1px solid #cbd5e1" placeholder="Nhập ghi chú..."></textarea>
+                    <button class="btn btn-primary" onclick="saveNote()">Lưu Ghi Chú</button>
+                </div>
+            </div>
 
-                <!-- Tab 6: Cài Đặt -->
-                <div id="tab-config" class="tab-content">
-                    <div class="form-group"><label>Tiêu đề QR:</label><input type="text" id="cfgTitle"></div>
-                    <div class="form-group"><label>Link Form:</label><input type="text" id="cfgLink"></div>
-                    <div class="form-group"><label>API Google Script <i class="fa-solid fa-lock" style="color:var(--danger)"></i></label>
-                        <div class="pass-group">
-                            <input type="text" id="cfgApi" readonly class="secure-locked">
-                            <div class="pass-controls"><button class="icon-btn" onclick="unlockField('cfgApi', 'Abc110022@')"><i class="fa-solid fa-lock-open"></i></button></div>
-                        </div>
-                    </div>
-                    
-                    <fieldset style="border:1px solid #eee; padding:10px; border-radius:8px; margin-top:15px; margin-bottom:15px">
-                        <legend style="font-size:12px; font-weight:bold; color:var(--primary)">Giao diện QR & Chữ chạy</legend>
-                        <div class="form-group"><label>Nội dung chữ chạy:</label><input type="text" id="cfgMqText"></div>
-                        <div style="display:flex; gap:10px">
-                            <div style="flex:1"><label>Vị trí:</label><select id="cfgMqPos"><option value="none">Tắt</option><option value="bottom">Dưới đáy</option><option value="top">Trên cùng</option></select></div>
-                            <div style="flex:1"><label>Màu nền Marquee:</label><input type="color" id="cfgMqBg" style="height:40px; padding:2px; width:100%"></div>
-                            <div style="flex:1"><label>Màu chữ Marquee:</label><input type="color" id="cfgMqColor" style="height:40px; padding:2px; width:100%"></div>
-                        </div>
-                        <div style="display:flex; gap:10px; margin-top:10px;">
-                            <div style="flex:1"><label>Màu mã QR:</label><input type="color" id="cfgQrColor" style="height:40px; padding:2px; width:100%"></div>
-                            <div style="flex:1"><label>Màu nền QR:</label><input type="color" id="cfgQrBg" style="height:40px; padding:2px; width:100%"></div>
-                            <div style="flex:1"><label>Độ chi tiết:</label><select id="cfgQrLevel"><option value="L">Thấp</option><option value="M">Trung</option><option value="Q">Cao</option><option value="H">Tốt nhất</option></select></div>
-                        </div>
-                    </fieldset>
-                    
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px">
-                        <div class="form-group"><label>Pass Admin <i class="fa-solid fa-lock" style="color:var(--danger)"></i></label>
-                            <div class="pass-group">
-                                <input type="password" id="cfgPass" readonly class="secure-locked">
-                                <div class="pass-controls">
-                                    <button class="icon-btn" onclick="togglePass('cfgPass', this)"><i class="fa-solid fa-eye"></i></button>
-                                    <button class="icon-btn" onclick="unlockField('cfgPass', 'Abc110022#')"><i class="fa-solid fa-lock-open"></i></button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group"><label>Pass Reset <i class="fa-solid fa-lock" style="color:var(--danger)"></i></label>
-                            <div class="pass-group">
-                                <input type="password" id="cfgResetPass" readonly class="secure-locked">
-                                <div class="pass-controls">
-                                    <button class="icon-btn" onclick="togglePass('cfgResetPass', this)"><i class="fa-solid fa-eye"></i></button>
-                                    <button class="icon-btn" onclick="unlockField('cfgResetPass', 'Abc110022#')"><i class="fa-solid fa-lock-open"></i></button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <button class="btn btn-primary" onclick="saveSystemConfig()" style="width:100%; margin-top:20px;">Lưu Cài Đặt</button>
+            <!-- 6. CÀI ĐẶT -->
+            <div id="tab-config" class="tab-content">
+                <div class="form-group"><label>API Google Script:</label>
+                    <div class="pass-group"><input type="text" id="cfgApi" readonly class="secure-locked"><div class="pass-controls"><button class="icon-btn" onclick="unlockField('cfgApi', 'Abc110022@')"><i class="fa-solid fa-lock-open"></i></button></div></div>
                 </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
+                     <div class="form-group"><label>Tiêu đề QR:</label><input type="text" id="cfgTitle"></div>
+                     <div class="form-group"><label>Link Form:</label><input type="text" id="cfgLink"></div>
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px">
+                     <div class="form-group"><label>Pass Admin:</label>
+                        <div class="pass-group"><input type="password" id="cfgPass" readonly class="secure-locked"><div class="pass-controls"><button class="icon-btn" onclick="togglePass('cfgPass', this)"><i class="fa-solid fa-eye"></i></button><button class="icon-btn" onclick="unlockField('cfgPass', 'Abc110022#')"><i class="fa-solid fa-lock-open"></i></button></div></div>
+                     </div>
+                     <div class="form-group"><label>Pass Reset:</label>
+                        <div class="pass-group"><input type="password" id="cfgResetPass" readonly class="secure-locked"><div class="pass-controls"><button class="icon-btn" onclick="togglePass('cfgResetPass', this)"><i class="fa-solid fa-eye"></i></button><button class="icon-btn" onclick="unlockField('cfgResetPass', 'Abc110022#')"><i class="fa-solid fa-lock-open"></i></button></div></div>
+                     </div>
+                     <div class="form-group"><label>Thời gian QR:</label><input type="number" id="cfgTime"></div>
+                </div>
+                
+                <fieldset style="border:1px solid #eee; padding:10px; border-radius:8px; margin-bottom:15px">
+                    <legend style="font-size:12px; font-weight:bold; color:var(--primary)">Giao diện QR</legend>
+                    <div style="display:flex; gap:10px">
+                        <div><label>Màu Mã:</label><input type="color" id="cfgQrColor" style="height:35px"></div>
+                        <div><label>Màu Nền:</label><input type="color" id="cfgQrBg" style="height:35px"></div>
+                        <div style="flex:1"><label>Chữ Chạy:</label><input type="text" id="cfgMqText"></div>
+                    </div>
+                </fieldset>
+                
+                <button class="btn btn-primary" onclick="saveSystemConfig()" style="width:100%">Lưu Cài Đặt</button>
             </div>
         </div>
     </div>
 
-    <!-- Auth Modal -->
+    <!-- AUTH MODAL -->
     <div id="authModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:2000; align-items:center; justify-content:center;">
         <div style="background:white; padding:30px; border-radius:16px; text-align:center; width:300px">
             <h3>ĐĂNG NHẬP</h3>
-            <div class="pass-group" style="margin-bottom:15px; position:relative;">
+            <div class="pass-group" style="margin-bottom:15px; position:relative">
                 <input type="password" id="loginPass" placeholder="••••••" style="width:100%; padding:10px; text-align:center; letter-spacing:5px" onkeyup="if(event.key==='Enter') doLogin()">
-                <div class="pass-controls" style="right:10px; top:50%; transform:translateY(-50%)"><i class="fa-solid fa-eye" onclick="togglePass('loginPass', this.parentElement)" style="cursor:pointer"></i></div>
+                <div class="pass-controls" style="right:10px"><i class="fa-solid fa-eye" onclick="togglePass('loginPass', this.parentElement)" style="cursor:pointer"></i></div>
             </div>
             <button class="btn btn-primary" onclick="doLogin()" style="width:100%">Vào Admin</button>
             <div style="margin-top:10px; font-size:12px; cursor:pointer; color:#666" onclick="closeAuthModal()">Đóng</div>
         </div>
     </div>
     
-    <!-- Zoom QR -->
-    <div id="qrZoomModal" style="display:none; position:fixed; inset:0; background:white; z-index:5000; align-items:center; justify-content:center; flex-direction:column;">
-        <h2 style="color:var(--text)">QUÉT MÃ ĐIỂM DANH</h2>
-        <div id="qrcodeZoom" style="transform: scale(1.5); margin: 50px;"></div>
-        <button class="btn btn-danger" onclick="closeZoom()">Đóng (ESC)</button>
-    </div>
+    <!-- EXTENSIONS -->
+    <div id="lockScreen"><h2>HỆ THỐNG ĐANG KHÓA</h2><button class="btn btn-primary" onclick="openLoginModal(true)" style="margin-top:20px">MỞ KHÓA</button></div>
+    <div id="qrZoomModal"><h2 style="color:var(--text)">QUÉT MÃ ĐIỂM DANH</h2><div id="qrcodeZoom" style="transform: scale(1.5); margin: 50px;"></div><button class="btn btn-danger" onclick="closeZoom()">Đóng</button></div>
 
     <script>
-        const DEFAULT = { api: "https://script.google.com/macros/s/AKfycbxQgOytzD2nJwoCSdTLiRaGnl567gcNKVOmHTsA_u8dJ7Y87rBBFlJc1c32uuYLtauy/exec", pass: "Admin", reset: "Admin", title: "ĐIỂM DANH CLB", time: 30, mqText: "HỆ THỐNG ĐANG MỞ ĐIỂM DANH", mqPos: "bottom", mqBg: "#ef4444", mqColor: "#ffffff", qrColor: "#000000", qrBg: "#ffffff", qrLevel: "M", notifEnabled: true };
+        const DEFAULT = { api: "https://script.google.com/macros/s/AKfycbxQgOytzD2nJwoCSdTLiRaGnl567gcNKVOmHTsA_u8dJ7Y87rBBFlJc1c32uuYLtauy/exec", pass: "Admin", reset: "Admin", title: "ĐIỂM DANH CLB", time: 30, mqText: "HỆ THỐNG ĐANG MỞ", qrColor: "#000000", qrBg: "#ffffff", notifEnabled: true };
         let cfg = JSON.parse(localStorage.getItem('qr_cfg')) || DEFAULT;
         let formCfg = { title: "THÔNG TIN", fields: [{label:"Họ Tên", type:"text"}, {label:"MSSV", type:"tel"}, {label:"Lớp", type:"text"}] };
-        let allData = [], logs = JSON.parse(localStorage.getItem('logs')) || [];
-        let timer=30, qrObj=null, lastReq=0, isPaused=false, isResizing=false;
+        let allData = [], filteredData = [], logs = JSON.parse(localStorage.getItem('logs')) || [];
+        let timer=30, qrObj=null, lastReq=0, isPaused=false, isResizing=false, isUnlockMode=false;
+        let liveInterval = null;
+        let classChartInstance=null, timeChartInstance=null, lineChartInstance=null;
 
-        // Split Screen
+        // --- SPLIT SCREEN ---
         const resizer=document.getElementById('resizer'); const adminSection=document.getElementById('adminSection');
         resizer.addEventListener('mousedown', ()=>{isResizing=true; document.body.style.cursor='col-resize';});
-        document.addEventListener('mousemove', e=>{if(isResizing){const w=window.innerWidth-e.clientX; if(w>300 && w<window.innerWidth-300) { adminSection.style.width=w+'px'; document.getElementById('qrSection').style.flex='none'; document.getElementById('qrSection').style.width=(window.innerWidth-w)+'px'; } }});
+        document.addEventListener('mousemove', e=>{if(isResizing){const w=window.innerWidth-e.clientX; if(w>300 && w<window.innerWidth-300){adminSection.style.width=w+'px'; document.getElementById('qrSection').style.width=(window.innerWidth-w)+'px';}}});
         document.addEventListener('mouseup', ()=>{isResizing=false; document.body.style.cursor='default';});
 
+        // --- INIT ---
         window.onload = () => {
             document.getElementById('viewDate').valueAsDate = new Date();
-            // Fix input readonly
+            document.getElementById('adminNote').value = localStorage.getItem('admin_note') || "";
             document.querySelectorAll('.secure-locked').forEach(el => { el.addEventListener('mousedown', e => { if(el.readOnly) { e.preventDefault(); el.click(); } }); });
+            
             applyUI(); startQR(); renderLogs();
             if(cfg.api) {
-                fetch(`${cfg.api}?action=GET_FORM_CONFIG`).then(r=>r.json()).then(res=>{
-                    if(res.status==="success" && res.config) formCfg = res.config;
-                    renderFormBuilder();
-                }).catch(()=>renderFormBuilder());
-                setInterval(pollData, 5000);
+                fetch(`${cfg.api}?action=GET_FORM_CONFIG`).then(r=>r.json()).then(res=>{ if(res.status==="success" && res.config) formCfg = res.config; renderFormBuilder(); }).catch(()=>renderFormBuilder());
+                configPolling();
             } else renderFormBuilder();
         };
 
-        // --- CORE ---
+        function configPolling() {
+            if(cfg.notifEnabled) {
+                if(liveInterval) clearInterval(liveInterval);
+                liveInterval = setInterval(pollData, 5000);
+            } else if(liveInterval) clearInterval(liveInterval);
+        }
+
+        // --- CORE QR ---
         function startQR() {
-            setInterval(() => {
-                if(!isPaused) { timer--; document.getElementById('countdown').innerText = timer; if(timer<=0) { timer=cfg.time||30; updateQR(); } } else document.getElementById('countdown').innerText = "--";
-            }, 1000);
+            setInterval(() => { if(!isPaused) { timer--; document.getElementById('countdown').innerText = timer; if(timer<=0) { timer=cfg.time||30; updateQR(); } } else document.getElementById('countdown').innerText = "--"; }, 1000);
             updateQR();
             setInterval(()=>document.getElementById('clock').innerText=new Date().toLocaleString('vi-VN'),1000);
         }
         function updateQR() {
             const div=document.getElementById('qrcode');
-            const url=`${(cfg.link && cfg.link.length > 5 ? cfg.link : window.location.href.replace('index.html','form.html'))}?t=${Date.now()}`;
-            if(!qrObj) { div.innerHTML=""; qrObj=new QRCode(div,{text:url,width:250,height:250,colorDark:cfg.qrColor,colorLight:cfg.qrBg,correctLevel:QRCode.CorrectLevel[cfg.qrLevel]}); }
+            const url=`${(cfg.link && cfg.link.length>5 ? cfg.link : window.location.href.replace('index.html','form.html'))}?t=${Date.now()}`;
+            if(!qrObj) { div.innerHTML=""; qrObj=new QRCode(div,{text:url,width:250,height:250,colorDark:cfg.qrColor,colorLight:cfg.qrBg}); }
             else { qrObj.clear(); qrObj.makeCode(url); }
             const zd = document.getElementById('qrcodeZoom');
-            if(zd.style.display!=='none') { zd.innerHTML=""; new QRCode(zd,{text:url,width:250,height:250,colorDark:cfg.qrColor,colorLight:cfg.qrBg,correctLevel:QRCode.CorrectLevel[cfg.qrLevel]}); }
+            if(zd.style.display!=='none') { zd.innerHTML=""; new QRCode(zd,{text:url,width:250,height:250,colorDark:cfg.qrColor,colorLight:cfg.qrBg}); }
         }
         function applyUI() {
             document.getElementById('orgName').innerText = cfg.title;
-            const mq=document.getElementById('marqueeContainer'); 
-            mq.style.display = cfg.mqPos === 'none' ? 'none' : 'block';
-            mq.className = 'marquee-container ' + (cfg.mqPos === 'top' ? 'marquee-top' : 'marquee-bottom');
-            mq.style.background = cfg.mqBg; mq.style.color = cfg.mqColor;
-            mq.innerHTML=`<marquee>${cfg.mqText}</marquee>`;
+            const mq=document.getElementById('marqueeContainer'); mq.style.display='block'; mq.innerHTML=`<marquee>${cfg.mqText}</marquee>`;
             if(cfg.darkMode) document.body.classList.add("dark-mode");
-            else document.body.classList.remove("dark-mode");
-            updateToolUI("toolDark", cfg.darkMode, "Tối", "Sáng", "fa-moon", "fa-sun");
             updateToolUI("toolLive", cfg.notifEnabled, "Bật Live", "Tắt Live", "fa-bell", "fa-bell-slash");
-            updateToolUI("toolPause", isPaused, "Đang Tạm Dừng", "Tạm Dừng", "fa-pause", "fa-play");
+            updateToolUI("toolDark", cfg.darkMode, "Tối", "Sáng", "fa-moon", "fa-sun");
         }
 
         // --- AUTH ---
         function openAuth() { document.getElementById('authModal').style.display='flex'; document.getElementById('loginPass').focus(); }
         function closeAuthModal() { document.getElementById('authModal').style.display='none'; }
-        function openLoginModal() { openAuth(); }
+        function openLoginModal(isUnlock=false) { isUnlockMode=isUnlock; openAuth(); }
         function doLogin() {
-            if(document.getElementById('loginPass').value === cfg.pass) {
+            const p = document.getElementById('loginPass').value;
+            if(p === cfg.pass) {
                 closeAuthModal();
-                document.body.classList.add('admin-open');
-                document.getElementById('adminModal').style.display='flex';
-                // Load data
-                document.getElementById('cfgApi').value = cfg.api;
-                document.getElementById('cfgLink').value = cfg.link;
-                document.getElementById('cfgPass').value = cfg.pass;
-                document.getElementById('cfgResetPass').value = cfg.reset;
-                document.getElementById('cfgTitle').value = cfg.title;
-                document.getElementById('cfgMqText').value = cfg.mqText;
-                document.getElementById('cfgQrColor').value = cfg.qrColor;
-                document.getElementById('cfgQrBg').value = cfg.qrBg;
-                document.getElementById('cfgMqBg').value = cfg.mqBg;
-                document.getElementById('cfgMqColor').value = cfg.mqColor;
-                document.getElementById('cfgMqPos').value = cfg.mqPos;
-                document.getElementById('cfgQrLevel').value = cfg.qrLevel;
-                fetchList(); showToast("Đã đăng nhập", "success");
+                if(isUnlockMode) { document.getElementById("lockScreen").style.display="none"; showToast("Đã mở khóa"); }
+                else {
+                    document.body.classList.add('admin-open');
+                    document.getElementById('adminModal').style.display='flex';
+                    // Load Values
+                    document.getElementById('cfgApi').value = cfg.api; document.getElementById('cfgLink').value = cfg.link;
+                    document.getElementById('cfgPass').value = cfg.pass; document.getElementById('cfgResetPass').value = cfg.reset;
+                    document.getElementById('cfgTitle').value = cfg.title; document.getElementById('cfgMqText').value = cfg.mqText;
+                    document.getElementById('cfgQrColor').value = cfg.qrColor; document.getElementById('cfgQrBg').value = cfg.qrBg;
+                    fetchList(); addLog("Hệ thống", "Admin đăng nhập", "success");
+                }
             } else alert("Sai mật khẩu");
         }
         function closeAdmin() { document.body.classList.remove('admin-open'); document.getElementById('adminModal').style.display='none'; }
-        function togglePass(id, btn) { const x=document.getElementById(id); x.type=x.type==='password'?'text':'password'; if(btn) btn.querySelector('i').className = x.type==='password'?'fa-solid fa-eye':'fa-solid fa-eye-slash'; }
-        function unlockField(id, code) { const p=prompt("Nhập mã cấp 2:"); if(p===code) { const el=document.getElementById(id); el.readOnly=false; el.classList.add('unlocked'); el.focus(); el.onblur=()=>{el.readOnly=true; el.classList.remove('unlocked')}; showToast("Đã mở khóa"); } else alert("Sai mã"); }
         function saveSystemConfig(silent=false) {
             cfg.api = document.getElementById('cfgApi').value; cfg.link = document.getElementById('cfgLink').value;
             cfg.pass = document.getElementById('cfgPass').value; cfg.reset = document.getElementById('cfgResetPass').value;
             cfg.title = document.getElementById('cfgTitle').value; cfg.mqText = document.getElementById('cfgMqText').value;
             cfg.qrColor = document.getElementById('cfgQrColor').value; cfg.qrBg = document.getElementById('cfgQrBg').value;
-            cfg.mqBg = document.getElementById('cfgMqBg').value; cfg.mqColor = document.getElementById('cfgMqColor').value;
-            cfg.mqPos = document.getElementById('cfgMqPos').value; cfg.qrLevel = document.getElementById('cfgQrLevel').value;
-            localStorage.setItem('qr_cfg', JSON.stringify(cfg));
-            localStorage.setItem('admin_reset_pass', cfg.reset);
+            localStorage.setItem('qr_cfg', JSON.stringify(cfg)); localStorage.setItem('admin_reset_pass', cfg.reset);
             if(!silent) { alert("Đã lưu!"); location.reload(); }
             applyUI(); updateQR();
         }
@@ -412,25 +407,29 @@
             const c = document.getElementById('fbFields'); c.innerHTML = "";
             formCfg.fields.forEach((f, i) => {
                 c.innerHTML += `
-                    <div class="fb-item"><div class="fb-settings">
-                        <input type="text" value="${f.label}" onchange="formCfg.fields[${i}].label=this.value" placeholder="Tên trường">
-                        <input type="text" value="${f.placeholder||''}" onchange="formCfg.fields[${i}].placeholder=this.value" placeholder="Ghi chú">
-                        <select onchange="formCfg.fields[${i}].type=this.value"><option value="text" ${f.type=='text'?'selected':''}>Chữ</option><option value="tel" ${f.type=='tel'?'selected':''}>Số</option></select>
-                        <select onchange="formCfg.fields[${i}].format=this.value"><option value="none" ${f.format=='none'?'selected':''}>None</option><option value="uppercase" ${f.format=='uppercase'?'selected':''}>IN HOA</option><option value="capitalize" ${f.format=='capitalize'?'selected':''}>Viết Hoa</option></select>
-                        <label><input type="checkbox" ${f.required?'checked':''} onchange="formCfg.fields[${i}].required=this.checked"> Bắt buộc</label>
-                        <i class="fa-solid fa-trash" onclick="formCfg.fields.splice(${i},1); renderFormBuilder()" style="color:red; cursor:pointer"></i>
-                    </div></div>`;
+                    <div class="fb-item">
+                        <div class="fb-header"><i class="fa-solid fa-grip-vertical fb-handle"></i> <span style="font-weight:bold">Trường ${i+1}</span> <i class="fa-solid fa-trash" onclick="removeField(${i})" style="color:red; cursor:pointer"></i></div>
+                        <div class="fb-settings">
+                            <input type="text" value="${f.label}" onchange="formCfg.fields[${i}].label=this.value" placeholder="Tên trường">
+                            <input type="text" value="${f.placeholder||''}" onchange="formCfg.fields[${i}].placeholder=this.value" placeholder="Ghi chú (Placeholder)">
+                            <select onchange="formCfg.fields[${i}].type=this.value"><option value="text" ${f.type=='text'?'selected':''}>Chữ</option><option value="tel" ${f.type=='tel'?'selected':''}>Số</option></select>
+                            <select onchange="formCfg.fields[${i}].format=this.value"><option value="none" ${f.format=='none'?'selected':''}>None</option><option value="uppercase" ${f.format=='uppercase'?'selected':''}>IN HOA</option><option value="capitalize" ${f.format=='capitalize'?'selected':''}>Viết Hoa</option></select>
+                            <div style="display:flex;align-items:center;gap:5px"><label class="switch"><input type="checkbox" ${f.required?'checked':''} onchange="formCfg.fields[${i}].required=this.checked"><span class="slider"></span></label> <span>Bắt buộc</span></div>
+                        </div>
+                    </div>`;
             });
             document.getElementById('fbTitle').value = formCfg.title;
         }
         function addFormField() { formCfg.fields.push({label:"Mới", type:"text", format:"none", required:false, placeholder:""}); renderFormBuilder(); }
+        function removeField(i) { if(confirm("Xóa?")) { formCfg.fields.splice(i, 1); renderFormBuilder(); } }
+        function updateField(i, k, v) { formCfg.fields[i][k] = v; }
         function saveFormConfig() {
             formCfg.title = document.getElementById('fbTitle').value;
             fetch(cfg.api, { method:'POST', mode:'no-cors', body:JSON.stringify({action:"SAVE_FORM_CONFIG", config:formCfg}) })
             .then(() => { alert("Đã lưu!"); addLog("Form", "Cập nhật cấu hình Form", "success"); fetchList(); });
         }
 
-        // --- DATA ---
+        // --- DATA TABLE ---
         function fetchList() {
             if(!cfg.api) return;
             const d = document.getElementById('viewDate').value;
@@ -448,7 +447,7 @@
                         fetch(`${cfg.api}?action=GET_LOGS`).then(l=>l.json()).then(logRes=>{
                              if(logRes.status==="success" && logRes.data.length > 0) {
                                  const req = logRes.data[0];
-                                 showToast(`🔔 Yêu cầu: ${req.name} (${req.reason})`, "warning");
+                                 showToast(`🔔 Yêu cầu từ ${req.name}: ${req.reason}`);
                                  addLog("Yêu cầu", `Từ ${req.name}: ${req.reason}`, "warning");
                              }
                         });
@@ -466,32 +465,31 @@
             const term = document.getElementById('searchInput').value.toLowerCase();
             filteredData = allData.filter(i => JSON.stringify(i).toLowerCase().includes(term));
             
-            const headerRow = document.getElementById("tableHeader");
+            // Header động & Bộ lọc Excel
+            const headerRow = document.getElementById("dynamicHeader");
+            const filterRow = document.getElementById("filterRow");
             let hHTML = `<th style="width:30px"><input type="checkbox" onclick="toggleAll(this)"></th><th style="width:30px">🔔</th><th>Giờ</th>`;
-            formCfg.fields.forEach(f => hHTML += `<th>${f.label}</th>`);
-            hHTML += `<th>Xóa</th>`;
-            headerRow.innerHTML = hHTML;
+            let fHTML = `<th></th><th></th><th><input class="filter-input" placeholder="Lọc..." onkeyup="filterCol()"></th>`;
+            
+            formCfg.fields.forEach(f => {
+                hHTML += `<th onclick="sortTable('${f.label}')">${f.label} <i class="fa-solid fa-sort"></i></th>`;
+                fHTML += `<th><input class="filter-input" placeholder="Lọc ${f.label}..." onkeyup="filterCol()"></th>`;
+            });
+            hHTML += `<th style="text-align:center">Xóa</th>`; fHTML += `<th></th>`;
+            headerRow.innerHTML = hHTML; filterRow.innerHTML = fHTML; filterRow.style.display="table-row";
 
             const tbody = document.getElementById("tableBody");
             let html = "";
             filteredData.forEach(i => {
                 let bell = i.request ? `<i class="fa-solid fa-bell bell-active" title="${i.request.reason}" onclick="alert('${i.request.reason}')"></i>` : "";
-                
                 let rowCols = "";
-                let extra = {}; 
-                // Xử lý dữ liệu trả về từ API (Cấu trúc: Time, Name, MSSV, Class, Device, ExtraJSON)
-                // API GET_LIST trả về object: {time, name, mssv, class_name, extra}
-                // Map vào các cột dựa trên formCfg
+                let extra = {}; try { extra = JSON.parse(i.extra || "{}"); } catch(e){}
+                
                 formCfg.fields.forEach((f, idx) => {
-                    let val = "";
-                    // Nếu là 3 trường đầu tiên, lấy từ các trường cố định
-                    if (idx === 0) val = i.name;
-                    else if (idx === 1) val = i.mssv;
-                    else if (idx === 2) val = i.class_name;
-                    else {
-                         // Lấy từ extra
-                         try { let ex = JSON.parse(i.extra || "{}"); val = ex[f.label] || ""; } catch(e){}
-                    }
+                    let val = extra[f.label] || "";
+                    if (!val && idx === 0) val = i.name; // Fallback
+                    if (!val && idx === 1) val = i.mssv;
+                    if (!val && idx === 2) val = i.class_name;
                     rowCols += `<td>${val || "---"}</td>`;
                 });
 
@@ -503,34 +501,32 @@
         }
 
         // --- UTILS ---
+        function togglePass(id, btn) { const x=document.getElementById(id); x.type=x.type==='password'?'text':'password'; btn.querySelector('i').className = x.type==='password'?'fa-solid fa-eye':'fa-solid fa-eye-slash'; }
+        function unlockField(id, code) { const p=prompt("Nhập mã cấp 2:"); if(p===code) { const el=document.getElementById(id); el.readOnly=false; el.classList.add('unlocked'); el.focus(); el.onblur=()=>{el.readOnly=true; el.classList.remove('unlocked')}; showToast("Đã mở khóa"); } else alert("Sai mã"); }
+        function switchTab(id) { document.querySelectorAll(".tab-content").forEach(e=>e.style.display='none'); document.querySelectorAll(".tab-btn").forEach(e=>e.classList.remove('active')); document.getElementById(id).style.display = "flex"; event.currentTarget.classList.add('active'); }
+        function toggleExpandAdmin() { const m = document.getElementById("adminModal"); if(m.classList.contains("full-width")) { m.classList.remove("full-width"); document.body.classList.remove("full-width"); } else { m.classList.add("full-width"); document.body.classList.add("full-width"); } }
+        function showToast(msg, type="success") { const d = document.createElement('div'); d.className = `live-toast ${type}`; d.innerHTML = `<div><b>${msg}</b></div>`; document.getElementById('liveToastContainer').prepend(d); setTimeout(()=>d.remove(), 5000); }
+        function updateToolUI(id, act, on, off, iOn, iOff) { const el=document.getElementById(id); if(act){el.classList.add('tool-active'); el.querySelector('span').innerText=on; el.querySelector('i').className='fa-solid '+iOff;}else{el.classList.remove('tool-active'); el.querySelector('span').innerText=off; el.querySelector('i').className='fa-solid '+iOn;} }
+        
+        // Logs
+        function addLog(title, msg, type) { const t=new Date().toLocaleTimeString(); logs.unshift({title, msg, type, t}); if(logs.length>50) logs.pop(); localStorage.setItem('logs', JSON.stringify(logs)); renderLogs(); }
+        function renderLogs() { const l = document.getElementById('logList'); l.innerHTML = logs.map(x => `<li class="timeline-item ${x.type}"><div class="log-time">${x.t}</div><div class="log-card"><div class="log-body"><strong>${x.title}</strong> ${x.msg}</div></div></li>`).join(''); }
+        function clearLocalLogs() { logs=[]; localStorage.setItem('logs', '[]'); renderLogs(); }
+
+        // Bulk & Delete
         function updateBulk() { const c=document.querySelectorAll('.chk:checked').length; const b=document.getElementById('btnBulkDelete'); if(c>0){b.style.display='inline-flex'; b.innerHTML=`Xóa (${c})`;}else b.style.display='none'; }
         function toggleSelectAll() { const m=document.getElementById('selectAll'); document.querySelectorAll('.chk').forEach(c=>c.checked=m.checked); updateBulk(); }
         async function deleteSelected() { const s=Array.from(document.querySelectorAll('.chk:checked')); if(!confirm(`Xóa ${s.length} mục?`)) return; for(const c of s){let v=c.value.split('|'); await fetch(cfg.api, {method:'POST', body:JSON.stringify({action:"DELETE_ROW", row_index:v[0], mssv:v[1]})});} alert("Xong"); fetchList(); addLog("Dữ liệu", `Đã xóa ${s.length} sinh viên`, "danger"); }
         function deleteRow(idx, mssv, name) { if(confirm("Xóa?")) fetch(cfg.api, {method:'POST', body:JSON.stringify({action:"DELETE_ROW", row_index:idx, mssv:mssv})}).then(r=>r.json()).then(r=>{if(r.status==="success") { alert("Đã xóa"); fetchList(); addLog("Dữ liệu", `Đã xóa SV: ${name}`, "danger"); }}); }
-        function addLog(title, msg, type="info") { const t=new Date().toLocaleTimeString(); logs.unshift({title, msg, type, t}); if(logs.length>50) logs.pop(); localStorage.setItem('logs', JSON.stringify(logs)); renderLogs(); }
-        function renderLogs() { document.getElementById('logList').innerHTML = logs.map(x => `<li class="log-item ${x.type}"><div><strong>${x.title}</strong> ${x.msg}</div><div class="log-time">${x.t}</div></li>`).join(''); }
-        function clearLocalLogs() { logs=[]; localStorage.setItem('logs', '[]'); renderLogs(); }
-        function showToast(msg, type="success") { 
-            const d = document.createElement('div'); d.className = `live-toast ${type}`; d.innerHTML = `<div><b>${msg}</b></div>`;
-            document.getElementById('liveToastContainer').prepend(d); setTimeout(()=>d.remove(), 5000);
-        }
-        function switchTab(id) { document.querySelectorAll(".tab-content").forEach(e=>e.style.display='none'); document.querySelectorAll(".tab-btn").forEach(e=>e.classList.remove('active')); document.getElementById(id).style.display='flex'; event.currentTarget.classList.add('active'); }
-        function toggleFullAdmin() { document.body.classList.toggle('full-width'); }
-        function toggleLiveNotif(init) {
-            if(!init) {cfg.notifEnabled = !cfg.notifEnabled; saveSystemConfig(true); showToast(cfg.notifEnabled?"Đã Bật TB":"Đã Tắt TB");}
-            updateToolUI('toolLive', cfg.notifEnabled, "Bật Live", "Tắt Live", "fa-bell", "fa-bell-slash");
-            if(cfg.notifEnabled && cfg.api) {
-                 const now = new Date(); const d = now.getFullYear() + "-" + String(now.getMonth()+1).padStart(2,'0') + "-" + String(now.getDate()).padStart(2,'0');
-                 fetch(`${cfg.api}?action=GET_LIST&date=${d}`).then(r=>r.json()).then(r=>{if(r.status==="success") lastReqCount=r.totalRequests||0;});
-            }
-        }
-        function updateToolUI(id, act, on, off, iOn, iOff) { const el=document.getElementById(id); if(act){el.classList.add('tool-active'); el.querySelector('span').innerText=on; el.querySelector('i').className='fa-solid '+iOff;}else{el.classList.remove('tool-active'); el.querySelector('span').innerText=off; el.querySelector('i').className='fa-solid '+iOn;} }
+
+        // Tools
+        function toggleLiveNotif() { config.notifEnabled=!config.notifEnabled; saveSystemConfig(true); configPolling(); }
         function togglePause() { isPaused=!isPaused; showToast(isPaused?"Tạm dừng":"Tiếp tục"); updateToolUI("toolPause", isPaused, "Đang Tạm Dừng", "Tạm dừng", "fa-pause", "fa-play"); }
         function toggleDarkMode() { cfg.darkMode=!cfg.darkMode; applyUI(); saveSystemConfig(true); }
         function toggleFullscreen() { if(!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
         function downloadQR() { const i=document.querySelector("#qrcode img"); if(i){const a=document.createElement("a"); a.href=i.src; a.download="QR.png"; a.click();} }
-        function exportCSV() { if(filteredData.length===0) return alert("Trống"); let c="Time,Data\n"; filteredData.forEach(i=>c+=`${i.time},${i.name},${i.mssv},${i.class_name}\n`); const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([c],{type:'text/csv'})); a.download="Data.csv"; a.click(); }
-        // Tools
+        function exportCSV() { if(filteredData.length===0) return alert("Trống"); let c="Time,Data\n"; filteredData.forEach(i=>c+=`${i.time},${i.extra}\n`); const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([c],{type:'text/csv'})); a.download="Data.csv"; a.click(); }
+        function downloadChart(id) { const c=document.getElementById(id); const a=document.createElement("a"); a.href=c.toDataURL("image/png"); a.download="Chart.png"; a.click(); }
         function zoomQR() { document.getElementById("qrZoomModal").style.display="flex"; updateQR(); }
         function closeZoom() { document.getElementById("qrZoomModal").style.display="none"; }
         function lockScreen() { document.getElementById("lockScreen").style.display="flex"; closeModal(); }
@@ -547,13 +543,30 @@
         function startTimer5() { let m=5,s=0; isPaused=true; const t=setInterval(()=>{if(s===0){if(m===0){clearInterval(t);alert("Hết giờ");isPaused=false;return;}m--;s=59;}else s--;document.getElementById("countdown").innerText=`${m}:${s<10?'0'+s:s}`;},1000); }
         function toggleBlurQR() { const b=document.getElementById("qrcode").classList.toggle("blur-effect"); updateToolUI("toolBlur", b, "Đang Che", "Che QR", "fa-eye-slash", "fa-eye"); }
         function toggleClockUI() { const c=document.querySelector('.realtime'); const h=c.style.opacity==='0'; c.style.opacity=h?'1':'0'; updateToolUI("toolClock", !h, "Ẩn Giờ", "Hiện Giờ", "fa-clock", "fa-clock"); }
+        
         function renderStats() {
-            document.getElementById('statTotal').innerText=filteredData.length; const cc={}, tc={}; filteredData.forEach(i=>{cc[i.class_name]=(cc[i.class_name]||0)+1; let h=i.time.split(":")[0]; tc[h]=(tc[h]||0)+1;});
-            document.getElementById('statClasses').innerText=Object.keys(cc).length; if(filteredData.length>0) document.getElementById('statLatest').innerText=(filteredData[0].time||"").split(" ")[0];
+            document.getElementById('statTotal').innerText=filteredData.length;
+            const cc={}, tc={}, lines={}; 
+            filteredData.forEach(i=>{
+                cc[i.class_name]=(cc[i.class_name]||0)+1; 
+                let h=i.time.split(":")[0]; tc[h]=(tc[h]||0)+1;
+                let d=i.time.split(" ")[1]; lines[d]=(lines[d]||0)+1; // Daily trend
+            });
+            document.getElementById('statClasses').innerText=Object.keys(cc).length; 
+            if(filteredData.length>0) document.getElementById('statLatest').innerText=(filteredData[0].time||"").split(" ")[0];
+            
             if(classChartInstance) classChartInstance.destroy();
-            classChartInstance=new Chart(document.getElementById('classChart'),{type:'doughnut',data:{labels:Object.keys(cc),datasets:[{data:Object.values(cc),backgroundColor:['#2563eb','#10b981','#f59e0b']}]}});
+            classChartInstance=new Chart(document.getElementById('classChart'),{type:'doughnut',data:{labels:Object.keys(cc),datasets:[{data:Object.values(cc),backgroundColor:['#2563eb','#10b981','#f59e0b','#ef4444','#8b5cf6']}]}});
+            
             if(timeChartInstance) timeChartInstance.destroy();
             timeChartInstance=new Chart(document.getElementById('timeChart'),{type:'bar',data:{labels:Object.keys(tc).sort(),datasets:[{label:'SL',data:Object.keys(tc).sort().map(k=>tc[k]),backgroundColor:'#2563eb'}]}});
+
+            // Line Chart (Xu hướng)
+            if(window.lineChartInstance) window.lineChartInstance.destroy();
+            const canvasLine = document.getElementById('lineChart');
+            if(canvasLine) {
+                 window.lineChartInstance=new Chart(canvasLine,{type:'line',data:{labels:Object.keys(lines).sort(),datasets:[{label:'Tham gia',data:Object.keys(lines).sort().map(k=>lines[k]),borderColor:'#10b981',tension:0.3}]}});
+            }
         }
     </script>
 </body>
