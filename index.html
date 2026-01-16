@@ -19,23 +19,36 @@
         body.dark-mode {
             --primary: #60a5fa; --bg: #0f172a; --text: #f1f5f9; --white: #1e293b; --border: #334155;
         }
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; transition: 0.3s; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; transition: background 0.3s, color 0.3s; }
         
         .settings-btn { position: absolute; top: 20px; left: 20px; font-size: 28px; color: #94a3b8; cursor: pointer; padding: 10px; z-index: 100; transition: 0.3s; }
         .settings-btn:hover { color: var(--primary); transform: rotate(90deg); }
 
-        /* QR CARD */
-        .qr-card { background: var(--white); padding: 40px; border-radius: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); text-align: center; width: 380px; position: relative; z-index: 10; border: 1px solid var(--border); transition: 0.3s; }
-        #qrcode { background: var(--white); padding: 15px; border: 2px dashed #cbd5e1; border-radius: 16px; display: inline-block; margin: 20px 0; transition: 0.3s; }
+        /* --- QR CARD (Giao diện chính) --- */
+        .qr-card { 
+            background: var(--white); padding: 40px; border-radius: 24px; 
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); text-align: center; 
+            width: 380px; position: relative; z-index: 10; border: 1px solid var(--border); 
+            transition: 0.3s;
+            /* Flex để căn giữa nội dung */
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        
+        #qrcode { 
+            background: var(--white); padding: 15px; border: 2px dashed #cbd5e1; 
+            border-radius: 16px; display: inline-block; margin: 20px auto; 
+            transition: 0.3s;
+        }
+        
         .timer { font-size: 64px; font-weight: 900; color: var(--danger); line-height: 1; font-variant-numeric: tabular-nums; }
-        .realtime { margin-top: 20px; font-weight: 600; color: #64748b; border-top: 1px solid var(--border); padding-top: 15px;}
+        .realtime { margin-top: 20px; font-weight: 600; color: #64748b; border-top: 1px solid var(--border); padding-top: 15px; width: 100%;}
         .blur-effect { filter: blur(15px); opacity: 0.5; pointer-events: none; }
 
         /* Marquee */
         .marquee-container { position: fixed; left: 0; width: 100%; padding: 10px 0; font-weight: bold; font-size: 16px; z-index: 50; text-transform: uppercase; display: none; }
         .marquee-top { top: 0; } .marquee-bottom { bottom: 0; }
 
-        /* LIVE TOAST (Thông báo điểm danh) */
+        /* --- TOAST NOTIFICATION --- */
         #liveToastContainer { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column-reverse; gap: 10px; pointer-events: none; }
         .live-toast { 
             background: rgba(255, 255, 255, 0.95); border-left: 5px solid var(--success); 
@@ -50,9 +63,7 @@
         .live-toast-time { font-size: 11px; opacity: 0.7; }
         .live-toast:nth-last-child(n+2) { opacity: 0.8; transform: scale(0.98); }
         .live-toast:nth-last-child(n+3) { opacity: 0.6; transform: scale(0.96); }
-        .live-toast:nth-last-child(n+4) { opacity: 0.4; transform: scale(0.94); }
 
-        /* SYSTEM TOAST */
         #systemToast { 
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); 
             background: #333; color: white; padding: 12px 24px; border-radius: 30px; 
@@ -64,7 +75,7 @@
         @keyframes slideIn { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes fadeOutUp { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-20px); } }
 
-        /* MODAL ADMIN & SPLIT SCREEN LOGIC */
+        /* --- MODAL CHUNG --- */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center; }
         .modal-content { background: var(--white); width: 95%; max-width: 1000px; border-radius: 16px; display: flex; flex-direction: column; max-height: 95vh; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); overflow: hidden; }
         .modal-header { padding: 15px 25px; background: var(--white); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
@@ -72,29 +83,48 @@
         .close-modal { font-size: 24px; cursor: pointer; color: #94a3b8; }
         .modal-body { padding: 20px; overflow-y: auto; background: var(--bg); flex: 1; display: flex; flex-direction: column; }
 
-        /* --- SPLIT SCREEN FOR DESKTOP --- */
+        /* --- AUTH MODAL (Đăng nhập ẩn pass) --- */
+        #authModal .modal-content { max-width: 400px; height: auto; }
+        #authModal input { font-size: 18px; text-align: center; letter-spacing: 5px; }
+
+        /* --- SPLIT SCREEN & RESIZER (PC) --- */
+        #resizer {
+            width: 8px;
+            background-color: var(--border);
+            cursor: col-resize;
+            display: none; /* Chỉ hiện khi admin open */
+            z-index: 101;
+            transition: background 0.2s;
+        }
+        #resizer:hover, #resizer.resizing { background-color: var(--primary); }
+
         @media (min-width: 1024px) {
             body.admin-open {
-                flex-direction: row; /* Chia đôi màn hình */
+                flex-direction: row; 
                 align-items: stretch;
                 justify-content: flex-start;
             }
             body.admin-open .qr-card {
-                flex: 1; /* QR chiếm 1 phần */
+                flex: 1; /* Tự động co giãn phần còn lại */
                 height: 100vh;
-                width: auto;
+                width: auto; /* Reset width cứng */
                 border-radius: 0;
                 border: none;
                 box-shadow: none;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
+                background: var(--bg); /* Đồng bộ nền */
             }
+            /* QR to và giữa khi chia màn hình */
+            body.admin-open #qrcode {
+                transform: scale(1.2); /* Phóng to */
+                margin: 40px auto;
+            }
+            
             body.admin-open #adminModal {
-                display: flex !important; /* Luôn hiện khi ở chế độ admin */
+                display: flex !important;
                 position: relative;
-                width: 50%; /* Admin chiếm 50% */
-                min-width: 600px;
+                width: 600px; /* Width mặc định ban đầu */
+                min-width: 400px; /* Giới hạn nhỏ nhất */
+                max-width: 80%;
                 height: 100vh;
                 background: var(--white);
                 border-left: 1px solid var(--border);
@@ -109,12 +139,11 @@
                 box-shadow: none;
                 max-height: none;
             }
-            body.admin-open .settings-btn {
-                display: none; /* Ẩn nút setting khi đang mở admin */
-            }
+            body.admin-open .settings-btn { display: none; }
+            body.admin-open #resizer { display: block; }
         }
 
-        /* Tabs */
+        /* Tabs & UI Components */
         .tabs { display: flex; gap: 5px; margin-bottom: 15px; background: var(--white); padding: 5px; border-radius: 10px; border: 1px solid var(--border); width: fit-content; }
         .tab-btn { padding: 8px 16px; border: none; background: none; font-weight: 600; color: #64748b; cursor: pointer; border-radius: 6px; transition: 0.2s; font-size: 13px; }
         .tab-btn:hover { background: var(--bg); }
@@ -123,7 +152,6 @@
         .tab-content.active { display: flex; flex-direction: column; }
         @keyframes fadeEffect { from {opacity: 0; transform: translateY(5px);} to {opacity: 1; transform: translateY(0);} }
 
-        /* Dashboard */
         .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .stat-card { background: var(--white); padding: 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; align-items: center; gap: 15px; }
         .stat-icon { width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
@@ -133,7 +161,6 @@
         .chart-box { background: var(--white); padding: 20px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; }
         .chart-canvas-container { flex: 1; position: relative; min-height: 250px; }
 
-        /* Data Table */
         .excel-toolbar { background: var(--white); padding: 10px; border-radius: 8px 8px 0 0; border: 1px solid var(--border); border-bottom: none; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .excel-table-container { flex: 1; overflow: auto; border: 1px solid var(--border); background: var(--white); border-radius: 0 0 8px 8px; min-height: 300px; }
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -141,7 +168,6 @@
         td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text); }
         input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
 
-        /* Tools Grid */
         .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; padding-bottom: 20px;}
         .tool-card { background: var(--white); padding: 15px 10px; border-radius: 12px; text-align: center; cursor: pointer; border: 1px solid var(--border); transition: 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); height: 100px; position: relative; overflow: hidden; }
         .tool-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
@@ -149,10 +175,7 @@
         .tool-card span { font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.2; }
         .tool-active { border: 2px solid var(--success) !important; background: rgba(16, 185, 129, 0.05) !important; }
         .tool-active i { color: var(--success) !important; }
-        .tool-danger i { color: var(--danger); }
-        .tool-warning i { color: var(--warning); }
-        .tool-success i { color: var(--success); }
-
+        
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px; color: var(--text); }
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; font-family: inherit; background: var(--white); color: var(--text); }
@@ -170,14 +193,12 @@
 </head>
 <body>
 
-    <div class="settings-btn" onclick="checkLogin()"><i class="fa-solid fa-sliders"></i></div>
+    <div class="settings-btn" onclick="openLoginModal()"><i class="fa-solid fa-sliders"></i></div>
 
-    <!-- Container Thông báo Live -->
     <div id="liveToastContainer"></div>
-    
-    <!-- Thông báo Hệ thống -->
     <div id="systemToast">Thông báo</div>
 
+    <!-- Màn hình QR chính -->
     <div class="qr-card" id="mainCard">
         <h1 id="orgName" style="color:var(--primary)">ĐIỂM DANH CLB</h1>
         <div id="qrcode"></div>
@@ -186,21 +207,8 @@
         <div class="realtime"><i class="fa-regular fa-clock"></i> <span id="clock">Loading...</span></div>
     </div>
 
-    <div id="lockScreen">
-        <i class="fa-solid fa-lock fa-4x" style="margin-bottom:20px"></i>
-        <h2>HỆ THỐNG ĐANG KHÓA</h2>
-        <button class="btn btn-primary" onclick="unlockScreen()" style="margin-top:20px;">MỞ KHÓA</button>
-    </div>
-
-    <div id="qrZoomModal">
-        <h2 style="color:var(--text)">QUÉT MÃ ĐIỂM DANH</h2>
-        <div id="qrcodeZoom" style="transform: scale(1.5); margin: 50px;"></div>
-        <button class="btn btn-danger" onclick="closeZoom()">Đóng (ESC)</button>
-    </div>
-
-    <div id="marqueeContainer" class="marquee-container">
-        <marquee id="marqueeText"></marquee>
-    </div>
+    <!-- Thanh kéo chỉnh kích thước (Chỉ hiện khi split screen) -->
+    <div id="resizer"></div>
 
     <!-- MODAL ADMIN -->
     <div id="adminModal" class="modal">
@@ -242,7 +250,7 @@
                     </div>
                 </div>
 
-                <!-- TAB 2: DỮ LIỆU EXCEL -->
+                <!-- TAB 2: DỮ LIỆU -->
                 <div id="tab-data" class="tab-content">
                     <div class="excel-toolbar">
                         <div style="flex:1"><input type="date" id="viewDate" onchange="fetchList()"></div>
@@ -305,7 +313,7 @@
                         <div class="form-group"><label>Pass Reset:</label><input type="text" id="cfgResetPass"></div>
                     </div>
                     <fieldset style="border:1px solid #e2e8f0; border-radius:8px; padding:10px; margin-top:10px">
-                        <legend style="font-size:12px; font-weight:bold; color:var(--primary)">Chữ chạy (Marquee)</legend>
+                        <legend style="font-size:12px; font-weight:bold; color:var(--primary)">Chữ chạy</legend>
                         <div class="form-group"><label>Nội dung:</label><input type="text" id="cfgMqText"></div>
                         <div style="display:flex; gap:10px">
                             <div style="flex:1"><label>Vị trí:</label><select id="cfgMqPos"><option value="none">Tắt</option><option value="bottom">Dưới đáy</option><option value="top">Trên cùng</option></select></div>
@@ -314,7 +322,7 @@
                         </div>
                     </fieldset>
                     <fieldset style="border:1px solid #e2e8f0; border-radius:8px; padding:10px; margin-top:10px">
-                        <legend style="font-size:12px; font-weight:bold; color:var(--primary)">Cấu hình QR</legend>
+                        <legend style="font-size:12px; font-weight:bold; color:var(--primary)">QR Code</legend>
                         <div style="display:flex; gap:10px">
                             <div style="flex:1"><label>Màu mã:</label><input type="color" id="cfgQrColor" style="height:40px; padding:2px"></div>
                             <div style="flex:1"><label>Màu nền:</label><input type="color" id="cfgQrBg" style="height:40px; padding:2px"></div>
@@ -330,6 +338,38 @@
         </div>
     </div>
 
+    <!-- AUTH MODAL (Đăng nhập ẩn pass) -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title"><i class="fa-solid fa-lock"></i> ĐĂNG NHẬP</div>
+                <div class="close-modal" onclick="closeAuthModal()">&times;</div>
+            </div>
+            <div class="modal-body" style="align-items:center; text-align:center;">
+                <p style="margin-bottom:15px; color:#64748b;">Nhập mật khẩu quản trị viên để tiếp tục</p>
+                <input type="password" id="authPassInput" placeholder="••••••" onkeyup="if(event.key==='Enter') submitLogin()">
+                <button class="btn btn-primary" onclick="submitLogin()" style="width:100%; margin-top:15px; justify-content:center;">ĐĂNG NHẬP</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Màn hình Khóa -->
+    <div id="lockScreen">
+        <i class="fa-solid fa-lock fa-4x" style="margin-bottom:20px"></i>
+        <h2>HỆ THỐNG ĐANG KHÓA</h2>
+        <button class="btn btn-primary" onclick="openLoginModal(true)" style="margin-top:20px;">MỞ KHÓA</button>
+    </div>
+
+    <div id="qrZoomModal">
+        <h2 style="color:var(--text)">QUÉT MÃ ĐIỂM DANH</h2>
+        <div id="qrcodeZoom" style="transform: scale(1.5); margin: 50px;"></div>
+        <button class="btn btn-danger" onclick="closeZoom()">Đóng (ESC)</button>
+    </div>
+
+    <div id="marqueeContainer" class="marquee-container">
+        <marquee id="marqueeText"></marquee>
+    </div>
+
     <script>
         // --- CẤU HÌNH ---
         const DEFAULT_CONFIG = { link: "https://nhnanh.github.io/Code_QR_30s_CLB_KHPL/form.html", api: "", time: 30, pass: "Admin", resetPass: "Admin", title: "ĐIỂM DANH CLB", mqText: "HỆ THỐNG ĐANG MỞ ĐIỂM DANH", mqPos: "bottom", mqBg: "#ef4444", mqColor: "#ffffff", qrColor: "#000000", qrBg: "#ffffff", qrLevel: "M", darkMode: false };
@@ -337,10 +377,36 @@
         let allData = [], filteredData = [], sortState = { key: 'time', dir: 'desc' };
         let timer = config.time, qrObj = null, interval = null, isPaused = false;
         let classChartInstance = null, timeChartInstance = null;
-        
-        // --- LIVE NOTIFICATION VARS ---
         let isLiveNotif = false, liveInterval = null, lastRowCount = 0;
+        let isUnlockMode = false; // Flag check xem đang mở khóa hay đăng nhập admin
 
+        // --- SPLIT SCREEN LOGIC ---
+        const resizer = document.getElementById('resizer');
+        const adminModal = document.getElementById('adminModal');
+        let isResizing = false;
+
+        resizer.addEventListener('mousedown', function(e) {
+            isResizing = true;
+            document.body.style.cursor = 'col-resize';
+            resizer.classList.add('resizing');
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isResizing) return;
+            // Tính toán width cho Admin Modal (bên phải)
+            const newWidth = window.innerWidth - e.clientX;
+            if (newWidth > 300 && newWidth < window.innerWidth - 300) {
+                adminModal.style.width = newWidth + 'px';
+            }
+        });
+
+        document.addEventListener('mouseup', function(e) {
+            isResizing = false;
+            document.body.style.cursor = 'default';
+            resizer.classList.remove('resizing');
+        });
+
+        // --- INIT ---
         window.onload = function() {
             document.getElementById('viewDate').valueAsDate = new Date();
             document.getElementById('adminNote').value = localStorage.getItem('admin_note') || "";
@@ -348,7 +414,7 @@
             setInterval(() => document.getElementById("clock").innerText = new Date().toLocaleString("vi-VN"), 1000);
         };
 
-        // --- HỆ THỐNG CHÍNH ---
+        // --- HỆ THỐNG QR ---
         function startSystem() {
             if (interval) clearInterval(interval);
             updateQR(); timer = config.time;
@@ -378,10 +444,9 @@
             updateToolUI("toolDark", config.darkMode, "Chế độ Tối", "Chế độ Sáng", "fa-moon", "fa-sun");
         }
 
-        // --- QUẢN LÝ TIỆN ÍCH & THÔNG BÁO ---
         function showSystemToast(msg) {
             const t = document.getElementById("systemToast");
-            t.innerHTML = `<i class="fa-solid fa-circle-info"></i> ${msg} <span style="font-size:11px; opacity:0.7">(${new Date().toLocaleTimeString()})</span>`;
+            t.innerHTML = `<i class="fa-solid fa-circle-info"></i> ${msg}`;
             t.classList.add("show");
             setTimeout(() => t.classList.remove("show"), 3000);
         }
@@ -407,7 +472,6 @@
         function toggleBlurQR() { const isBlur = document.getElementById("qrcode").classList.toggle("blur-effect"); showSystemToast(isBlur ? "Đã CHE MỜ mã QR" : "Đã HIỂN THỊ lại mã QR"); updateToolUI("toolBlur", isBlur, "Đang Che Mờ", "Che mờ QR", "fa-eye-slash", "fa-eye"); }
         function toggleClockUI() { const clk = document.querySelector('.realtime'); const isHidden = clk.style.opacity==='0'; clk.style.opacity = isHidden?'1':'0'; showSystemToast(isHidden?"Đã HIỆN đồng hồ":"Đã ẨN đồng hồ"); updateToolUI("toolClock", !isHidden, "Ẩn Đồng Hồ", "Hiện Đồng Hồ", "fa-clock", "fa-clock"); }
 
-        // --- LIVE NOTIFICATION ---
         function toggleLiveNotif() {
             isLiveNotif = !isLiveNotif;
             updateToolUI("toolLive", isLiveNotif, "Đang Bật Live", "Bật Thông Báo Live", "fa-bell", "fa-bell-slash");
@@ -447,12 +511,50 @@
             setTimeout(() => { if(t.parentNode) t.parentNode.removeChild(t); }, 5000);
         }
 
-        // --- CÁC CHỨC NĂNG KHÁC ---
         function downloadQR() { const img = document.querySelector("#qrcode img"); if(img) { const a = document.createElement("a"); a.href = img.src; a.download = "QR_Code.png"; a.click(); showSystemToast("Đã tải ảnh mã QR"); } }
         function zoomQR() { document.getElementById("qrZoomModal").style.display = "flex"; updateQR(); showSystemToast("Chế độ Phóng to"); }
         function closeZoom() { document.getElementById("qrZoomModal").style.display = "none"; }
         function lockScreen() { document.getElementById("lockScreen").style.display = "flex"; closeModal(); }
-        function unlockScreen() { if(prompt("Nhập mật khẩu Admin:") === config.pass) { document.getElementById("lockScreen").style.display = "none"; showSystemToast("Đã mở khóa"); } else alert("Sai mật khẩu!"); }
+        
+        function openLoginModal(isUnlock = false) {
+            isUnlockMode = isUnlock;
+            document.getElementById("authModal").style.display = "flex";
+            document.getElementById("authPassInput").value = "";
+            document.getElementById("authPassInput").focus();
+        }
+        function closeAuthModal() { document.getElementById("authModal").style.display = "none"; }
+        function submitLogin() {
+            const p = document.getElementById("authPassInput").value;
+            if(p === config.pass) {
+                closeAuthModal();
+                if(isUnlockMode) {
+                    document.getElementById("lockScreen").style.display = "none";
+                    showSystemToast("Đã mở khóa");
+                } else {
+                    document.body.classList.add("admin-open");
+                    document.getElementById("adminModal").style.display="flex";
+                    // Load data
+                    document.getElementById("cfgTitle").value=config.title;
+                    document.getElementById("cfgLink").value=config.link;
+                    document.getElementById("cfgApi").value=config.api;
+                    document.getElementById("cfgTime").value=config.time;
+                    document.getElementById("cfgPass").value=config.pass;
+                    document.getElementById("cfgResetPass").value=config.resetPass;
+                    document.getElementById("cfgMqText").value=config.mqText;
+                    document.getElementById("cfgMqPos").value=config.mqPos;
+                    document.getElementById("cfgMqBg").value=config.mqBg;
+                    document.getElementById("cfgMqColor").value=config.mqColor;
+                    document.getElementById("cfgQrColor").value=config.qrColor;
+                    document.getElementById("cfgQrBg").value=config.qrBg;
+                    document.getElementById("cfgQrLevel").value=config.qrLevel;
+                    fetchList();
+                }
+            } else {
+                alert("Sai mật khẩu!");
+            }
+        }
+        function unlockScreen() { openLoginModal(true); }
+
         function randomStudent() { if(filteredData.length === 0) { alert("Danh sách trống!"); return; } const rd = filteredData[Math.floor(Math.random() * filteredData.length)]; alert(`🎉 CHÚC MỪNG: ${rd.name} - ${rd.mssv}`); }
         function exportCSV() { if(filteredData.length === 0) { alert("Không có dữ liệu!"); return; } let csv = "Gio,Ho Ten,MSSV,Lop\n"; filteredData.forEach(i => csv += `${i.time},${i.name},${i.mssv},${i.class_name}\n`); const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = "DiemDanh.csv"; link.click(); showSystemToast("Đã xuất file Excel"); }
         function printList() { window.print(); }
@@ -465,10 +567,8 @@
         function saveNote() { localStorage.setItem('admin_note', document.getElementById("adminNote").value); showSystemToast("Đã lưu ghi chú"); }
         function startTimer5() { let m = 5, s = 0; isPaused = true; const tInt = setInterval(() => { if(s===0){if(m===0){clearInterval(tInt); alert("Hết giờ!"); isPaused=false; return;} m--; s=59;} else s--; document.getElementById("countdown").innerText = `${m}:${s<10?'0'+s:s}`; }, 1000); showSystemToast("Bắt đầu đếm ngược 5 phút"); }
         function deleteRow(idx, mssv) { if(!confirm("Xóa?")) return; fetch(config.api, { method: 'POST', body: JSON.stringify({ action: "DELETE_ROW", row_index: idx, mssv: mssv }) }).then(r=>r.json()).then(r=>{if(r.status==="success"){alert("Đã xóa"); fetchList();}else alert("Lỗi")}); }
-        function clearSheetData() { if(!confirm("XÓA HẾT SHEET?")) return; fetch(config.api, { method: 'POST', body: JSON.stringify({ action: "CLEAR_DATA" }) }).then(()=>alert("Đã xóa")).catch(()=>alert("Lỗi")); }
 
         // --- ADMIN MODAL & DATA ---
-        function checkLogin() { const p = prompt("Pass Admin:"); if(p===config.pass) { document.body.classList.add("admin-open"); document.getElementById("adminModal").style.display="flex"; document.getElementById("cfgLink").value=config.link; document.getElementById("cfgApi").value=config.api; document.getElementById("cfgTime").value=config.time; document.getElementById("cfgPass").value=config.pass; document.getElementById("cfgResetPass").value=config.resetPass; document.getElementById("cfgMqText").value=config.mqText; document.getElementById("cfgMqPos").value=config.mqPos; document.getElementById("cfgMqBg").value=config.mqBg; document.getElementById("cfgMqColor").value=config.mqColor; document.getElementById("cfgQrColor").value=config.qrColor; document.getElementById("cfgQrBg").value=config.qrBg; document.getElementById("cfgQrLevel").value=config.qrLevel; fetchList(); } else if(p!==null) alert("Sai pass"); }
         function closeModal() { document.body.classList.remove("admin-open"); document.getElementById("adminModal").style.display="none"; }
         function saveConfig() { config.title=document.getElementById("cfgTitle").value; config.link=document.getElementById("cfgLink").value; config.api=document.getElementById("cfgApi").value; config.time=parseInt(document.getElementById("cfgTime").value); config.pass=document.getElementById("cfgPass").value; config.resetPass=document.getElementById("cfgResetPass").value; config.mqText=document.getElementById("cfgMqText").value; config.mqPos=document.getElementById("cfgMqPos").value; config.mqBg=document.getElementById("cfgMqBg").value; config.mqColor=document.getElementById("cfgMqColor").value; config.qrColor=document.getElementById("cfgQrColor").value; config.qrBg=document.getElementById("cfgQrBg").value; config.qrLevel=document.getElementById("cfgQrLevel").value; localStorage.setItem('qr_config_max', JSON.stringify(config)); localStorage.setItem('admin_reset_pass', config.resetPass); alert("Đã lưu!"); closeModal(); qrObj=null; document.getElementById("qrcode").innerHTML=""; applyUI(); startSystem(); }
         function switchTab(id) { document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active')); document.getElementById(id).classList.add('active'); event.currentTarget.classList.add('active'); }
