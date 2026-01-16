@@ -13,9 +13,11 @@
         label { display: block; font-weight: bold; margin-bottom: 5px; color: #555; }
         input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
         .btn-submit { width: 100%; padding: 15px; background: #2ecc71; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .reset-options { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #eee; padding-top: 15px; }
+        
+        .reset-options { margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; display: flex; flex-direction: column; gap: 10px; }
         .btn-link { background: none; border: none; color: #666; cursor: pointer; text-decoration: underline; font-size: 13px; text-align: left; }
         .btn-link:hover { color: #2563eb; }
+
         .hidden { display: none !important; }
         .error-box { text-align: center; padding: 20px; color: #c0392b; background: #fadbd8; border: 2px dashed #c0392b; border-radius: 10px; }
     </style>
@@ -35,17 +37,16 @@
         </div>
         
         <div class="reset-options">
-            <button class="btn-link" onclick="requestReset()">① Yêu cầu Admin Reset (Gửi thông báo)</button>
-            <button class="btn-link" onclick="manualReset()">② Nhập mật khẩu để Reset ngay</button>
+            <button class="btn-link" onclick="requestReset()"><i class="fa-solid fa-paper-plane"></i> Yêu cầu Admin Reset (Gửi thông báo)</button>
+            <button class="btn-link" onclick="manualReset()"><i class="fa-solid fa-key"></i> Nhập mật khẩu để Reset ngay</button>
         </div>
     </div>
 
     <script>
         // --- DÁN API CỦA BẠN VÀO ĐÂY ---
-        const API_URL = "https://script.google.com/macros/s/AKfycbxVLYjNJVzv5GbDSpTVs9Aoij5LRcWW7SleWEo0mOfNdlD9j5cDBESP78e3vHsaHRa4/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbzIOQFhY7-Fg05g5BsrJjAgGceZIjLJahPbtiqLbClw6PjmVDTYTX27_a5CXWRKXt7u/exec";
         
         const today = new Date().toLocaleDateString('vi-VN');
-        let formConfig = null;
 
         window.onload = function() {
             if (localStorage.getItem('attended_today') === today) {
@@ -58,8 +59,10 @@
         function checkQR() {
             const p = new URLSearchParams(window.location.search);
             const t = parseInt(p.get('t'));
-            if (!t || (Date.now() - t > 45000)) showError("Mã QR đã hết hạn! Vui lòng quét lại.");
-            else loadFormConfig();
+            // Logic check QR cũ (tắt tạm để test)
+            // if (!t || (Date.now() - t > 45000)) showError("Mã QR đã hết hạn! Vui lòng quét lại.");
+            // else 
+            loadFormConfig();
         }
 
         function loadFormConfig() {
@@ -69,6 +72,7 @@
                 if (res.status === "success" && res.config) {
                     renderForm(res.config);
                 } else {
+                    // Fallback mặc định
                     renderForm({
                         title: "ĐIỂM DANH",
                         fields: [
@@ -82,7 +86,6 @@
         }
 
         function renderForm(cfg) {
-            formConfig = cfg;
             document.getElementById("formTitle").innerText = cfg.title;
             const form = document.getElementById("dynamicForm");
             form.innerHTML = "";
@@ -126,13 +129,14 @@
             const dataObj = {};
             formData.forEach((value, key) => dataObj[key] = value);
             
+            // Map 3 trường đầu vào 3 cột cố định của Backend để Admin nhận diện
             const keys = Object.keys(dataObj);
             const payload = {
                 name: dataObj[keys[0]] || "", 
                 mssv: dataObj[keys[1]] || "", 
                 class_name: dataObj[keys[2]] || "",
                 device_info: navigator.userAgent,
-                extraData: JSON.stringify(dataObj)
+                extraData: JSON.stringify(dataObj) // Gửi toàn bộ data
             };
 
             fetch(API_URL, {
@@ -143,7 +147,6 @@
                 localStorage.setItem('attended_today', today);
                 localStorage.setItem('my_mssv', payload.mssv);
                 localStorage.setItem('my_name', payload.name);
-                localStorage.setItem('my_class', payload.class_name);
                 
                 Swal.fire('Thành công', 'Đã ghi nhận điểm danh!', 'success').then(()=>showError("ĐÃ ĐIỂM DANH XONG"));
             }).catch(() => {
@@ -160,7 +163,7 @@
 
         function requestReset() {
             const mssv = localStorage.getItem('my_mssv');
-            if(!mssv) { Swal.fire('Lỗi', 'Bạn chưa điểm danh lần nào!', 'warning'); return; }
+            if(!mssv) return Swal.fire('Lỗi', 'Chưa có dữ liệu!', 'warning');
             
             Swal.fire({
                 title: 'YÊU CẦU RESET',
@@ -174,11 +177,10 @@
                             action: "REQUEST_RESET", 
                             mssv: mssv, 
                             name: localStorage.getItem('my_name'), 
-                            class_name: localStorage.getItem('my_class'),
                             reason: res.value 
                         })
                     }).then(() => {
-                        Swal.fire('Đã gửi', 'Yêu cầu đã được gửi đến Admin.', 'success');
+                        Swal.fire('Đã gửi', 'Chờ Admin duyệt.', 'success');
                     });
                 }
             });
@@ -187,17 +189,13 @@
         function manualReset() {
             Swal.fire({
                 title: 'NHẬP MẬT KHẨU',
-                text: 'Nhập mật khẩu Reset do Admin cung cấp:',
                 input: 'password', showCancelButton: true
             }).then((res) => {
                 if(res.isConfirmed) {
-                    const correctPass = "Admin"; 
-                    if(res.value === correctPass) {
+                    if(res.value === "Admin") { // Pass mặc định
                         localStorage.removeItem('attended_today');
-                        Swal.fire('Thành công', 'Đã mở khóa thiết bị!', 'success').then(()=>location.reload());
-                    } else {
-                        Swal.fire('Sai mật khẩu', '', 'error');
-                    }
+                        location.reload();
+                    } else Swal.fire('Sai mật khẩu', '', 'error');
                 }
             });
         }
