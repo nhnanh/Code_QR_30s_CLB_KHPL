@@ -20,6 +20,7 @@
             --border: #e2e8f0;
             --danger: #ef4444; --success: #10b981; --warning: #f59e0b; --info: #0ea5e9;
             --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             --radius: 12px;
         }
         
@@ -212,7 +213,7 @@
         .toast.danger { border-color: var(--danger); } .toast.danger i { color: var(--danger); }
         @keyframes slideIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
 
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .modal-box { background: var(--bg-card); padding: 40px; border-radius: 24px; width: 450px; max-width: 90%; box-shadow: var(--shadow-lg); animation: slideUp 0.3s; }
         @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
@@ -269,7 +270,7 @@
                 <span class="credit-text">#Made by Nguyễn Hữu Ngọc Anh</span>
             </div>
             <div style="display:flex; gap:8px">
-                <button class="icon-btn expand-btn" onclick="toggleFullAdmin()"><i class="fa-solid fa-expand"></i></button>
+                <button class="icon-btn expand-btn" onclick="toggleFullAdmin()" title="Mở rộng"><i class="fa-solid fa-expand"></i></button>
                 <button class="btn btn-danger" onclick="closeAdmin()"><i class="fa-solid fa-power-off"></i> Thoát</button>
             </div>
         </div>
@@ -292,17 +293,14 @@
             <div id="tab-stats" class="tab-content active">
                 <div class="stat-grid">
                     <div class="stat-card">
-                        <div class="stat-icon"><i class="fa-solid fa-users" style="color:var(--primary); font-size:24px"></i></div>
-                        <div class="stat-val" id="statTotal">0</div>
+                        <div class="stat-val" id="statTotal" style="color:var(--primary)">0</div>
                         <div class="stat-label">Tổng Sinh Viên</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon"><i class="fa-solid fa-layer-group" style="color:var(--success); font-size:24px"></i></div>
                         <div class="stat-val" style="color:var(--success)" id="statClasses">0</div>
                         <div class="stat-label">Lớp Tham Gia</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon"><i class="fa-solid fa-bell" style="color:var(--warning); font-size:24px"></i></div>
                         <div class="stat-val" style="color:var(--warning)" id="statReq">0</div>
                         <div class="stat-label">Yêu Cầu Mới</div>
                     </div>
@@ -310,11 +308,11 @@
                 
                 <div class="chart-row">
                     <div class="chart-box">
-                        <div class="chart-header"><span>Tỉ lệ Lớp</span><button class="download-btn icon-btn" onclick="dlChart('c1')">⬇</button></div>
+                        <div class="chart-header"><span>Tỉ lệ Lớp</span><button class="download-btn" onclick="dlChart('c1')">⬇ PNG</button></div>
                         <div class="chart-container"><canvas id="c1"></canvas></div>
                     </div>
                     <div class="chart-box">
-                        <div class="chart-header"><span>Mật độ Giờ</span><button class="download-btn icon-btn" onclick="dlChart('c2')">⬇</button></div>
+                        <div class="chart-header"><span>Mật độ Giờ</span><button class="download-btn" onclick="dlChart('c2')">⬇ PNG</button></div>
                         <div class="chart-container"><canvas id="c2"></canvas></div>
                     </div>
                 </div>
@@ -384,7 +382,7 @@
                     <div class="tool-card" onclick="window.location.reload()"><i class="fa-solid fa-rotate-right"></i><span>Reload</span></div>
                 </div>
                 <div id="notePad" style="display:none; margin-top:20px;">
-                    <textarea id="adminNote" style="width:100%; height:100px; padding:15px; border-radius:12px; border:1px solid var(--border)" placeholder="Nhập ghi chú..."></textarea>
+                    <textarea id="adminNote" style="width:100%; height:100px; padding:10px; border-radius:8px; border:1px solid #cbd5e1" placeholder="Nhập ghi chú..."></textarea>
                     <button class="btn btn-primary" onclick="saveNote()" style="margin-top:5px">Lưu Ghi Chú</button>
                 </div>
             </div>
@@ -393,7 +391,7 @@
             <div id="tab-config" class="tab-content">
                 <div class="config-group" style="margin-bottom:20px; border:1px solid var(--border); padding:20px; border-radius:16px;">
                     <div style="font-weight:700; color:var(--primary); margin-bottom:15px; text-transform:uppercase"><i class="fa-solid fa-link"></i> Kết nối</div>
-                    <div class="form-group"><label>API Google Script <i class="fa-solid fa-lock" style="font-size:10px; color:var(--danger)"></i></label>
+                    <div class="form-group"><label>API Google Apps Script <i class="fa-solid fa-lock" style="font-size:10px; color:var(--danger)"></i></label>
                         <div class="pass-group">
                             <input type="text" id="cfgApi" readonly class="secure-locked" oncopy="return false">
                             <div class="pass-controls"><button class="icon-btn" onclick="unlock('cfgApi', 'Abc110022@')"><i class="fa-solid fa-pen"></i></button></div>
@@ -443,7 +441,7 @@
         <div class="modal-box" style="text-align:center">
             <h3>ĐĂNG NHẬP</h3>
             <div class="pass-group" style="margin:20px 0">
-                <input type="password" id="loginPass" placeholder="••••••" style="width:100%; padding:15px; text-align:center; font-size:20px; letter-spacing:5px; border:1px solid #ddd; border-radius:10px;" onkeyup="if(event.key==='Enter') doLogin()">
+                <input type="password" id="loginPass" placeholder="••••••" style="width:100%; padding:15px; text-align:center; font-size:20px; letter-spacing:5px; margin:20px 0; border:1px solid #ddd; border-radius:10px;" onkeyup="if(event.key==='Enter') doLogin()">
                 <div class="pass-controls" style="right:10px"><button class="icon-btn" onclick="togglePass('loginPass', this)"><i class="fa-solid fa-eye"></i></button></div>
             </div>
             <button class="btn btn-primary" onclick="doLogin()" style="width:100%; padding:15px">VÀO ADMIN</button>
@@ -730,6 +728,9 @@
         }
         function updateTool(id, active) { const el=document.getElementById(id); if(active) el.classList.add('tool-active'); else el.classList.remove('tool-active'); }
         function dlChart(id) { const a=document.createElement('a'); a.href=document.getElementById(id).toDataURL(); a.download='Chart.png'; a.click(); }
+        function toggleAll(src) { document.querySelectorAll('.chk').forEach(c=>c.checked=src.checked); updateBulk(); }
+        function toggleFullAdmin() { document.body.classList.toggle('full-width'); }
+        function switchTab(id) { document.querySelectorAll('.tab-content').forEach(e=>e.style.display='none'); document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active')); document.getElementById(id).style.display='block'; event.currentTarget.classList.add('active'); }
         
         // Tool Actions
         function togglePause() { isPaused=!isPaused; updateTool('toolPause', isPaused); showToast(isPaused?"Đã Tạm Dừng":"Tiếp Tục"); addLog("Tiện ích", isPaused?"Tạm dừng hệ thống":"Tiếp tục hệ thống", "warning"); }
@@ -745,7 +746,6 @@
             XLSX.writeFile(wb, "DiemDanh.xlsx");
             addLog("Dữ liệu", "Xuất Excel", "success");
         }
-        function toggleFullAdmin() { document.body.classList.toggle('full-width'); }
         function openLink() { window.open(cfg.link, '_blank'); }
         function checkNet() { showToast(navigator.onLine ? "Kết nối ổn định" : "Mất kết nối", navigator.onLine?"success":"danger"); }
         function toggleNote() { const n=document.getElementById('notePad'); n.style.display=n.style.display==='none'?'block':'none'; }
