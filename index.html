@@ -93,7 +93,7 @@
 
         @media (min-width: 1024px) {
             body.admin-open { flex-direction: row; align-items: stretch; justify-content: flex-start; }
-            body.admin-open .qr-card { flex: 1; height: 100vh; width: auto; border-radius: 0; border: none; box-shadow: none; background: var(--bg); }
+            body.admin-open .qr-card { flex: 1; height: 100vh; width: auto; border: none; box-shadow: none; border-radius: 0; background: var(--bg); }
             body.admin-open #qrcode { transform: scale(1.2); margin: 40px auto; }
             body.admin-open #adminModal { display: flex !important; position: relative; width: 600px; min-width: 400px; max-width: 80%; height: 100vh; background: var(--white); border-left: 1px solid var(--border); backdrop-filter: none; z-index: 100; }
             body.admin-open .modal-content { width: 100%; height: 100%; max-width: none; border-radius: 0; box-shadow: none; max-height: none; }
@@ -144,8 +144,7 @@
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px; color: var(--text); }
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; font-family: inherit; background: var(--white); color: var(--text); }
-        
-        /* Style cho input bị khóa bảo mật */
+        /* Style cho input bị khóa */
         input.secure-locked { 
             background-color: #f1f5f9; 
             color: #94a3b8; 
@@ -178,6 +177,7 @@
 <body>
 
     <div class="settings-btn" onclick="openLoginModal()"><i class="fa-solid fa-sliders"></i></div>
+
     <div id="liveToastContainer" class="pos-top-right"></div>
     <div id="systemToast">Thông báo</div>
 
@@ -221,8 +221,7 @@
             <div class="modal-body">
                 <div class="tabs">
                     <button class="tab-btn active" onclick="switchTab('tab-stats')"><i class="fa-solid fa-chart-pie"></i> Thống Kê</button>
-                    <button class="tab-btn" onclick="switchTab('tab-data')"><i class="fa-solid fa-table"></i> Danh Sách</button>
-                    <button class="tab-btn" onclick="switchTab('tab-notif')"><i class="fa-solid fa-bell"></i> Lịch sử TB</button>
+                    <button class="tab-btn" onclick="switchTab('tab-data')"><i class="fa-solid fa-table"></i> Dữ Liệu</button>
                     <button class="tab-btn" onclick="switchTab('tab-tools')"><i class="fa-solid fa-toolbox"></i> Tiện Ích</button>
                     <button class="tab-btn" onclick="switchTab('tab-config')"><i class="fa-solid fa-gear"></i> Cấu Hình</button>
                 </div>
@@ -232,7 +231,7 @@
                 <!-- TAB STATS -->
                 <div id="tab-stats" class="tab-content active">
                     <div class="dashboard-grid">
-                        <div class="stat-card"><div class="stat-icon" style="background:#dbeafe; color:var(--primary)"><i class="fa-solid fa-users"></i></div><div class="stat-info"><h4>Tổng Sinh Viên</h4><p id="statTotal">0</p></div></div>
+                        <div class="stat-card"><div class="stat-icon" style="background:#dbeafe; color:var(--primary)"><i class="fa-solid fa-users"></i></div><div class="stat-info"><h4>Tổng SV</h4><p id="statTotal">0</p></div></div>
                         <div class="stat-card"><div class="stat-icon" style="background:#dcfce7; color:var(--success)"><i class="fa-solid fa-layer-group"></i></div><div class="stat-info"><h4>Số Lớp</h4><p id="statClasses">0</p></div></div>
                         <div class="stat-card"><div class="stat-icon" style="background:#fee2e2; color:var(--danger)"><i class="fa-regular fa-clock"></i></div><div class="stat-info"><h4>Mới nhất</h4><p id="statLatest" style="font-size:18px">--:--</p></div></div>
                     </div>
@@ -242,34 +241,21 @@
                     </div>
                 </div>
 
-                <!-- TAB DATA (Có cột chuông) -->
+                <!-- TAB DATA -->
                 <div id="tab-data" class="tab-content">
-                    <div class="excel-toolbar" style="margin-bottom:10px; display:flex; gap:10px;">
-                        <input type="date" id="viewDate" onchange="fetchList()">
-                        <input type="text" id="searchInput" placeholder="🔍 Lọc..." onkeyup="applyFilter()" style="flex:1">
-                        <button class="btn btn-primary" onclick="fetchList()">Tải lại</button>
+                    <div class="excel-toolbar">
+                        <div style="flex:1"><input type="date" id="viewDate" onchange="fetchList()"></div>
+                        <div style="flex:2"><input type="text" id="searchInput" placeholder="🔍 Lọc nhanh..." onkeyup="applyFilter()"></div>
+                        <button class="btn btn-danger" id="btnBulkDelete" onclick="deleteSelected()" style="display:none;"><i class="fa-solid fa-trash"></i> Xóa mục chọn</button>
+                        <button class="btn btn-primary" onclick="fetchList()"><i class="fa-solid fa-rotate"></i> Tải lại</button>
                     </div>
                     <div class="excel-table-container">
                         <table id="dataTable">
-                            <thead><tr>
-                                <th class="bell-cell"><i class="fa-regular fa-bell"></i></th>
-                                <th onclick="sortTable('time')">Giờ</th>
-                                <th onclick="sortTable('name')">Họ Tên</th>
-                                <th onclick="sortTable('mssv')">MSSV</th>
-                                <th onclick="sortTable('class_name')">Lớp</th>
-                                <th style="text-align:center">Xóa</th>
-                            </tr></thead>
-                            <tbody id="tableBody"><tr><td colspan="6" style="text-align:center; padding:30px;">Vui lòng tải dữ liệu</td></tr></tbody>
+                            <thead><tr><th style="width:40px; text-align:center"><input type="checkbox" id="selectAll" onclick="toggleSelectAll()"></th><th onclick="sortTable('time')">Giờ <i class="fa-solid fa-sort"></i></th><th onclick="sortTable('name')">Họ và Tên <i class="fa-solid fa-sort"></i></th><th onclick="sortTable('mssv')">MSSV <i class="fa-solid fa-sort"></i></th><th onclick="sortTable('class_name')">Lớp <i class="fa-solid fa-sort"></i></th><th style="text-align:center">Thao tác</th></tr></thead>
+                            <tbody id="tableBody"><tr><td colspan="6" style="text-align:center; padding:30px; color:#999">Vui lòng chọn ngày để xem dữ liệu</td></tr></tbody>
                         </table>
                     </div>
-                </div>
-
-                <!-- TAB NOTIFICATION LOG -->
-                <div id="tab-notif" class="tab-content">
-                    <button class="btn btn-primary" style="margin-bottom:15px; width:100%" onclick="fetchLogs()">🔄 Cập nhật Lịch sử Yêu cầu</button>
-                    <ul id="logList" class="log-list">
-                        <li style="text-align:center; color:#999">Chưa có dữ liệu</li>
-                    </ul>
+                    <div style="margin-top:10px; font-size:12px; color:#64748b; text-align:right">Tổng dòng hiển thị: <b id="rowCount">0</b></div>
                 </div>
 
                 <!-- TAB TOOLS -->
@@ -305,7 +291,7 @@
                     </div>
                 </div>
 
-                <!-- TAB CONFIG (ĐÃ BỔ SUNG KHÓA CẤP 2) -->
+                <!-- TAB CONFIG -->
                 <div id="tab-config" class="tab-content">
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px">
                         <div class="form-group"><label>Tiêu đề:</label><input type="text" id="cfgTitle"></div>
@@ -457,15 +443,15 @@
             document.getElementById('viewDate').valueAsDate = new Date();
             document.getElementById('adminNote').value = localStorage.getItem('admin_note') || "";
             
-            // Prevent selection on secure inputs
+            // Prevent selection on secure inputs explicitly
             const secureInputs = document.querySelectorAll('.secure-locked');
             secureInputs.forEach(el => {
                 el.addEventListener('selectstart', e => e.preventDefault());
                 el.addEventListener('mousedown', e => {
-                    // Click to unlock
+                    // Cho phép click để kích hoạt unlock, nhưng chặn bôi đen
                     if(el.readOnly) {
                         e.preventDefault();
-                        el.click(); 
+                        el.click(); // Trigger click event manually if prevented
                     }
                 });
             });
@@ -495,8 +481,11 @@
             const qrDiv = document.getElementById("qrcode");
             const token = Date.now(); 
             const finalLink = `${config.link}?t=${token}`;
-            if (!qrObj) { qrDiv.innerHTML = ""; qrObj = new QRCode(qrDiv, { text: finalLink, width: 250, height: 250, colorDark : "#2563eb" }); }
+            if (!qrObj) { qrDiv.innerHTML = ""; qrObj = new QRCode(qrDiv, { text: finalLink, width: 250, height: 250, colorDark : config.qrColor, colorLight: config.qrBg, correctLevel: QRCode.CorrectLevel[config.qrLevel] }); }
             else { qrObj.clear(); qrObj.makeCode(finalLink); }
+            
+            const zoomDiv = document.getElementById("qrcodeZoom");
+            if(zoomDiv.style.display !== 'none') { zoomDiv.innerHTML = ""; new QRCode(zoomDiv, { text: finalLink, width: 250, height: 250, colorDark : config.qrColor, colorLight: config.qrBg, correctLevel: QRCode.CorrectLevel[config.qrLevel] }); }
         }
 
         function applyUI() {
@@ -521,6 +510,11 @@
             setTimeout(() => t.classList.remove("show"), 3000);
         }
 
+        function addLogToHistory(title, msg, type = 'info') {
+             // Hàm này được dùng trong các tiện ích, có thể triển khai sau nếu cần
+             console.log(`[LOG] ${title}: ${msg}`);
+        }
+
         function updateToolUI(id, isActive, textActive, textInactive, iconActive, iconInactive) {
             const el = document.getElementById(id);
             const icon = el.querySelector("i");
@@ -536,11 +530,190 @@
             }
         }
 
-        function togglePause() { isPaused = !isPaused; showSystemToast(isPaused ? "Đã TẠM DỪNG hệ thống" : "Hệ thống TIẾP TỤC chạy"); updateToolUI("toolPause", isPaused, "Đang Tạm Dừng", "Tạm dừng", "fa-pause", "fa-play"); }
-        function toggleDarkMode() { config.darkMode = !config.darkMode; applyUI(); showSystemToast("Đã chuyển giao diện"); saveConfig(true); }
-        function toggleFullscreen() { if(!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); updateToolUI("toolFull", document.fullscreenElement, "Thoát Toàn màn hình", "Toàn màn hình", "fa-expand", "fa-compress"); }
-        function toggleBlurQR() { const isBlur = document.getElementById("qrcode").classList.toggle("blur-effect"); showSystemToast(isBlur ? "Đã CHE MỜ mã QR" : "Đã HIỂN THỊ lại mã QR"); updateToolUI("toolBlur", isBlur, "Đang Che Mờ", "Che mờ QR", "fa-eye-slash", "fa-eye"); }
-        function toggleClockUI() { const clk = document.querySelector('.realtime'); const isHidden = clk.style.opacity==='0'; clk.style.opacity = isHidden?'1':'0'; showSystemToast(isHidden?"Đã HIỆN đồng hồ":"Đã ẨN đồng hồ"); updateToolUI("toolClock", !isHidden, "Ẩn Đồng Hồ", "Hiện Đồng Hồ", "fa-clock", "fa-clock"); }
+        // --- CÁC HÀM TIỆN ÍCH (Được viết đầy đủ) ---
+        function togglePause() { 
+            isPaused = !isPaused; 
+            showSystemToast(isPaused ? "Đã TẠM DỪNG hệ thống" : "Hệ thống TIẾP TỤC chạy"); 
+            updateToolUI("toolPause", isPaused, "Đang Tạm Dừng", "Tạm dừng", "fa-pause", "fa-play"); 
+            addLogToHistory("Tiện ích", isPaused ? "Tạm dừng hệ thống" : "Tiếp tục hệ thống", "warning");
+        }
+
+        function toggleDarkMode() { 
+            config.darkMode = !config.darkMode; 
+            applyUI(); 
+            showSystemToast("Đã chuyển giao diện"); 
+            saveConfig(true); 
+            addLogToHistory("Giao diện", "Đổi chế độ Sáng/Tối", "info");
+        }
+
+        function toggleFullscreen() { 
+            if(!document.fullscreenElement) { 
+                document.documentElement.requestFullscreen(); 
+                addLogToHistory("Giao diện", "Bật Toàn màn hình", "info"); 
+            } else { 
+                document.exitFullscreen(); 
+                addLogToHistory("Giao diện", "Tắt Toàn màn hình", "info"); 
+            }
+            updateToolUI("toolFull", document.fullscreenElement, "Thoát Toàn màn hình", "Toàn màn hình", "fa-expand", "fa-compress"); 
+        }
+
+        function toggleBlurQR() { 
+            const isBlur = document.getElementById("qrcode").classList.toggle("blur-effect"); 
+            showSystemToast(isBlur ? "Đã CHE MỜ mã QR" : "Đã HIỂN THỊ lại mã QR"); 
+            updateToolUI("toolBlur", isBlur, "Đang Che Mờ", "Che mờ QR", "fa-eye-slash", "fa-eye"); 
+            addLogToHistory("Tiện ích", isBlur ? "Che mờ mã QR" : "Hiện mã QR", "info");
+        }
+
+        function toggleClockUI() { 
+            const clk = document.querySelector('.realtime'); 
+            const isHidden = clk.style.opacity==='0'; 
+            clk.style.opacity = isHidden?'1':'0'; 
+            showSystemToast(isHidden?"Đã HIỆN đồng hồ":"Đã ẨN đồng hồ"); 
+            updateToolUI("toolClock", !isHidden, "Ẩn Đồng Hồ", "Hiện Đồng Hồ", "fa-clock", "fa-clock"); 
+            addLogToHistory("Tiện ích", isHidden ? "Hiện đồng hồ" : "Ẩn đồng hồ", "info");
+        }
+
+        function downloadQR() { 
+            const img = document.querySelector("#qrcode img"); 
+            if(img) { 
+                const a = document.createElement("a"); 
+                a.href = img.src; 
+                a.download = "QR_Code.png"; 
+                a.click(); 
+                showSystemToast("Đã tải ảnh mã QR"); 
+                addLogToHistory("Tiện ích", "Tải ảnh QR Code", "info");
+            } 
+        }
+
+        function zoomQR() { 
+            document.getElementById("qrZoomModal").style.display = "flex"; 
+            updateQR(); 
+            showSystemToast("Chế độ Phóng to"); 
+        }
+
+        function closeZoom() { 
+            document.getElementById("qrZoomModal").style.display = "none"; 
+        }
+
+        function lockScreen() { 
+            document.getElementById("lockScreen").style.display = "flex"; 
+            closeModal(); 
+        }
+
+        function unlockScreen() { 
+            openLoginModal(true); 
+        }
+
+        function randomStudent() { 
+            if(filteredData.length === 0) { 
+                alert("Danh sách trống!"); 
+                return; 
+            } 
+            const rd = filteredData[Math.floor(Math.random() * filteredData.length)]; 
+            alert(`🎉 CHÚC MỪNG: ${rd.name} - ${rd.mssv}`); 
+            addLogToHistory("Quay số", `Đã chọn: ${rd.name} (${rd.mssv})`, "success");
+        }
+
+        function exportCSV() { 
+            if(filteredData.length === 0) { 
+                alert("Không có dữ liệu!"); 
+                return; 
+            } 
+            let csv = "Gio,Ho Ten,MSSV,Lop\n"; 
+            filteredData.forEach(i => csv += `${i.time},${i.name},${i.mssv},${i.class_name}\n`); 
+            const link = document.createElement("a"); 
+            link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); 
+            link.download = "DiemDanh.csv"; 
+            link.click(); 
+            showSystemToast("Đã xuất file Excel"); 
+            addLogToHistory("Dữ liệu", "Xuất file Excel (CSV)", "info");
+        }
+
+        function printList() { 
+            window.print(); 
+        }
+
+        function exportConfig() { 
+            const a = document.createElement('a'); 
+            a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(config)); 
+            a.download = "config.json"; 
+            a.click(); 
+            showSystemToast("Đã sao lưu cấu hình"); 
+        }
+
+        function importConfig() { 
+            const i = document.createElement('input'); 
+            i.type = 'file'; 
+            i.onchange = e => { 
+                const fr = new FileReader(); 
+                fr.onload = ev => { 
+                    config = JSON.parse(ev.target.result); 
+                    localStorage.setItem('qr_config_max', JSON.stringify(config)); 
+                    alert("Đã khôi phục! Reload..."); 
+                    location.reload(); 
+                }; 
+                fr.readAsText(e.target.files[0]); 
+            }; 
+            i.click(); 
+        }
+
+        function openFormLink() { 
+            window.open(config.link, "_blank"); 
+            showSystemToast("Đang mở link Form"); 
+        }
+
+        function showStaticQR() { 
+            document.getElementById("qrZoomModal").style.display = "flex"; 
+            const z = document.getElementById("qrcodeZoom"); 
+            z.innerHTML = ""; 
+            new QRCode(z, { text: config.link, width: 300, height: 300 }); 
+            showSystemToast("Đang hiện QR Tĩnh"); 
+        }
+
+        function checkPing() { 
+            showSystemToast(navigator.onLine ? "✅ Mạng ổn định" : "❌ Mất kết nối internet"); 
+            addLogToHistory("Tiện ích", navigator.onLine ? "Mạng ổn định" : "Mất mạng", navigator.onLine?"success":"danger");
+        }
+
+        function toggleNote() { 
+            const n = document.getElementById("notePad"); 
+            n.style.display = n.style.display === "none" ? "block" : "none"; 
+        }
+
+        function saveNote() { 
+            localStorage.setItem('admin_note', document.getElementById("adminNote").value); 
+            showSystemToast("Đã lưu ghi chú"); 
+        }
+
+        function startTimer5() { 
+            let m = 5, s = 0; 
+            isPaused = true; 
+            const tInt = setInterval(() => { 
+                if(s === 0) { 
+                    if(m === 0) { 
+                        clearInterval(tInt); 
+                        alert("Hết giờ!"); 
+                        isPaused = false; 
+                        return; 
+                    } 
+                    m--; s = 59; 
+                } else s--; 
+                document.getElementById("countdown").innerText = `${m}:${s < 10 ? '0'+s : s}`; 
+            }, 1000); 
+            showSystemToast("Bắt đầu đếm ngược 5 phút"); 
+        }
+
+        function deleteRow(idx, mssv) { 
+            if(!confirm("Xóa?")) return; 
+            fetch(config.api, { method: 'POST', body: JSON.stringify({ action: "DELETE_ROW", row_index: idx, mssv: mssv }) })
+            .then(r=>r.json()).then(r=>{ 
+                if(r.status==="success") { 
+                    alert("Đã xóa"); 
+                    addLogToHistory("Dữ liệu", `Đã xóa sinh viên MSSV ${mssv}`, "danger");
+                    fetchList(); 
+                } else alert("Lỗi"); 
+            }); 
+        }
 
         // --- LIVE NOTIFICATION ---
         function toggleLiveNotif(init = false) {
@@ -548,6 +721,7 @@
                 config.notifEnabled = !config.notifEnabled;
                 saveConfig(true); // Lưu ngay
                 showSystemToast(config.notifEnabled ? "Đã BẬT thông báo điểm danh" : "Đã TẮT thông báo điểm danh");
+                addLogToHistory("Tiện ích", config.notifEnabled ? "Đã BẬT thông báo Live" : "Đã TẮT thông báo Live", "info");
             }
             
             updateToolUI("toolLive", config.notifEnabled, "Đang Bật Live", "Bật Thông Báo Live", "fa-bell", "fa-bell-slash");
@@ -597,12 +771,7 @@
             setTimeout(() => { if(t.parentNode) t.parentNode.removeChild(t); }, config.notifDuration * 1000);
         }
 
-        // --- CÁC CHỨC NĂNG KHÁC ---
-        function downloadQR() { const img = document.querySelector("#qrcode img"); if(img) { const a = document.createElement("a"); a.href = img.src; a.download = "QR_Code.png"; a.click(); showSystemToast("Đã tải ảnh mã QR"); } }
-        function zoomQR() { document.getElementById("qrZoomModal").style.display = "flex"; updateQR(); showSystemToast("Chế độ Phóng to"); }
-        function closeZoom() { document.getElementById("qrZoomModal").style.display = "none"; }
-        function lockScreen() { document.getElementById("lockScreen").style.display = "flex"; closeModal(); }
-        
+        // --- ADMIN MODAL & DATA ---
         function openLoginModal(isUnlock = false) {
             isUnlockMode = isUnlock;
             document.getElementById("authModal").style.display = "flex";
@@ -610,6 +779,8 @@
             document.getElementById("authPassInput").focus();
         }
         function closeAuthModal() { document.getElementById("authModal").style.display = "none"; }
+        function closeModal() { document.body.classList.remove("admin-open"); document.getElementById("adminModal").style.display="none"; }
+        
         function submitLogin() {
             const p = document.getElementById("authPassInput").value;
             if(p === config.pass) {
@@ -627,10 +798,11 @@
                     document.getElementById("cfgResetPass").value = config.resetPass;
                     
                     // New Configs
-                    document.getElementById("cfgNotifDuration").value=config.notifDuration;
-                    document.getElementById("cfgNotifPos").value=config.notifPos;
+                    if(document.getElementById("cfgNotifDuration")) document.getElementById("cfgNotifDuration").value = config.notifDuration;
+                    if(document.getElementById("cfgNotifPos")) document.getElementById("cfgNotifPos").value = config.notifPos;
                     
                     fetchList();
+                    addLogToHistory("Hệ thống", "Admin đăng nhập thành công", "warning");
                 }
             } else {
                 alert("Sai mật khẩu!");
@@ -638,24 +810,6 @@
         }
         function unlockScreen() { openLoginModal(true); }
 
-        function randomStudent() { if(filteredData.length === 0) { alert("Danh sách trống!"); return; } const rd = filteredData[Math.floor(Math.random() * filteredData.length)]; alert(`🎉 CHÚC MỪNG: ${rd.name} - ${rd.mssv}`); }
-        function exportCSV() { if(filteredData.length === 0) { alert("Không có dữ liệu!"); return; } let csv = "Gio,Ho Ten,MSSV,Lop\n"; filteredData.forEach(i => csv += `${i.time},${i.name},${i.mssv},${i.class_name}\n`); const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' })); link.download = "DiemDanh.csv"; link.click(); showSystemToast("Đã xuất file Excel"); }
-        function printList() { window.print(); }
-        function exportConfig() { const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(config)); a.download = "config.json"; a.click(); showSystemToast("Đã sao lưu cấu hình"); }
-        function importConfig() { const i = document.createElement('input'); i.type = 'file'; i.onchange = e => { const fr = new FileReader(); fr.onload = ev => { config = JSON.parse(ev.target.result); localStorage.setItem('qr_config_max', JSON.stringify(config)); alert("Đã khôi phục!"); location.reload(); }; fr.readAsText(e.target.files[0]); }; i.click(); }
-        function openFormLink() { window.open(config.link, "_blank"); showSystemToast("Đang mở link Form"); }
-        function showStaticQR() { document.getElementById("qrZoomModal").style.display = "flex"; const z = document.getElementById("qrcodeZoom"); z.innerHTML = ""; new QRCode(z, { text: config.link, width: 300, height: 300 }); showSystemToast("Đang hiện QR Tĩnh"); }
-        function checkPing() { showSystemToast(navigator.onLine ? "✅ Mạng ổn định" : "❌ Mất kết nối internet"); }
-        function toggleNote() { const n = document.getElementById("notePad"); n.style.display = n.style.display === "none" ? "block" : "none"; }
-        function saveNote() { localStorage.setItem('admin_note', document.getElementById("adminNote").value); showSystemToast("Đã lưu ghi chú"); }
-        function startTimer5() { let m = 5, s = 0; isPaused = true; const tInt = setInterval(() => { if(s===0){if(m===0){clearInterval(tInt); alert("Hết giờ!"); isPaused=false; return;} m--; s=59;} else s--; document.getElementById("countdown").innerText = `${m}:${s<10?'0'+s:s}`; }, 1000); showSystemToast("Bắt đầu đếm ngược 5 phút"); }
-        function deleteRow(idx, mssv) { if(!confirm("Xóa?")) return; fetch(config.api, { method: 'POST', body: JSON.stringify({ action: "DELETE_ROW", row_index: idx, mssv: mssv }) }).then(r=>r.json()).then(r=>{ 
-            if(r.status==="success") { alert("Đã xóa!"); fetchList(); } 
-        }); }
-
-        // --- ADMIN MODAL & DATA ---
-        function closeModal() { document.body.classList.remove("admin-open"); document.getElementById("adminModal").style.display="none"; }
-        
         function saveConfig(silent = false) { 
             config.title=document.getElementById("cfgTitle").value || config.title; 
             config.link=document.getElementById("cfgLink").value || config.link; 
@@ -681,6 +835,7 @@
             if(!silent) {
                 alert("Đã lưu!"); 
                 closeModal(); 
+                addLogToHistory("Cấu hình", "Đã lưu cài đặt mới", "info");
             }
             qrObj=null; document.getElementById("qrcode").innerHTML=""; applyUI(); startSystem(); 
         }
@@ -693,9 +848,9 @@
         function toggleSelectAll() { const m=document.getElementById('selectAll'); document.querySelectorAll('.row-checkbox').forEach(c=>c.checked=m.checked); updateBulkButton(); }
         function updateBulkButton() { const c=document.querySelectorAll('.row-checkbox:checked').length; const b=document.getElementById('btnBulkDelete'); if(c>0){b.style.display='inline-flex'; b.innerHTML=`<i class="fa-solid fa-trash"></i> Xóa (${c}) mục`;}else b.style.display='none'; }
         async function deleteSelected() { const s=Array.from(document.querySelectorAll('.row-checkbox:checked')); if(s.length===0) return; if(!confirm(`Xóa ${s.length} mục?`)) return; let delList=s.map(c=>{let p=c.value.split('|'); return {i:parseInt(p[0]), m:p[1]}}).sort((a,b)=>b.i-a.i); document.getElementById('loader').style.display='block'; for(const i of delList){try{await fetch(config.api, {method:'POST', body:JSON.stringify({action:"DELETE_ROW", row_index:i.i, mssv:i.m})})}catch(e){console.log(e)}} document.getElementById('loader').style.display='none'; alert("Xong"); fetchList(); }
-        function renderStats() { document.getElementById('statTotal').innerText=filteredData.length; const cc={}, tc={}; filteredData.forEach(i=>{cc[i.class_name]=(cc[i.class_name]||0)+1; let h=(i.time || "").split(":")[0]+"h"; tc[h]=(tc[h]||0)+1;}); document.getElementById('statClasses').innerText=Object.keys(cc).length; if(filteredData.length>0) document.getElementById('statLatest').innerText=(filteredData[0].time || "").split(" ")[0]; const c1=document.getElementById('classChart').getContext('2d'); if(classChartInstance) classChartInstance.destroy(); classChartInstance=new Chart(c1,{type:'doughnut',data:{labels:Object.keys(cc),datasets:[{data:Object.values(cc),backgroundColor:['#2563eb','#10b981','#f59e0b','#ef4444','#8b5cf6']}]}}); const c2=document.getElementById('timeChart').getContext('2d'); if(timeChartInstance) timeChartInstance.destroy(); const st=Object.keys(tc).sort(); timeChartInstance=new Chart(c2,{type:'bar',data:{labels:st,datasets:[{label:'SL',data:st.map(t=>tc[t]),backgroundColor:'#2563eb',borderRadius:4}]}}); }
+        function renderStats() { document.getElementById('statTotal').innerText=filteredData.length; const cc={}, tc={}; filteredData.forEach(i=>{cc[i.class_name]=(cc[i.class_name]||0)+1; let h=(i.time||"").split(":")[0]+"h"; tc[h]=(tc[h]||0)+1;}); document.getElementById('statClasses').innerText=Object.keys(cc).length; if(filteredData.length>0) document.getElementById('statLatest').innerText=(filteredData[0].time||"").split(" ")[0]; const c1=document.getElementById('classChart').getContext('2d'); if(classChartInstance) classChartInstance.destroy(); classChartInstance=new Chart(c1,{type:'doughnut',data:{labels:Object.keys(cc),datasets:[{data:Object.values(cc),backgroundColor:['#2563eb','#10b981','#f59e0b','#ef4444','#8b5cf6']}]}}); const c2=document.getElementById('timeChart').getContext('2d'); if(timeChartInstance) timeChartInstance.destroy(); const st=Object.keys(tc).sort(); timeChartInstance=new Chart(c2,{type:'bar',data:{labels:st,datasets:[{label:'SL',data:st.map(t=>tc[t]),backgroundColor:'#2563eb',borderRadius:4}]}}); }
 
-        // --- BẢO MẬT CẤP 2 (MỚI - AUTO LOCK) ---
+        // --- BẢO MẬT CẤP 2 (AUTO-LOCK) ---
         function unlockField(id, code) {
             const el = document.getElementById(id);
             if (!el.readOnly) return; 
