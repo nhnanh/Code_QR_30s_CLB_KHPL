@@ -36,11 +36,14 @@
         * { box-sizing: border-box; outline: none; }
         body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); height: 100vh; display: flex; overflow: hidden; transition: background 0.3s, color 0.3s; }
         input::-ms-reveal, input::-ms-clear { display: none; }
+        
+        /* Chặn copy */
+        .no-copy { -webkit-user-select: none; user-select: none; }
 
         /* --- LAYOUT CHIA ĐÔI --- */
         #mainContainer { display: flex; width: 100%; height: 100%; position: relative; }
         
-        /* CỘT TRÁI: QR */
+        /* CỘT TRÁI: QR NEON STYLE */
         #qrSection { 
             flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; 
             position: relative; z-index: 1; transition: flex-basis 0.3s ease;
@@ -52,7 +55,7 @@
             box-shadow: var(--shadow-lg); text-align: center; width: 420px; max-width: 90%; 
             z-index: 2; overflow: hidden;
         }
-        /* Hiệu ứng viền Neon */
+        /* Hiệu ứng viền chạy Neon */
         .qr-card::before {
             content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
             background: conic-gradient(transparent 20%, var(--primary), transparent 90%);
@@ -235,11 +238,9 @@
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: var(--text-sub); }
         input:not([type=checkbox]), select, textarea { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: var(--bg-card); color: var(--text-main); font-size: 14px; transition: 0.2s; }
-        
-        .pass-group { position: relative; width: 100%; }
-        .pass-group input { padding-right: 90px; }
+        .pass-group { position: relative; width: 100%; } .pass-group input { padding-right: 90px; }
         .pass-controls { position: absolute; right: 5px; top: 50%; transform: translateY(-50%); display: flex; gap: 4px; }
-        .icon-btn { background: var(--bg-body); border: 1px solid var(--border); cursor: pointer; padding: 6px; border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: var(--text-sub); }
+        .icon-btn { background: var(--bg-body); border: 1px solid var(--border); cursor: pointer; padding: 6px; border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: var(--text-sub); transition: 0.2s; }
         .icon-btn:hover { color: var(--primary); border-color: var(--primary); }
         input[readonly].secure-locked { background: var(--bg-body); cursor: not-allowed; border: 1px dashed #cbd5e1; color: var(--text-sub); user-select: none; }
         input.unlocked { background: #f0fdf4; border: 1px solid var(--success); color: var(--success); font-weight: bold; cursor: text; }
@@ -368,8 +369,9 @@
 
             <!-- 3. CẤU HÌNH FORM (NEW CARD DESIGN) -->
             <div id="tab-form" class="tab-content">
-                <div class="chart-box" style="margin-bottom:10px">
-                    <div class="form-group"><label>Tiêu đề Form:</label><input type="text" id="fbTitle" value="THÔNG TIN SINH VIÊN" style="font-weight:bold; font-size:16px; border-left:10px solid var(--primary)"></div>
+                <div class="chart-box" style="margin-bottom:20px; padding:15px">
+                     <!-- Thu gọn khoảng trắng thừa ở tiêu đề -->
+                    <div class="form-group" style="margin-bottom:0"><label style="margin-bottom:2px">Tiêu đề Form:</label><input type="text" id="fbTitle" value="THÔNG TIN SINH VIÊN" style="font-weight:bold; font-size:16px; border-left:4px solid var(--primary); padding:8px 12px"></div>
                 </div>
                 
                 <div class="fb-container" id="fbFields">
@@ -750,14 +752,14 @@
             document.getElementById('logList').innerHTML = logs.map(x => {
                 let icon = 'info-circle';
                 if(x.type==='success') icon='check-circle'; if(x.type==='warning') icon='triangle-exclamation'; if(x.type==='danger') icon='circle-xmark';
-                return `<li class="timeline-item ${x.type}"><div class="timeline-icon"><i class="fa-solid fa-${icon}"></i></div><div class="log-box"><span class="log-time">${x.t}</span><span class="log-msg"><b>${x.title}:</b> ${x.msg}</span></div></li>`
+                return `<li class="timeline-item ${x.type}"><div class="log-box"><span class="log-time">${x.t}</span><span class="log-msg"><i class="fa-solid fa-${icon}"></i> <b>${x.title}:</b> ${x.msg}</span></div></li>`
             }).join(''); 
         }
         function clearLocalLogs() { logs=[]; localStorage.setItem('logs', '[]'); renderLogs(); }
         function showToast(msg, type="success") { 
             const d=document.createElement('div'); d.className=`toast ${type}`; 
             let icon='check-circle'; if(type==='warning') icon='triangle-exclamation'; if(type==='danger') icon='xmark-circle';
-            d.innerHTML=`<i class="fa-solid fa-${icon} toast-icon"></i><div class="toast-body"><span class="toast-msg">${msg}</span></div>`;
+            d.innerHTML=`<i class="fa-solid fa-${icon} toast-icon"></i><div class="toast-body"><span class="toast-title">${type==='danger'?'Lỗi':(type==='warning'?'Chú ý':'Thành công')}</span><span class="toast-msg">${msg}</span></div>`;
             document.getElementById('liveToastContainer').prepend(d); setTimeout(()=>d.remove(), cfg.notifDuration*1000); 
         }
         function updateTool(id, active) { const el=document.getElementById(id); if(active) el.classList.add('tool-active'); else el.classList.remove('tool-active'); }
@@ -767,7 +769,7 @@
         function switchTab(id) { document.querySelectorAll('.tab-content').forEach(e=>e.style.display='none'); document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active')); document.getElementById(id).style.display='block'; event.currentTarget.classList.add('active'); }
         
         // Tool Actions
-        function togglePause() { isPaused=!isPaused; updateTool('toolPause', isPaused); showToast(isPaused?"Đã Tạm Dừng":"Tiếp Tục", "info"); addLog("Tiện ích", isPaused?"Tạm dừng hệ thống":"Tiếp tục hệ thống", "warning"); }
+        function togglePause() { isPaused=!isPaused; updateTool('toolPause', isPaused); showToast(isPaused?"Đã Tạm Dừng":"Tiếp Tục"); addLog("Tiện ích", isPaused?"Tạm dừng hệ thống":"Tiếp tục hệ thống", "warning"); }
         function toggleDark() { cfg.darkMode=!cfg.darkMode; applyUI(); saveSystemConfig(true); addLog("Giao diện", "Đổi chế độ Sáng/Tối", "info"); }
         function zoomQR() { document.getElementById('qrZoomModal').style.display='flex'; updateQR(); }
         function toggleBlur() { document.getElementById('qrcode').classList.toggle('blur'); updateTool('toolBlur', document.getElementById('qrcode').classList.contains('blur')); }
@@ -819,11 +821,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
