@@ -52,7 +52,7 @@
 
         .qr-card { 
             position: relative; background: var(--bg-card); padding: 5px; border-radius: 30px; 
-            box-shadow: var(--shadow-lg); text-align: center; width: 420px; max-width: 90%; 
+            box-shadow: 0 20px 60px -10px rgba(99, 102, 241, 0.3); text-align: center; width: 420px; max-width: 90%; 
             z-index: 2; overflow: hidden;
         }
         /* Hiệu ứng viền chạy Neon */
@@ -171,7 +171,7 @@
             display: flex; flex-direction: column; gap: 15px;
         }
         .fb-card {
-            background: var(--bg-card); border-radius: 12px; padding: 20px;
+            background: var(--bg-card); border-radius: 12px; padding: 25px;
             border: 1px solid var(--border); box-shadow: var(--shadow-sm);
             position: relative; transition: 0.2s; border-left: 5px solid var(--primary);
         }
@@ -184,10 +184,10 @@
         .fb-body { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .fb-full { grid-column: 1 / -1; }
         
-        .fb-footer { margin-top: 15px; padding-top: 10px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; align-items: center; gap: 15px; }
+        .fb-footer { margin-top: 15px; padding-top: 10px; border-top: 1px dashed var(--border); display: flex; justify-content: flex-end; align-items: center; gap: 15px; }
         
         /* Form Label Style */
-        .fb-label-small { font-size: 11px; color: var(--text-sub); font-weight: 600; margin-bottom: 4px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
+        .fb-label-small { font-size: 11px; color: var(--text-sub); font-weight: 700; margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
 
         /* Switch Toggle */
         .switch { position: relative; display: inline-block; width: 40px; height: 22px; }
@@ -336,6 +336,7 @@
                     <div class="stat-card"><span class="stat-val" style="color:var(--primary)" id="statTotal">0</span><span class="stat-label">Tổng SV</span></div>
                     <div class="stat-card"><span class="stat-val" style="color:var(--success)" id="statClasses">0</span><span class="stat-label">Lớp Tham Gia</span></div>
                     <div class="stat-card"><span class="stat-val" style="color:var(--warning)" id="statReq">0</span><span class="stat-label">Yêu Cầu Mới</span></div>
+                     <div class="stat-card"><span class="stat-val" style="color:var(--info)" id="statLatest">--:--</span><span class="stat-label">Mới nhất</span></div>
                 </div>
                 <div class="chart-row">
                     <div class="chart-box">
@@ -370,18 +371,19 @@
                 <div style="text-align:right; margin-top:10px; font-size:12px; color:var(--text-sub)">Tổng dòng: <b id="rowCount">0</b></div>
             </div>
 
-            <!-- 3. CẤU HÌNH FORM (UPDATED) -->
+            <!-- 3. CẤU HÌNH FORM (UPDATED COMPACT) -->
             <div id="tab-form" class="tab-content">
-                <div style="background:var(--bg-card); padding:15px; border-radius:12px; border:1px solid var(--border); box-shadow:var(--shadow-sm); margin-bottom:20px; display:flex; flex-direction:column; gap:5px;">
-                     <label style="font-size:12px; font-weight:700; color:var(--text-sub); text-transform:uppercase;">Tiêu đề Form</label>
-                     <input type="text" id="fbTitle" value="THÔNG TIN SINH VIÊN" style="font-weight:bold; font-size:16px; border:none; border-bottom:2px solid var(--primary); border-radius:0; background:transparent; padding:5px 0;">
+                <!-- SỬA: Loại bỏ khoảng trắng thừa ở ô tiêu đề, thu nhỏ lại tối đa -->
+                <div class="chart-box" style="margin-bottom:15px; padding:8px 15px; border-left:4px solid var(--primary); display:flex; align-items:center; gap:10px; height:auto; min-height:unset;">
+                    <label style="font-size:11px; font-weight:700; color:var(--text-sub); text-transform:uppercase; margin:0; white-space:nowrap">TIÊU ĐỀ FORM:</label>
+                    <input type="text" id="fbTitle" value="THÔNG TIN SINH VIÊN" style="flex:1; border:none; border-bottom:1px solid transparent; border-radius:0; padding:5px 0; font-weight:700; font-size:15px; width:100%; background:transparent; color:var(--text-main); transition:0.3s; height:100%;">
                 </div>
                 
                 <div class="fb-container" id="fbFields">
                     <!-- Fields injected here -->
                 </div>
                 
-                <button class="btn btn-gray" onclick="addFormField()" style="width:100%; margin-top:15px; border:1px dashed #ccc; padding:15px">+ Thêm trường dữ liệu</button>
+                <button class="btn btn-gray" onclick="addFormField()" style="width:100%; margin-top:15px; border:1px dashed #ccc; padding:12px">+ Thêm trường dữ liệu</button>
                 <div style="margin-top:20px; text-align:right; padding-top:15px; border-top:1px solid var(--border)">
                     <button class="btn btn-success" onclick="saveFormConfig()"><i class="fa-solid fa-cloud-arrow-up"></i> Lưu & Đồng bộ Server</button>
                 </div>
@@ -452,6 +454,7 @@
                 
                 <div class="config-group" style="margin-bottom:20px; border:1px solid var(--border); padding:20px; border-radius:16px;">
                     <div style="font-weight:700; color:var(--primary); margin-bottom:15px; text-transform:uppercase"><i class="fa-solid fa-palette"></i> Giao diện & Thông báo</div>
+                    <div class="form-group"><label>Tiêu đề QR:</label><input type="text" id="cfgTitle"></div>
                     <div class="form-group"><label>Nội dung chữ chạy:</label><input type="text" id="cfgMqText"></div>
                     
                     <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:10px; margin-top:10px">
@@ -515,6 +518,7 @@
         let formCfg = { title: "THÔNG TIN", fields: [{label:"Họ Tên", type:"text", required:true}, {label:"MSSV", type:"tel", required:true}, {label:"Lớp", type:"text", required:true}] };
         let allData=[], filteredData=[], logs=JSON.parse(localStorage.getItem('logs'))||[], timer=30, qrObj=null, lastReq=0, isPaused=false, liveInt=null, isUnlockMode=false, curReq=null;
         let chart1=null, chart2=null, chart3=null;
+        let lastRowCount = 0; // Biến theo dõi số lượng sinh viên
 
         const resizer=document.getElementById('resizer'), adminSec=document.getElementById('adminSection'); let isResizing=false;
         resizer.addEventListener('mousedown', ()=>{isResizing=true; document.body.style.cursor='col-resize'});
@@ -568,13 +572,34 @@
             updateTool('toolLive', cfg.notifEnabled);
             if(cfg.notifEnabled && cfg.api) {
                 if(liveInt) clearInterval(liveInt);
-                liveInt = setInterval(pollData, 5000);
+                // Giảm thời gian polling xuống 2.5s để cập nhật nhanh hơn
+                liveInt = setInterval(pollData, 2500);
             } else clearInterval(liveInt);
         }
         function pollData() {
             const d = document.getElementById('viewDate').value; 
             fetch(`${cfg.api}?action=GET_LIST&date=${d}`).then(r=>r.json()).then(r=>{
                 if(r.status==="success") {
+                    const newData = r.data || [];
+                    const newCount = newData.length;
+
+                    // 1. Kiểm tra sinh viên mới điểm danh
+                    if (newCount > lastRowCount) {
+                         // Lặp qua các sinh viên mới để thông báo
+                         for (let i = lastRowCount; i < newCount; i++) {
+                             const sv = newData[i];
+                             // Giả định: Trường 0 là Tên, Trường 1 là MSSV
+                             const svName = (sv.data && sv.data[0]) ? sv.data[0] : (sv.name || "Sinh viên");
+                             const svMssv = (sv.data && sv.data[1]) ? sv.data[1] : (sv.mssv || "---");
+                             const svTime = sv.time.split(' ')[0];
+                             
+                             showToast(`✅ ${svName} (${svMssv}) đã điểm danh lúc ${svTime}`, "success");
+                             addLog("Điểm danh", `${svName} (${svMssv}) vào lớp lúc ${svTime}`, "success");
+                         }
+                         lastRowCount = newCount; 
+                    }
+                    
+                    // 2. Kiểm tra yêu cầu reset
                     if(r.totalRequests > lastReq) {
                         fetch(`${cfg.api}?action=GET_LOGS`).then(l=>l.json()).then(lr=>{
                             if(lr.status==="success" && lr.data.length>0) {
@@ -584,11 +609,19 @@
                             }
                         });
                         lastReq = r.totalRequests;
+                        // Chỉ refresh list nếu admin đang mở
                         if(document.body.classList.contains('admin-open')) fetchList();
                     }
+                    
+                    // 3. Đồng bộ danh sách hiển thị
                     if(document.body.classList.contains('admin-open')) {
-                        const old = allData.length; allData = r.data;
-                        if(allData.length > old) { showToast(`👨‍🎓 ${allData.length-old} bạn mới điểm danh`, "success"); applyFilter(); addLog("Dữ liệu", "Có sinh viên mới", "success"); }
+                        if(allData.length !== newData.length) {
+                             allData = newData;
+                             applyFilter();
+                        }
+                    } else {
+                        // Cập nhật ngầm
+                        allData = newData;
                     }
                 }
             });
@@ -599,7 +632,11 @@
             document.getElementById('loader').style.display = "block";
             fetch(`${cfg.api}?action=GET_LIST&date=${d}`).then(r=>r.json()).then(r=>{
                 document.getElementById('loader').style.display = "none";
-                if(r.status==="success"){ allData = r.data; applyFilter(); }
+                if(r.status==="success"){ 
+                    allData = r.data; 
+                    lastRowCount = allData.length; // Đồng bộ số lượng khi tải thủ công
+                    applyFilter(); 
+                }
             }).catch(()=>{document.getElementById('loader').style.display = "none";});
         }
 
@@ -631,6 +668,44 @@
             document.getElementById('tableBody').innerHTML = html || '<tr><td colspan="10" style="text-align:center">Trống</td></tr>';
             document.getElementById('rowCount').innerText = filteredData.length;
             updateBulk(); renderStats();
+        }
+
+        let colFilters = {};
+        function filterCol(idx, val) {
+            colFilters[idx] = val.toLowerCase();
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            filteredData = allData.filter(i => {
+                const globalMatch = JSON.stringify(i).toLowerCase().includes(searchTerm);
+                if (!globalMatch) return false;
+                for (let key in colFilters) {
+                    if (!colFilters[key]) continue;
+                    let cellValue = "";
+                    if (key == 2) cellValue = i.time.split(' ')[0]; 
+                    else {
+                        let dataIdx = key - 3;
+                        if (i.data && i.data[dataIdx]) cellValue = i.data[dataIdx];
+                    }
+                    if (!String(cellValue).toLowerCase().includes(colFilters[key])) return false;
+                }
+                return true;
+            });
+            
+            // Re-render Body Only
+            const tbody = document.getElementById('tableBody');
+            let html = "";
+             filteredData.forEach(i => {
+                let bell = i.request ? `<i class="fa-solid fa-bell bell-active" onclick="openReq('${i.unique_id}','${i.name}','${i.mssv}','${i.class_name}','${i.request.reason}')"></i>` : "";
+                let cols = "";
+                formCfg.fields.forEach((f, idx) => {
+                    let val = (i.data && i.data[idx]) ? i.data[idx] : "";
+                    if(!val) { if(idx===0) val=i.name; else if(idx===1) val=i.mssv; else if(idx===2) val=i.class_name; }
+                    cols += `<td title="${val}">${val}</td>`;
+                });
+                html += `<tr><td><input type="checkbox" class="chk" value="${i.row_index}|${i.unique_id}" onclick="updateBulk()"></td><td class="bell-cell">${bell}</td><td>${i.time.split(' ')[0]}</td>${cols}<td><i class="fa-solid fa-trash" style="color:var(--danger);cursor:pointer" onclick="delRow(${i.row_index},'${i.name}')"></i></td></tr>`;
+            });
+            tbody.innerHTML = html || '<tr><td colspan="10" style="text-align:center">Trống</td></tr>';
+            document.getElementById('rowCount').innerText = filteredData.length;
+            renderStats();
         }
 
         function sortTable(key) {
@@ -684,22 +759,22 @@
         function toggleAll(src) { document.querySelectorAll('.chk').forEach(c=>c.checked=src.checked); updateBulk(); }
         function updateBulk() { const n=document.querySelectorAll('.chk:checked').length; document.getElementById('btnBulk').style.display=n?'inline-block':'none'; }
 
-        // --- FORM BUILDER (UPDATED) ---
+        // --- FORM BUILDER (NEW) ---
         function renderFormBuilder() {
             const c = document.getElementById('fbFields'); c.innerHTML="";
             formCfg.fields.forEach((f, i) => {
                 c.innerHTML += `
                 <div class="fb-card">
-                    <div class="fb-card-row" style="display:flex; gap:10px; margin-bottom:10px">
-                        <div style="flex:2">
+                    <div class="fb-card-row" style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap:10px; margin-bottom:10px">
+                        <div>
                             <label class="fb-label-small">Nội dung câu hỏi</label>
                             <input class="fb-input-label" type="text" value="${f.label}" onchange="formCfg.fields[${i}].label=this.value" placeholder="Tên câu hỏi">
                         </div>
-                        <div style="flex:1">
+                        <div>
                             <label class="fb-label-small">Loại dữ liệu</label>
                             <select onchange="formCfg.fields[${i}].type=this.value"><option value="text" ${f.type=='text'?'selected':''}>Trả lời ngắn</option><option value="tel" ${f.type=='tel'?'selected':''}>Số</option></select>
                         </div>
-                         <div style="flex:1">
+                         <div>
                             <label class="fb-label-small">Định dạng</label>
                             <select onchange="formCfg.fields[${i}].format=this.value"><option value="none" ${f.format=='none'?'selected':''}>Mặc định</option><option value="uppercase" ${f.format=='uppercase'?'selected':''}>IN HOA</option><option value="capitalize" ${f.format=='capitalize'?'selected':''}>Viết Hoa</option></select>
                         </div>
@@ -767,14 +842,14 @@
             document.getElementById('logList').innerHTML = logs.map(x => {
                 let icon = 'info-circle';
                 if(x.type==='success') icon='check-circle'; if(x.type==='warning') icon='triangle-exclamation'; if(x.type==='danger') icon='circle-xmark';
-                return `<li class="timeline-item ${x.type}"><div class="log-box"><span class="log-time">${x.t}</span><span class="log-msg"><i class="fa-solid fa-${icon}"></i> <b>${x.title}:</b> ${x.msg}</span></div></li>`
+                return `<li class="timeline-item ${x.type}"><div class="timeline-marker"></div><div class="log-box"><span class="log-time">${x.t}</span><div class="log-content"><span class="log-title"><i class="fa-solid fa-${icon}"></i> ${x.title}</span><span class="log-desc">${x.msg}</span></div></div></li>`
             }).join(''); 
         }
         function clearLocalLogs() { logs=[]; localStorage.setItem('logs', '[]'); renderLogs(); }
         function showToast(msg, type="success") { 
             const d=document.createElement('div'); d.className=`toast ${type}`; 
             let icon='check-circle'; if(type==='warning') icon='triangle-exclamation'; if(type==='danger') icon='xmark-circle';
-            d.innerHTML=`<i class="fa-solid fa-${icon} toast-icon"></i><div class="toast-body"><span class="toast-msg">${msg}</span></div>`;
+            d.innerHTML=`<div class="toast-icon"><i class="fa-solid fa-${icon}"></i></div><div class="toast-body"><span class="toast-title">${type==='danger'?'Lỗi':(type==='warning'?'Chú ý':'Thành công')}</span><span class="toast-msg">${msg}</span></div>`;
             document.getElementById('liveToastContainer').prepend(d); setTimeout(()=>d.remove(), cfg.notifDuration*1000); 
         }
         function updateTool(id, active) { const el=document.getElementById(id); if(active) el.classList.add('tool-active'); else el.classList.remove('tool-active'); }
@@ -787,29 +862,32 @@
         function togglePause() { isPaused=!isPaused; updateTool('toolPause', isPaused); showToast(isPaused?"Đã Tạm Dừng":"Tiếp Tục", "info"); addLog("Tiện ích", isPaused?"Tạm dừng hệ thống":"Tiếp tục hệ thống", "warning"); }
         function toggleDark() { cfg.darkMode=!cfg.darkMode; applyUI(); saveSystemConfig(true); addLog("Giao diện", "Đổi chế độ Sáng/Tối", "info"); }
         function zoomQR() { document.getElementById('qrZoomModal').style.display='flex'; updateQR(); }
-        function toggleBlur() { document.getElementById('qrcode').classList.toggle('blur'); updateTool('toolBlur', document.getElementById('qrcode').classList.contains('blur')); }
-        function lockScreen() { document.getElementById('lockScreen').style.display='flex'; closeAdmin(); addLog("Bảo mật", "Khóa màn hình", "warning"); }
-        function dlQR() { const i=document.querySelector('#qrcode img'); if(i){const a=document.createElement('a'); a.href=i.src; a.download='QR.png'; a.click();} }
+        function toggleBlur() { document.getElementById('qrcode').classList.toggle('blur'); updateTool('toolBlur', document.getElementById('qrcode').classList.contains('blur')); showToast(document.getElementById('qrcode').classList.contains('blur')?"Đã che QR":"Đã hiện QR", "info"); addLog("Tiện ích", document.getElementById('qrcode').classList.contains('blur')?"Che QR":"Hiện QR", "info"); }
+        function toggleClock() { const c=document.querySelector('.realtime'); c.style.display=c.style.display==='none'?'flex':'none'; updateTool('toolClock', c.style.display!=='none'); showToast(c.style.display!=='none'?"Hiện Đồng Hồ":"Ẩn Đồng Hồ", "info"); }
+        function lockScreen() { document.getElementById('lockScreen').style.display='flex'; closeAdmin(); addLog("Bảo mật", "Khóa màn hình", "warning"); showToast("Đã khóa màn hình", "warning"); }
+        function downloadQR() { const i=document.querySelector('#qrcode img'); if(i){const a=document.createElement('a'); a.href=i.src; a.download='QR.png'; a.click(); showToast("Đang tải QR...", "success"); addLog("Tiện ích", "Tải QR Code", "success");} }
         function exportExcel() { 
             const wb = XLSX.utils.book_new(); 
             const ws = XLSX.utils.json_to_sheet(allData.map(r=>({Time:r.time, ...r.data})));
             XLSX.utils.book_append_sheet(wb, ws, "Data");
             XLSX.writeFile(wb, "DiemDanh.xlsx");
             addLog("Dữ liệu", "Xuất Excel", "success");
+            showToast("Đã xuất Excel thành công", "success");
         }
-        function openLink() { window.open(cfg.link, '_blank'); }
-        function checkNet() { showToast(navigator.onLine ? "Kết nối ổn định" : "Mất kết nối", navigator.onLine?"success":"danger"); }
-        function toggleNote() { const n=document.getElementById('notePad'); n.style.display=n.style.display==='none'?'block':'none'; }
-        function saveNote() { localStorage.setItem('admin_note', document.getElementById('adminNote').value); showToast("Đã lưu note", "success"); }
-        function startTimer5() { let m=5, s=0; const t = setInterval(()=>{ if(s==0){if(m==0){clearInterval(t);alert("Hết giờ");return;}m--;s=59;}else s--; document.getElementById('countdown').innerText=`${m}:${s<10?'0'+s:s}`; },1000); showToast("Đếm ngược 5p", "info"); }
-        function showStaticQR() { document.getElementById('qrZoomModal').style.display='flex'; new QRCode(document.getElementById('qrcodeZoom'), {text:cfg.link, width:300, height:300}); }
-        function randomStudent() { if(filteredData.length>0) alert("🎉 " + (filteredData[Math.floor(Math.random()*filteredData.length)].data[0] || "Sinh viên")); }
+        function openLink() { window.open(cfg.link, '_blank'); showToast("Đã mở link", "success"); addLog("Tiện ích", "Mở Link Form", "info"); }
+        function checkNet() { showToast(navigator.onLine ? "Kết nối ổn định" : "Mất kết nối", navigator.onLine?"success":"danger"); addLog("Tiện ích", navigator.onLine ? "Check net: Online" : "Check net: Offline", navigator.onLine?"success":"danger"); }
+        function toggleNote() { const n=document.getElementById('notePad'); n.style.display=n.style.display==='none'?'block':'none'; showToast("Đã bật/tắt ghi chú", "info"); }
+        function saveNote() { localStorage.setItem('admin_note', document.getElementById('adminNote').value); showToast("Đã lưu note", "success"); addLog("Tiện ích", "Lưu ghi chú", "success"); }
+        function startTimer5() { let m=5, s=0; const t = setInterval(()=>{ if(s==0){if(m==0){clearInterval(t);alert("Hết giờ");return;}m--;s=59;}else s--; document.getElementById('countdown').innerText=`${m}:${s<10?'0'+s:s}`; },1000); showToast("Đếm ngược 5p", "info"); addLog("Tiện ích", "Bắt đầu đếm ngược 5p", "info"); }
+        function showStaticQR() { document.getElementById('qrZoomModal').style.display='flex'; new QRCode(document.getElementById('qrcodeZoom'), {text:cfg.link, width:300, height:300}); showToast("Hiện QR Tĩnh", "info"); }
+        function randomStudent() { if(filteredData.length>0) { const s = filteredData[Math.floor(Math.random()*filteredData.length)]; alert("🎉 " + (s.data[0] || "Sinh viên")); addLog("Tiện ích", `Quay số: ${s.data[0]}`, "success"); } }
         function printList() { 
             const win = window.open('', '', 'height=600, width=800'); 
             win.document.write('<html><head><title>IN DANH SÁCH</title><style>table{width:100%;border-collapse:collapse}th,td{border:1px solid #000;padding:8px}</style></head><body>'+document.querySelector('.excel-table-container').innerHTML+'</body></html>'); 
             win.document.close(); win.print(); 
+            addLog("Tiện ích", "In danh sách", "info");
         }
-        function exportConfig() { const a=document.createElement('a'); a.href="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(cfg)); a.download="config.json"; a.click(); }
+        function exportConfig() { const a=document.createElement('a'); a.href="data:text/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(cfg)); a.download="config.json"; a.click(); showToast("Đã sao lưu cấu hình", "success"); addLog("Cấu hình", "Sao lưu cấu hình", "success"); }
         function importConfig() { const i=document.createElement('input'); i.type='file'; i.onchange=e=>{const r=new FileReader(); r.onload=ev=>{cfg=JSON.parse(ev.target.result); localStorage.setItem('qr_cfg',JSON.stringify(cfg)); location.reload();}; r.readAsText(e.target.files[0]);}; i.click(); }
 
         function renderStats() {
