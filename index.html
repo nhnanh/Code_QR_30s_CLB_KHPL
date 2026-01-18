@@ -783,7 +783,7 @@
             addLog("Dữ liệu", "Xuất Excel", "success");
         }
         function openLink() { window.open(cfg.link, '_blank'); }
-        function checkNet() { showToast(navigator.onLine ? "Kết nối ổn định" : "Mất kết nối", navigator.onLine?"success":"danger"); }
+        function checkNet() { showToast(navigator.onLine ? "Kết nối ổn định" : "Mất kết nối", navigator.onLine?"suhttps://github.com/nhnanh/Code_QR_30s_CLB_KHPL/blob/main/index.htmlccess":"danger"); }
         function toggleNote() { const n=document.getElementById('notePad'); n.style.display=n.style.display==='none'?'block':'none'; }
         function saveNote() { localStorage.setItem('admin_note', document.getElementById('adminNote').value); showToast("Đã lưu note", "success"); }
         function startTimer5() { let m=5, s=0; const t = setInterval(()=>{ if(s==0){if(m==0){clearInterval(t);alert("Hết giờ");return;}m--;s=59;}else s--; document.getElementById('countdown').innerText=`${m}:${s<10?'0'+s:s}`; },1000); showToast("Đếm ngược 5p", "info"); }
