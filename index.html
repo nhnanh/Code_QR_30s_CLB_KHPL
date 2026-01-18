@@ -186,6 +186,9 @@
         
         .fb-footer { margin-top: 15px; padding-top: 10px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; align-items: center; gap: 15px; }
         
+        /* Form Label Style */
+        .fb-label-small { font-size: 11px; color: var(--text-sub); font-weight: 600; margin-bottom: 4px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
+
         /* Switch Toggle */
         .switch { position: relative; display: inline-block; width: 40px; height: 22px; }
         .switch input { opacity: 0; width: 0; height: 0; }
@@ -367,11 +370,11 @@
                 <div style="text-align:right; margin-top:10px; font-size:12px; color:var(--text-sub)">Tổng dòng: <b id="rowCount">0</b></div>
             </div>
 
-            <!-- 3. CẤU HÌNH FORM (NEW CARD DESIGN) -->
+            <!-- 3. CẤU HÌNH FORM (UPDATED) -->
             <div id="tab-form" class="tab-content">
-                <div class="chart-box" style="margin-bottom:20px; padding:15px">
-                     <!-- Thu gọn khoảng trắng thừa ở tiêu đề -->
-                    <div class="form-group" style="margin-bottom:0"><label style="margin-bottom:2px">Tiêu đề Form:</label><input type="text" id="fbTitle" value="THÔNG TIN SINH VIÊN" style="font-weight:bold; font-size:16px; border-left:4px solid var(--primary); padding:8px 12px"></div>
+                <div style="background:var(--bg-card); padding:15px; border-radius:12px; border:1px solid var(--border); box-shadow:var(--shadow-sm); margin-bottom:20px; display:flex; flex-direction:column; gap:5px;">
+                     <label style="font-size:12px; font-weight:700; color:var(--text-sub); text-transform:uppercase;">Tiêu đề Form</label>
+                     <input type="text" id="fbTitle" value="THÔNG TIN SINH VIÊN" style="font-weight:bold; font-size:16px; border:none; border-bottom:2px solid var(--primary); border-radius:0; background:transparent; padding:5px 0;">
                 </div>
                 
                 <div class="fb-container" id="fbFields">
@@ -681,18 +684,30 @@
         function toggleAll(src) { document.querySelectorAll('.chk').forEach(c=>c.checked=src.checked); updateBulk(); }
         function updateBulk() { const n=document.querySelectorAll('.chk:checked').length; document.getElementById('btnBulk').style.display=n?'inline-block':'none'; }
 
-        // --- FORM BUILDER (NEW) ---
+        // --- FORM BUILDER (UPDATED) ---
         function renderFormBuilder() {
             const c = document.getElementById('fbFields'); c.innerHTML="";
             formCfg.fields.forEach((f, i) => {
                 c.innerHTML += `
                 <div class="fb-card">
-                    <div class="fb-card-row">
-                        <input class="fb-input-label" type="text" value="${f.label}" onchange="formCfg.fields[${i}].label=this.value" placeholder="Tên câu hỏi">
-                        <select onchange="formCfg.fields[${i}].type=this.value"><option value="text" ${f.type=='text'?'selected':''}>Trả lời ngắn</option><option value="tel" ${f.type=='tel'?'selected':''}>Số</option></select>
-                         <select onchange="formCfg.fields[${i}].format=this.value"><option value="none" ${f.format=='none'?'selected':''}>Mặc định</option><option value="uppercase" ${f.format=='uppercase'?'selected':''}>IN HOA</option><option value="capitalize" ${f.format=='capitalize'?'selected':''}>Viết Hoa</option></select>
+                    <div class="fb-card-row" style="display:flex; gap:10px; margin-bottom:10px">
+                        <div style="flex:2">
+                            <label class="fb-label-small">Nội dung câu hỏi</label>
+                            <input class="fb-input-label" type="text" value="${f.label}" onchange="formCfg.fields[${i}].label=this.value" placeholder="Tên câu hỏi">
+                        </div>
+                        <div style="flex:1">
+                            <label class="fb-label-small">Loại dữ liệu</label>
+                            <select onchange="formCfg.fields[${i}].type=this.value"><option value="text" ${f.type=='text'?'selected':''}>Trả lời ngắn</option><option value="tel" ${f.type=='tel'?'selected':''}>Số</option></select>
+                        </div>
+                         <div style="flex:1">
+                            <label class="fb-label-small">Định dạng</label>
+                            <select onchange="formCfg.fields[${i}].format=this.value"><option value="none" ${f.format=='none'?'selected':''}>Mặc định</option><option value="uppercase" ${f.format=='uppercase'?'selected':''}>IN HOA</option><option value="capitalize" ${f.format=='capitalize'?'selected':''}>Viết Hoa</option></select>
+                        </div>
                     </div>
-                    <input class="fb-input-note" type="text" value="${f.placeholder||''}" onchange="formCfg.fields[${i}].placeholder=this.value" placeholder="Ghi chú (Placeholder)...">
+                    <div style="margin-bottom:10px">
+                        <label class="fb-label-small">Ghi chú (Placeholder)</label>
+                        <input class="fb-input-note" type="text" value="${f.placeholder||''}" onchange="formCfg.fields[${i}].placeholder=this.value" placeholder="VD: Nhập họ và tên...">
+                    </div>
                     <div class="fb-footer">
                         <div style="display:flex;align-items:center;gap:5px"><label class="switch"><input type="checkbox" ${f.required?'checked':''} onchange="formCfg.fields[${i}].required=this.checked"><span class="slider"></span></label> <span style="font-size:13px">Bắt buộc</span></div>
                         <i class="fa-solid fa-trash" style="color:var(--text-sub);cursor:pointer;font-size:18px" onclick="removeField(${i})"></i>
@@ -759,7 +774,7 @@
         function showToast(msg, type="success") { 
             const d=document.createElement('div'); d.className=`toast ${type}`; 
             let icon='check-circle'; if(type==='warning') icon='triangle-exclamation'; if(type==='danger') icon='xmark-circle';
-            d.innerHTML=`<i class="fa-solid fa-${icon} toast-icon"></i><div class="toast-body"><span class="toast-title">${type==='danger'?'Lỗi':(type==='warning'?'Chú ý':'Thành công')}</span><span class="toast-msg">${msg}</span></div>`;
+            d.innerHTML=`<i class="fa-solid fa-${icon} toast-icon"></i><div class="toast-body"><span class="toast-msg">${msg}</span></div>`;
             document.getElementById('liveToastContainer').prepend(d); setTimeout(()=>d.remove(), cfg.notifDuration*1000); 
         }
         function updateTool(id, active) { const el=document.getElementById(id); if(active) el.classList.add('tool-active'); else el.classList.remove('tool-active'); }
@@ -769,7 +784,7 @@
         function switchTab(id) { document.querySelectorAll('.tab-content').forEach(e=>e.style.display='none'); document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active')); document.getElementById(id).style.display='block'; event.currentTarget.classList.add('active'); }
         
         // Tool Actions
-        function togglePause() { isPaused=!isPaused; updateTool('toolPause', isPaused); showToast(isPaused?"Đã Tạm Dừng":"Tiếp Tục"); addLog("Tiện ích", isPaused?"Tạm dừng hệ thống":"Tiếp tục hệ thống", "warning"); }
+        function togglePause() { isPaused=!isPaused; updateTool('toolPause', isPaused); showToast(isPaused?"Đã Tạm Dừng":"Tiếp Tục", "info"); addLog("Tiện ích", isPaused?"Tạm dừng hệ thống":"Tiếp tục hệ thống", "warning"); }
         function toggleDark() { cfg.darkMode=!cfg.darkMode; applyUI(); saveSystemConfig(true); addLog("Giao diện", "Đổi chế độ Sáng/Tối", "info"); }
         function zoomQR() { document.getElementById('qrZoomModal').style.display='flex'; updateQR(); }
         function toggleBlur() { document.getElementById('qrcode').classList.toggle('blur'); updateTool('toolBlur', document.getElementById('qrcode').classList.contains('blur')); }
@@ -783,7 +798,7 @@
             addLog("Dữ liệu", "Xuất Excel", "success");
         }
         function openLink() { window.open(cfg.link, '_blank'); }
-        function checkNet() { showToast(navigator.onLine ? "Kết nối ổn định" : "Mất kết nối", navigator.onLine?"suhttps://github.com/nhnanh/Code_QR_30s_CLB_KHPL/blob/main/index.htmlccess":"danger"); }
+        function checkNet() { showToast(navigator.onLine ? "Kết nối ổn định" : "Mất kết nối", navigator.onLine?"success":"danger"); }
         function toggleNote() { const n=document.getElementById('notePad'); n.style.display=n.style.display==='none'?'block':'none'; }
         function saveNote() { localStorage.setItem('admin_note', document.getElementById('adminNote').value); showToast("Đã lưu note", "success"); }
         function startTimer5() { let m=5, s=0; const t = setInterval(()=>{ if(s==0){if(m==0){clearInterval(t);alert("Hết giờ");return;}m--;s=59;}else s--; document.getElementById('countdown').innerText=`${m}:${s<10?'0'+s:s}`; },1000); showToast("Đếm ngược 5p", "info"); }
