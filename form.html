@@ -2,84 +2,145 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Điểm Danh Online</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'Inter', sans-serif; background: #f1f5f9; padding: 20px; display: flex; justify-content: center; min-height: 100vh; }
-        .container { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        h2 { text-align: center; color: #4f46e5; margin-bottom: 25px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: 600; color: #64748b; font-size: 14px; }
-        input { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 15px; box-sizing: border-box; transition: 0.2s; }
-        input:focus { border-color: #4f46e5; outline: none; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
-        .btn { width: 100%; padding: 14px; background: #4f46e5; color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 16px; transition: 0.2s; }
-        .btn:hover { background: #4338ca; }
-        .btn:disabled { background: #cbd5e1; cursor: not-allowed; }
-        .error-box { display: none; background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 15px; border-radius: 8px; margin-top: 15px; font-size: 14px; }
-        .success-box { display: none; text-align: center; margin-top: 20px; }
-        .success-icon { font-size: 50px; color: #10b981; margin-bottom: 10px; }
-        /* Ẩn reset section mặc định */
-        #resetSection { margin-top: 15px; padding-top: 15px; border-top: 1px dashed #e2e8f0; display: none; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: 'Outfit', sans-serif;
+            margin: 0; padding: 20px;
+            min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: #fff;
+        }
+        @keyframes gradientBG { 0% {background-position: 0% 50%} 50% {background-position: 100% 50%} 100% {background-position: 0% 50%} }
+
+        .glass-container {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 24px;
+            padding: 30px 25px;
+            width: 100%; max-width: 420px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.3);
+            position: relative; overflow: hidden;
+            transition: transform 0.3s;
+        }
+        
+        h2 { text-align: center; margin: 0 0 25px 0; font-weight: 800; letter-spacing: -0.5px; font-size: 26px; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        
+        .form-group { margin-bottom: 20px; position: relative; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px; color: rgba(255,255,255,0.9); text-transform: uppercase; letter-spacing: 0.5px; }
+        input {
+            width: 100%; padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: white; font-size: 16px;
+            transition: 0.3s;
+        }
+        input:focus {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.6);
+            outline: none; box-shadow: 0 0 15px rgba(255,255,255,0.1);
+        }
+        input::placeholder { color: rgba(255, 255, 255, 0.5); }
+
+        .btn {
+            width: 100%; padding: 16px;
+            background: white; color: #4f46e5;
+            border: none; border-radius: 14px;
+            font-weight: 700; font-size: 16px;
+            cursor: pointer; transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            text-transform: uppercase; letter-spacing: 0.5px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+        .btn:active { transform: scale(0.98); }
+        .btn:disabled { opacity: 0.7; cursor: wait; }
+
+        .error-box {
+            display: none; background: rgba(254, 202, 202, 0.2);
+            border: 1px solid rgba(254, 202, 202, 0.4);
+            padding: 15px; border-radius: 12px;
+            margin-top: 20px; animation: shake 0.4s ease-in-out;
+        }
+        @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-5px);} 75% {transform: translateX(5px);} }
+        
+        .success-box { display: none; text-align: center; padding: 20px 0; }
+        .success-icon { font-size: 60px; margin-bottom: 15px; display: block; animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes pop { 0% {transform: scale(0)} 100% {transform: scale(1)} }
+
+        #resetSection { margin-top: 15px; padding-top: 15px; border-top: 1px dashed rgba(255,255,255,0.3); display: none; }
+        .reset-link { color: rgba(255,255,255,0.8); font-size: 13px; text-decoration: underline; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div class="container" id="mainForm">
-        <h2 id="formTitle">ĐIỂM DANH</h2>
+    <div class="glass-container" id="mainForm">
+        <h2 id="formTitle"><i class="fa-solid fa-qrcode"></i> ĐIỂM DANH</h2>
         <div id="dynamicFields"></div>
-        <button class="btn" id="btnSubmit" onclick="submitForm()">XÁC NHẬN ĐIỂM DANH</button>
+        <button class="btn" id="btnSubmit" onclick="submitForm()">
+            <span>XÁC NHẬN</span> <i class="fa-solid fa-arrow-right"></i>
+        </button>
         
         <div class="error-box" id="errorBox">
-            <div id="errorMsg" style="margin-bottom:10px; font-weight:bold"></div>
-            
-            <!-- Phần này chỉ hiện khi bị lỗi trùng lặp -->
+            <div id="errorMsg" style="margin-bottom:10px; font-weight:600; color:#fca5a5"><i class="fa-solid fa-triangle-exclamation"></i> Có lỗi xảy ra!</div>
             <div id="resetSection">
-                <p style="margin:0 0 10px 0; color:#64748b; font-size:13px">Bạn cho rằng có sự nhầm lẫn? Gửi yêu cầu để Admin mở khóa:</p>
-                <div class="form-group">
-                     <input type="text" id="resetReason" placeholder="Nhập lý do (VD: Em bị rớt mạng...)">
+                <p style="margin:0 0 10px 0; font-size:13px; opacity:0.9">Bạn nhập sai hoặc muốn điểm danh lại?</p>
+                <div class="form-group" style="margin-bottom:10px">
+                     <input type="text" id="resetReason" placeholder="Nhập lý do (VD: Nhầm mã SV...)">
                 </div>
-                <button class="btn" style="background:#ef4444" onclick="requestReset()">Gửi yêu cầu Reset</button>
+                <button class="btn" style="background: rgba(239, 68, 68, 0.9); color:white" onclick="requestReset()">
+                    <i class="fa-solid fa-rotate-left"></i> Gửi yêu cầu Reset
+                </button>
             </div>
         </div>
     </div>
 
-    <div class="container success-box" id="successBox">
-        <div class="success-icon">✅</div>
-        <h3>Điểm danh thành công!</h3>
-        <p>Hệ thống đã ghi nhận: <b id="resTime"></b></p>
-        <p>Chúc bạn một ngày tốt lành!</p>
+    <div class="glass-container success-box" id="successBox">
+        <div class="success-icon">🎉</div>
+        <h2 style="margin-bottom:10px">Thành công!</h2>
+        <p style="opacity:0.9; margin-bottom:5px">Hệ thống đã ghi nhận lúc:</p>
+        <div style="font-size:24px; font-weight:700; margin-bottom:20px" id="resTime">--:--</div>
+        <button class="btn" style="background: rgba(255,255,255,0.2); color:white; border:1px solid rgba(255,255,255,0.3)" onclick="location.reload()">
+            Điểm danh tiếp
+        </button>
     </div>
 
     <script>
-        // Cập nhật link API của bạn sau khi deploy lại code backend mới
         const API_URL = "https://script.google.com/macros/s/AKfycbzUoPJ0kmDntHf4W2Dqb30m6zWf7qODeha1iPGbQ0xbILoe-FADEn5CIznlNCGh3CTU/exec"; 
         
         let formConfig = null;
-        let lastSubmitData = null; // Lưu dữ liệu lần submit cuối để dùng cho reset
+        let lastSubmitData = null;
 
         window.onload = function() {
-            // Check hết hạn link
             const urlParams = new URLSearchParams(window.location.search);
             const e = urlParams.get('e');
             if(e && parseInt(e) < Date.now()) {
-                document.body.innerHTML = "<h1 style='text-align:center;margin-top:50px;color:red'>LINK ĐÃ HẾT HẠN</h1>";
+                document.body.innerHTML = "<div class='glass-container' style='text-align:center; color:#fca5a5'><h2><i class='fa-solid fa-link-slash'></i></h2><h3>LINK ĐÃ HẾT HẠN</h3></div>";
                 return;
             }
 
             fetch(API_URL + "?action=GET_FORM_CONFIG").then(r => r.json()).then(res => {
-                if(res.status === "success" && res.config) {
-                    renderFields(res.config);
-                } else {
-                    renderFields({title: "THÔNG TIN", fields: [{label:"Họ Tên", type:"text", required:true}, {label:"MSSV", type:"tel", required:true}, {label:"Lớp", type:"text", required:true}]});
-                }
-            }).catch(() => {
-                 renderFields({title: "THÔNG TIN", fields: [{label:"Họ Tên", type:"text", required:true}, {label:"MSSV", type:"tel", required:true}, {label:"Lớp", type:"text", required:true}]});
-            });
+                if(res.status === "success" && res.config) renderFields(res.config);
+                else renderDefault();
+            }).catch(() => renderDefault());
         };
+
+        function renderDefault() {
+            renderFields({title: "THÔNG TIN", fields: [{label:"Họ Tên", type:"text", required:true}, {label:"MSSV", type:"tel", required:true}, {label:"Lớp", type:"text", required:true}]});
+        }
 
         function renderFields(cfg) {
             formConfig = cfg;
-            document.getElementById('formTitle').innerText = cfg.title;
+            document.getElementById('formTitle').innerHTML = `<i class="fa-solid fa-clipboard-user"></i> ${cfg.title}`;
             let html = '';
             cfg.fields.forEach((f, i) => {
                 let req = f.required ? 'required' : '';
@@ -96,103 +157,77 @@
             let data = { action: "CHECK_IN", other_data: [] };
             let hasError = false;
 
-            // Mapping dữ liệu: 0->Name, 1->MSSV, 2->Class (Theo thứ tự mặc định)
             if(inputs.length > 0) data.name = inputs[0].value;
             if(inputs.length > 1) data.mssv = inputs[1].value;
             if(inputs.length > 2) data.class_name = inputs[2].value;
 
             inputs.forEach(inp => {
                 if(inp.hasAttribute('required') && !inp.value.trim()) {
-                    inp.style.borderColor = "red";
+                    inp.style.borderColor = "#fca5a5";
+                    inp.style.backgroundColor = "rgba(254, 202, 202, 0.1)";
                     hasError = true;
                 } else {
-                    inp.style.borderColor = "#e2e8f0";
+                    inp.style.borderColor = "rgba(255, 255, 255, 0.2)";
+                    inp.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
                     data.other_data.push(inp.value);
                 }
             });
 
             if(hasError) return;
-            
-            // Lưu data để dùng nếu cần reset (quan trọng là MSSV)
             lastSubmitData = data;
 
-            document.getElementById('btnSubmit').disabled = true;
-            document.getElementById('btnSubmit').innerText = "Đang xử lý...";
+            const btn = document.getElementById('btnSubmit');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ĐANG XỬ LÝ...';
             document.getElementById('errorBox').style.display = "none";
-            document.getElementById('resetSection').style.display = "none"; // Ẩn reset đi mỗi lần submit mới
 
             fetch(API_URL, {
                 method: 'POST',
                 mode: 'no-cors',
                 body: JSON.stringify(data)
             }).then(() => {
-                // Do no-cors không đọc được body response, ta dùng 1 trick nhỏ hoặc giả định
-                // Để test chính xác, bạn cần deploy Web App ở chế độ "Anyone (anonymous)" và dùng mode 'cors' nếu có thể.
-                // Ở đây giả lập gọi lại GET để check status nếu cần, hoặc đơn giản là hiển thị thành công.
-                // TUY NHIÊN, để bắt lỗi Duplicate, ta cần Apps Script trả về text/plain.
-                // Đoạn code dưới đây giả định server support CORS hoặc trả về opaque response mà ta không đọc được.
-                
-                // --- CÁCH FIX TẠM THỜI CHO NO-CORS ---
-                // Chúng ta sẽ hiển thị thành công mặc định.
-                // Nếu muốn bắt lỗi "Đã tồn tại", Backend phải trả về JSONP hoặc bạn phải dùng thư viện hỗ trợ.
-                // Nhưng với yêu cầu của bạn, tôi sẽ giả lập flow:
-                
-                // Mẹo: Gọi 1 request check riêng (GET) xem đã có chưa (nếu cần thiết), nhưng ở đây tôi sẽ để UI đơn giản.
-                // Thực tế: Google Apps Script Web App trả về 200 OK cho no-cors kể cả khi logic lỗi.
-                // Để Client biết lỗi, ta cần dùng JSONP hoặc iframe.
-                
-                // GIẢI PHÁP TỐT NHẤT CHO BẠN BÂY GIỜ:
-                // Tôi sẽ chuyển sang dùng fetch với `redirect: 'follow'` để cố gắng lấy response nếu cùng domain,
-                // Nhưng với Apps Script cross-origin, cách duy nhất để biết lỗi là Backend trả về JSON
-                // và Client dùng `mode: 'cors'`. Bạn hãy đảm bảo Backend `doPost` trả về ContentService...setMimeType(JSON).
-                
-                // Hãy thử force reload trang success. Nếu backend chặn, nó sẽ không ghi.
-                // Nhưng để hiện form reset, ta cần biết kết quả.
-                
-                // -> Tôi sẽ dùng cách: Giả định thành công, nhưng nếu bạn muốn test lỗi, hãy nhập lại MSSV cũ.
-                // Code dưới đây sẽ luôn hiện thành công vì giới hạn của no-cors. 
-                // ĐỂ KHẮC PHỤC: Bạn cần cấu hình Web App: "Execute as: Me", "Who has access: Anyone".
-                
+                // Giả định thành công do no-cors
                 document.getElementById('mainForm').style.display = 'none';
                 document.getElementById('successBox').style.display = 'block';
                 document.getElementById('resTime').innerText = new Date().toLocaleTimeString();
             })
             .catch(err => {
-                // Nếu có lỗi mạng hoặc lỗi server trả về
-                 document.getElementById('btnSubmit').disabled = false;
-                 document.getElementById('btnSubmit').innerText = "XÁC NHẬN ĐIỂM DANH";
+                 btn.disabled = false;
+                 btn.innerHTML = '<span>XÁC NHẬN</span> <i class="fa-solid fa-arrow-right"></i>';
                  document.getElementById('errorBox').style.display = "block";
-                 document.getElementById('errorMsg').innerText = "Có lỗi xảy ra hoặc bạn đã điểm danh rồi.";
-                 document.getElementById('resetSection').style.display = "block"; // Hiện nút reset khi lỗi
+                 document.getElementById('errorMsg').innerText = "Có lỗi kết nối hoặc bạn đã điểm danh rồi.";
+                 document.getElementById('resetSection').style.display = "block";
             });
+            
+            // Fallback: Nếu backend check trùng và trả lỗi (nhưng no-cors ko đọc dc), 
+            // ta hiện reset button sau 2s nếu user chưa chuyển màn hình (cách "hack" UX)
+            setTimeout(() => {
+                if(document.getElementById('mainForm').style.display !== 'none') {
+                     document.getElementById('resetSection').style.display = "block";
+                     document.getElementById('errorBox').style.display = "block";
+                     document.getElementById('errorMsg').innerHTML = "Nếu hệ thống không phản hồi, có thể bạn đã điểm danh rồi.";
+                     btn.disabled = false;
+                     btn.innerHTML = '<span>XÁC NHẬN</span> <i class="fa-solid fa-arrow-right"></i>';
+                }
+            }, 3000);
         }
         
-        // HÀM QUAN TRỌNG: Gửi yêu cầu Reset
         function requestReset() {
-            if(!lastSubmitData || !lastSubmitData.mssv) {
-                alert("Lỗi: Không tìm thấy Mã sinh viên để gửi yêu cầu.");
-                return;
-            }
-            
+            if(!lastSubmitData || !lastSubmitData.mssv) { alert("Lỗi: Không tìm thấy thông tin."); return; }
             const reason = document.getElementById('resetReason').value;
             if(!reason) { alert("Vui lòng nhập lý do!"); return; }
 
             const reqData = {
                 action: "SEND_REQUEST",
                 name: lastSubmitData.name,
-                mssv: lastSubmitData.mssv,     // Đảm bảo MSSV được gửi đi (Khắc phục lỗi undefined)
+                mssv: lastSubmitData.mssv,
                 class_name: lastSubmitData.class_name,
                 reason: reason
             };
 
-            // Gửi request
-            fetch(API_URL, { 
-                method: 'POST', 
-                mode: 'no-cors',
-                body: JSON.stringify(reqData) 
-            }).then(() => {
-                alert("Đã gửi yêu cầu đến Admin! Vui lòng đợi Admin duyệt và thử lại sau ít phút.");
-                document.getElementById('resetSection').innerHTML = "<p style='color:green; font-weight:bold'>✅ Đã gửi yêu cầu thành công!</p>";
+            fetch(API_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(reqData) })
+            .then(() => {
+                document.getElementById('resetSection').innerHTML = "<p style='color:#86efac; font-weight:bold; text-align:center'><i class='fa-solid fa-check'></i> Đã gửi yêu cầu! Vui lòng đợi Admin duyệt.</p>";
             });
         }
     </script>
